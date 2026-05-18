@@ -4009,7 +4009,10 @@ function toggleTheme(){
 }
 
 // ═══════════════ UTILS ═══════════════
-function closeModal(id){document.getElementById(id).classList.remove('show');}
+function closeModal(id){
+  const el=document.getElementById(id);
+  if(el){el.classList.remove('show');el.style.display='';}
+}
 let _tt;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);}
 function onDropWelcome(e){
@@ -5475,8 +5478,11 @@ window.addEventListener('DOMContentLoaded',()=>{
       finishInit();
       const fl2 = F();
       if(fl2.cameras.length > 0 || fl2.image){
-        document.getElementById('welcome').style.display = 'none';
-        document.getElementById('toolbar').style.display = 'flex';
+        // Esconde welcome e mostra editor
+        const wEl = document.getElementById('welcome');
+        if(wEl) wEl.style.display = 'none';
+        const tbEl = document.getElementById('toolbar');
+        if(tbEl) tbEl.style.display = 'flex';
         setTimeout(() => {
           // Ajusta zoom/pan para a imagem caber na tela
           const fl = F();
@@ -5602,7 +5608,9 @@ function openGhConfig(){
   if(ti) ti.value = cfg.token || '';
   if(ui) ui.value = cfg.user  || 'sussuminho';
   if(ri) ri.value = cfg.repo  || 'ibmp-cftv-control';
-  document.getElementById('github-modal').classList.add('show');
+  const m = document.getElementById('github-modal');
+  if(m){ m.style.display='flex'; m.classList.add('show'); }
+  setTimeout(()=>{ if(ti) ti.focus(); }, 100);
 }
 
 function buildProjectJSON(){
@@ -5734,7 +5742,7 @@ Baixar o projeto.json para salvar manualmente?')){
 }
 
 // Adicionar link "Configurar GitHub" no Admin
-// openAdmin já definido no bloco save
+
 
 // ═══════════════════════════════════════════════════════════════
 //  MOBILE VIEW — consulta rápida
