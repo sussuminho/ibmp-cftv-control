@@ -15,10 +15,10 @@
 #login-input:focus{border-color:#159b77}
 #login-btn{width:100%;background:#159b77;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
 #login-btn:hover{background:#0e7a5e}
+#login-err{color:#ef4444;font-size:12px;margin-top:10px;height:16px;transition:opacity .2s}
+#login-err.hide{opacity:0}
 </style>
 <link rel="manifest" href="manifest.json">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
 <meta name="theme-color" content="#159b77">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -183,13 +183,6 @@ input, textarea { font-family: inherit; }
 #btn-export.ready, #btn-pdf.ready {
   opacity: 1; pointer-events: auto;
 }
-/* Botão salvar cloud */
-#btn-save-cloud { position: relative; }
-#btn-save-cloud.saving { opacity: .7; pointer-events: none; }
-#btn-save-cloud.saved { color: var(--ok); border-color: var(--ok); }
-#btn-save-cloud.error { color: var(--nf); border-color: var(--nf); }
-@keyframes spin { to { transform: rotate(360deg); } }
-
 /* theme toggle */
 #theme-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
 #theme-btn:hover { background: var(--surface3); color: var(--text); }
@@ -585,7 +578,7 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
 
 @media (max-width: 768px) {
   /* Esconde todo o app desktop */
-  #hdr, #app { display: none !important; }
+  #hdr, #app-wrapper { display: none !important; }
 
   /* Mostra view mobile */
   #mob-view {
@@ -718,6 +711,103 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
   .mob-log-empty { font-size: 13px; color: var(--text3); text-align: center; padding: 10px 0; }
 }
 
+
+/* ── MOBILE VIEW ── */
+#mob-view { display: none; }
+@media (max-width: 768px) {
+  #hdr, #app { display: none !important; }
+  #mob-view { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: var(--bg); overflow: hidden; }
+  #mob-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 52px; flex-shrink: 0; background: var(--surface); border-bottom: 1px solid var(--border); }
+  #mob-hdr-left { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--text); }
+  #mob-hdr-left strong { font-weight: 800; }
+  #mob-hdr-right { display: flex; align-items: center; gap: 6px; }
+  #mob-theme-btn, #mob-pdf-btn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  #mob-pdf-btn { background: var(--g-light); border-color: var(--g); color: var(--g); }
+  #mob-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; padding: 12px 14px; flex-shrink: 0; }
+  .mob-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 6px; text-align: center; }
+  .mob-kpi-val { font-size: 20px; font-weight: 800; line-height: 1; }
+  .mob-kpi-lbl { font-size: 9px; color: var(--text3); margin-top: 3px; font-weight: 500; text-transform: uppercase; letter-spacing:.04em; }
+  .mob-kpi-ok .mob-kpi-val { color: var(--ok); }
+  .mob-kpi-nf .mob-kpi-val { color: var(--nf); }
+  .mob-kpi-nf { border-color: rgba(220,38,38,.2); background: rgba(220,38,38,.04); }
+  .mob-kpi-total .mob-kpi-val { color: var(--text); }
+  .mob-kpi-db .mob-kpi-val { color: var(--text2); }
+  #mob-search-wrap { padding: 0 14px 10px; flex-shrink: 0; }
+  #mob-search-row { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 0 12px; margin-bottom: 8px; }
+  #mob-search-row:focus-within { border-color: var(--g); }
+  #mob-search { flex: 1; background: none; border: none; outline: none; font-size: 14px; color: var(--text); padding: 11px 0; font-family: inherit; }
+  #mob-search::placeholder { color: var(--text3); }
+  #mob-search-clear { background: none; border: none; color: var(--text3); font-size: 14px; cursor: pointer; padding: 4px; }
+  #mob-filters { display: flex; gap: 6px; }
+  .mob-filter { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit; }
+  .mob-filter.on { background: var(--g-light); border-color: var(--g); color: var(--g); }
+  #mob-list { flex: 1; overflow-y: auto; padding: 0 14px 80px; }
+  .mob-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .mob-item:active { transform: scale(.98); }
+  .mob-item-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .mob-item-dot.ok { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+  .mob-item-dot.nf { background: var(--nf); box-shadow: 0 0 5px var(--nf); }
+  .mob-item-body { flex: 1; min-width: 0; }
+  .mob-item-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mob-item-sub { font-size: 12px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mob-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+  .mob-item-tag { font-size: 10px; font-weight: 700; color: var(--text3); background: var(--surface2); border: 1px solid var(--border); padding: 2px 7px; border-radius: 6px; }
+  .mob-item-arr { color: var(--text3); font-size: 14px; }
+  .mob-item.nf-item { border-color: rgba(220,38,38,.25); }
+  .mob-item.nf-item .mob-item-name { color: var(--nf); }
+  .mob-section-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing:.07em; color: var(--text3); padding: 12px 2px 5px; }
+  .mob-list-empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; }
+  #mob-sheet-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 800; }
+  #mob-sheet-bg.show { display: block; }
+  #mob-sheet { position: fixed; bottom: 0; left: 0; right: 0; height: 75vh; background: var(--surface); border-radius: 22px 22px 0 0; z-index: 801; transform: translateY(110%); transition: transform .3s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; box-shadow: 0 -8px 40px rgba(0,0,0,.2); }
+  #mob-sheet.open { transform: translateY(0); }
+  #mob-sheet-pull { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
+  #mob-sheet-scroll { flex: 1; overflow-y: auto; padding: 14px 18px 40px; }
+  #mob-sheet-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  #mob-sheet-name { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 5px; }
+  #mob-sheet-status { display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  #mob-sheet-status.ok { background: rgba(21,155,119,.12); color: var(--ok); border: 1px solid rgba(21,155,119,.3); }
+  #mob-sheet-status.nf { background: rgba(220,38,38,.1); color: var(--nf); border: 1px solid rgba(220,38,38,.25); }
+  #mob-sheet-close { width: 30px; height: 30px; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .mob-field { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 7px; }
+  .mob-field-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing:.06em; color: var(--text3); flex-shrink: 0; }
+  .mob-field-val { font-size: 13px; font-weight: 600; color: var(--text); text-align: right; word-break: break-all; }
+  .mob-field-val.ip { font-family: monospace; font-size: 12px; color: #3b82f6; }
+  .mob-field-val.nf { color: var(--nf); }
+  .mob-field-val.ok { color: var(--ok); }
+  .mob-log-sec { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 6px; }
+  .mob-log-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing:.07em; color: var(--text3); margin-bottom: 10px; }
+  .mob-log-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; }
+  .mob-log-meta { font-size: 10px; color: var(--text3); margin-bottom: 4px; display: flex; gap: 8px; align-items: center; }
+  .mob-log-badge { font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 10px; text-transform: uppercase; }
+  .mob-log-badge.info { background: rgba(59,130,246,.12); color: #3b82f6; }
+  .mob-log-badge.manut { background: rgba(245,158,11,.12); color: #f59e0b; }
+  .mob-log-badge.inc { background: rgba(220,38,38,.1); color: var(--nf); }
+  .mob-log-badge.res { background: rgba(21,155,119,.12); color: var(--ok); }
+  .mob-log-text { font-size: 12px; color: var(--text2); line-height: 1.4; }
+  .mob-log-empty { font-size: 13px; color: var(--text3); text-align: center; padding: 10px 0; }
+}
+
+/* ── LOGIN ── */
+#login-wall { position: fixed; inset: 0; z-index: 99999; background: #0f1923; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', Arial, sans-serif; }
+#login-box { background: #1a2533; border: 1px solid #2a3a4a; border-radius: 20px; padding: 40px 36px; width: 340px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+#login-logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px; }
+#login-logo span { font-size: 18px; font-weight: 800; color: #fff; }
+#login-logo strong { color: #159b77; }
+#login-sub { font-size: 13px; color: #64748b; margin-bottom: 24px; line-height: 1.5; }
+#login-inp-wrap { position: relative; margin-bottom: 12px; }
+#login-input { width: 100%; background: #0f1923; border: 1.5px solid #2a3a4a; border-radius: 10px; padding: 12px 44px 12px 14px; font-size: 15px; color: #fff; outline: none; font-family: inherit; text-align: center; letter-spacing: 2px; box-sizing: border-box; transition: border-color .2s; }
+#login-input:focus { border-color: #159b77; }
+#login-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #64748b; cursor: pointer; padding: 4px; display: flex; align-items: center; }
+#login-btn { width: 100%; background: #159b77; color: #fff; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .15s; }
+#login-btn:hover { background: #0e7a5e; }
+#login-err { color: #ef4444; font-size: 12px; margin-top: 10px; height: 16px; opacity: 0; transition: opacity .2s; }
+
+/* ── BOTÃO SALVAR ── */
+#btn-save-cloud.saved { color: var(--ok); border-color: var(--ok); }
+#btn-save-cloud.error { color: var(--nf); border-color: var(--nf); }
+#btn-save-cloud.saving { opacity: .7; pointer-events: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
 /* ═══════════════════════════════════════════════
    VIEW OVERLAYS
 ═══════════════════════════════════════════════ */
@@ -1309,10 +1399,9 @@ canvas.chart { width: 100%; display: block; }
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/><path d="M8 2v8M5 7l3 3 3-3"/></svg>
     Exportar
   </button>
-  <button class="hbtn" id="btn-save-cloud" onclick="saveToCloud()" title="Salvar projeto no servidor" style="gap:5px">
-    <svg id="save-icon-normal" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 2h9l3 3v9H2z"/><path d="M5 2v4h6V2"/><rect x="4" y="10" width="8" height="4" rx="1"/></svg>
-    <svg id="save-icon-spin" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="display:none;animation:spin 1s linear infinite"><path d="M8 2a6 6 0 016 6"/></svg>
-    <span id="save-btn-label">Salvar</span>
+  <button class="hbtn" id="btn-save-cloud" onclick="saveToCloud()" title="Salvar no GitHub">
+    <svg id="save-icon-n" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 2h9l3 3v9H2z"/><path d="M5 2v4h6V2"/><rect x="4" y="10" width="8" height="4" rx="1"/></svg>
+    <span id="save-btn-lbl">Salvar</span>
   </button>
   <div class="report-menu-wrap">
     <button class="hbtn" id="btn-pdf" id="btn-report-menu" onclick="toggleReportMenu()" title="Relatórios e exportações">
@@ -1352,17 +1441,7 @@ canvas.chart { width: 100%; display: block; }
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4"/></svg>
     Admin
   </button>
-  <button class="hbtn" onclick="(function(){
-    var m=document.getElementById('github-modal');
-    var cfg=getGhConfig();
-    var ti=document.getElementById('gh-token-input');
-    var ui=document.getElementById('gh-user-input');
-    var ri=document.getElementById('gh-repo-input');
-    if(ti)ti.value=cfg.token||'';
-    if(ui)ui.value=cfg.user||'sussuminho';
-    if(ri)ri.value=cfg.repo||'ibmp-cftv-control';
-    if(m){m.style.display='flex';m.classList.add('show');}
-  })()" title="Configurar salvamento automático no GitHub" style="font-size:11px;padding:6px 10px">
+  <button class="hbtn" id="btn-gh-config" onclick="openGhConfig()" title="Configurar GitHub" style="font-size:11px;padding:6px 10px">
     ⚙ GitHub
   </button>
 </header>
@@ -1374,14 +1453,9 @@ canvas.chart { width: 100%; display: block; }
       <span>CFTV <strong>IBMP</strong></span>
     </div>
     <div id="login-title">Sistema de Gestão de Câmeras<br>Segurança do Trabalho — IBMP</div>
-    <div style="position:relative;margin-bottom:12px">
-      <input id="login-input" type="password" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')loginCheck()" style="width:100%;background:#0f1923;border:1.5px solid #2a3a4a;border-radius:10px;padding:12px 44px 12px 14px;font-size:15px;color:#fff;outline:none;font-family:inherit;text-align:center;letter-spacing:2px;box-sizing:border-box;transition:border-color .2s">
-      <button id="login-eye" onclick="toggleSenha()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#64748b;cursor:pointer;padding:4px;display:flex;align-items:center">
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="10" cy="10" rx="8" ry="5"/><circle cx="10" cy="10" r="2.5"/></svg>
-      </button>
-    </div>
+    <input id="login-input" type="password" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')loginCheck()">
     <button id="login-btn" onclick="loginCheck()">Entrar</button>
-    <div id="login-err" style="color:#ef4444;font-size:12px;margin-top:10px;height:16px;opacity:0;transition:opacity .2s"></div>
+    <div id="login-err" class="hide">Senha incorreta</div>
   </div>
 </div>
 <!-- ═══ MOBILE VIEW ═══ -->
@@ -1441,6 +1515,105 @@ canvas.chart { width: 100%; display: block; }
   </div>
 </div>
 <!-- ═══ FIM MOBILE VIEW ═══ -->
+
+<!-- LOGIN -->
+<div id="login-wall">
+  <div id="login-box">
+    <div id="login-logo">
+      <svg width="28" height="28" viewBox="0 0 22 22" fill="none" stroke="#159b77" stroke-width="1.7"><rect x="1" y="4" width="14" height="11" rx="2"/><circle cx="8" cy="9.5" r="2.5"/><path d="M15 7l5-2v7l-5-2"/></svg>
+      <span>CFTV <strong>IBMP</strong></span>
+    </div>
+    <div id="login-sub">Sistema de Gestão de Câmeras<br>Segurança do Trabalho — IBMP</div>
+    <div id="login-inp-wrap">
+      <input id="login-input" type="password" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')doLogin()">
+      <button id="login-eye" onclick="toggleLoginEye()">👁</button>
+    </div>
+    <button id="login-btn" onclick="doLogin()">Entrar</button>
+    <div id="login-err"></div>
+  </div>
+</div>
+
+<!-- MOBILE VIEW -->
+<div id="mob-view">
+  <header id="mob-hdr">
+    <div id="mob-hdr-left">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#159b77" stroke-width="1.7"><rect x="1" y="4" width="14" height="11" rx="2"/><circle cx="8" cy="9.5" r="2.5"/><path d="M15 7l5-2v7l-5-2"/></svg>
+      <span>CFTV <strong>IBMP</strong></span>
+    </div>
+    <div id="mob-hdr-right">
+      <button id="mob-theme-btn" onclick="toggleTheme()" title="Tema">🌙</button>
+      <button id="mob-pdf-btn" onclick="exportPDF()" title="PDF">📄</button>
+    </div>
+  </header>
+  <div id="mob-kpis">
+    <div class="mob-kpi mob-kpi-total"><div class="mob-kpi-val" id="mkpi-total">—</div><div class="mob-kpi-lbl">Mapeadas</div></div>
+    <div class="mob-kpi mob-kpi-ok"><div class="mob-kpi-val" id="mkpi-ok">—</div><div class="mob-kpi-lbl">Operantes</div></div>
+    <div class="mob-kpi mob-kpi-nf"><div class="mob-kpi-val" id="mkpi-nf">—</div><div class="mob-kpi-lbl">Inativas</div></div>
+    <div class="mob-kpi mob-kpi-db"><div class="mob-kpi-val" id="mkpi-db">—</div><div class="mob-kpi-lbl">No banco</div></div>
+  </div>
+  <div id="mob-search-wrap">
+    <div id="mob-search-row">
+      <input id="mob-search" type="text" placeholder="Buscar câmera, setor, IP…" oninput="mobSearch(this.value)" autocomplete="off">
+      <button id="mob-search-clear" onclick="mobClearSearch()" style="display:none">✕</button>
+    </div>
+    <div id="mob-filters">
+      <button class="mob-filter on" id="mf-all" onclick="mobSetFilter('all')">Todas</button>
+      <button class="mob-filter" id="mf-nf" onclick="mobSetFilter('nf')">● Inativas</button>
+      <button class="mob-filter" id="mf-ok" onclick="mobSetFilter('ok')">● Operantes</button>
+    </div>
+  </div>
+  <div id="mob-list"><div class="mob-list-empty">Carregando…</div></div>
+  <div id="mob-sheet-bg" onclick="mobCloseSheet()"></div>
+  <div id="mob-sheet">
+    <div id="mob-sheet-pull"></div>
+    <div id="mob-sheet-scroll">
+      <div id="mob-sheet-hdr">
+        <div><div id="mob-sheet-name"></div><div id="mob-sheet-status"></div></div>
+        <button id="mob-sheet-close" onclick="mobCloseSheet()">✕</button>
+      </div>
+      <div id="mob-sheet-fields"></div>
+      <div id="mob-sheet-logs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GITHUB CONFIG -->
+<div class="overlay" id="github-modal">
+  <div class="mbox" style="width:460px;max-height:90vh;overflow-y:auto">
+    <h3 style="margin-bottom:16px">⚙ Configurar Salvamento Automático</h3>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+      O botão <strong>Salvar</strong> envia o projeto direto para o GitHub.<br>
+      Precisa de um <strong>Personal Access Token</strong> com permissão <code>repo</code>.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+      <div>
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px">GitHub Token</label>
+        <div style="position:relative">
+          <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+            style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 40px 10px 12px;font-size:13px;color:var(--text);outline:none;font-family:monospace;box-sizing:border-box">
+          <button onclick="var i=document.getElementById('gh-token-input');i.type=i.type==='password'?'text':'password'" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer">👁</button>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px">Usuário GitHub</label>
+        <input id="gh-user-input" type="text" placeholder="sussuminho"
+          style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);outline:none;font-family:inherit;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px">Repositório</label>
+        <input id="gh-repo-input" type="text" placeholder="ibmp-cftv-control"
+          style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);outline:none;font-family:inherit;box-sizing:border-box">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="doSaveGhConfig()" class="mbtn primary" style="flex:1">Salvar Configuração</button>
+      <button onclick="closeModal('github-modal')" class="mbtn cancel">Cancelar</button>
+    </div>
+    <p style="font-size:11px;color:var(--text3);text-align:center;margin-top:12px;line-height:1.6">
+      GitHub → Settings → Developer settings → Personal access tokens → Generate new token → marcar <strong>repo</strong>
+    </p>
+  </div>
+</div>
 
 <!-- APP -->
 <div id="app-wrapper">
@@ -1927,47 +2100,6 @@ canvas.chart { width: 100%; display: block; }
     <div class="mbtns">
       <button class="mbtn cancel" onclick="closeModal('pass-modal')">Cancelar</button>
       <button class="mbtn primary" onclick="checkPass()">Entrar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal GitHub Config -->
-<div class="overlay" id="github-modal">
-  <div class="mbox" style="width:480px;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
-      <span style="font-weight:700;font-size:14px">⚙ Configurar Salvamento Automático</span>
-      <button onclick="closeModal('github-modal')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:2px 6px">✕</button>
-    </div>
-    <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text2);line-height:1.6">
-        O botão <strong>Salvar</strong> envia o projeto direto para o GitHub.<br>
-        Precisa de um <strong>Personal Access Token</strong> com permissão <code>repo</code>.
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:12px;font-weight:700;color:var(--text2)">GITHUB TOKEN</label>
-        <div style="position:relative">
-          <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-            style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 40px 10px 12px;font-size:13px;color:var(--text);outline:none;font-family:monospace;box-sizing:border-box">
-          <button onclick="toggleGhToken()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer">👁</button>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:12px;font-weight:700;color:var(--text2)">USUÁRIO GITHUB</label>
-        <input id="gh-user-input" type="text" placeholder="sussuminho"
-          style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);outline:none;font-family:inherit;box-sizing:border-box">
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <label style="font-size:12px;font-weight:700;color:var(--text2)">REPOSITÓRIO</label>
-        <input id="gh-repo-input" type="text" placeholder="ibmp-cftv-control"
-          style="width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);outline:none;font-family:inherit;box-sizing:border-box">
-      </div>
-      <div style="display:flex;gap:8px;margin-top:4px">
-        <button onclick="saveGhConfig()" style="flex:1;background:var(--g);color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar Configuração</button>
-        <button onclick="closeModal('github-modal')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:11px 16px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
-      </div>
-      <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.6">
-        Como gerar: GitHub → Settings → Developer settings →<br>Personal access tokens → Generate new token → marcar <strong>repo</strong>
-      </div>
     </div>
   </div>
 </div>
@@ -4019,10 +4151,7 @@ function toggleTheme(){
 }
 
 // ═══════════════ UTILS ═══════════════
-function closeModal(id){
-  const el=document.getElementById(id);
-  if(el){el.classList.remove('show');el.style.display='';}
-}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
 let _tt;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);}
 function onDropWelcome(e){
@@ -5408,123 +5537,45 @@ function loadLocalInventory(){
 window.addEventListener('DOMContentLoaded',()=>{
   E.init();
   // Auto-load projeto.json se existir no servidor
-  // Auto-load — tenta GitHub, fallback localStorage
-  (async function(){
-    try {
-      // Primeiro tenta carregar do localStorage (instantâneo)
-      const localBackup = localStorage.getItem('ibmp_projeto_backup');
-
-      const _base = location.href.replace(/[^\/]*$/, '');
-      const url = _base + 'projeto.json';
-      console.log('[AutoLoad] Buscando:', url);
-      const r = await fetch(url, {cache: 'no-store'});
-      if(!r.ok){ console.log('[AutoLoad] projeto.json não encontrado ('+r.status+')'); return; }
-      const data = await r.json();
-      console.log('[AutoLoad] JSON recebido, chaves:', Object.keys(data));
-
-      // Carregar banco de dados
-      if(data.db){
-        if(data.db.cameras && data.db.cameras.length) DB.cameras = data.db.cameras;
-        if(data.db.recorders && data.db.recorders.length) DB.recorders = data.db.recorders;
-        if(data.db.pareceres && data.db.pareceres.length) DB.pareceres = data.db.pareceres;
-        console.log('[AutoLoad] DB carregado: '+DB.cameras.length+' câmeras');
-      }
-
-      // Carregar plantas
-      if(data.floors && data.floors.length){
-        floors = data.floors.map(fd => {
-          const fl = mkFloor(fd.name);
-          fl.id    = fd.id || fl.id;
-          fl.panX  = fd.panX || 0;
-          fl.panY  = fd.panY || 0;
-          fl.zoom  = fd.zoom || 1;
-          fl.scale     = fd.scale || null;
-          fl.riskZones = fd.riskZones || [];
-          // O JSON exportado usa "image" como string base64
-          // Precisa converter para objeto HTMLImageElement
-          const imgSrc = fd.imgB64 || fd.image || null;
-          if(imgSrc && typeof imgSrc === 'string'){
-            const img = new Image();
-            img.src = imgSrc;
-            fl.image  = img;
-            fl.imgB64 = imgSrc;
-          } else if(imgSrc && typeof imgSrc === 'object'){
-            fl.image  = imgSrc;
-            fl.imgB64 = null;
-          } else {
-            fl.image  = null;
-            fl.imgB64 = null;
-          }
-          fl.cameras = (fd.cameras || []).map(cd => {
-            const cam = new Cam(cd.id || _uid++, cd.name, cd.x, cd.y);
-            cam.rot = cd.rot || 0;
-            cam.fov = cd.fov || 90;
-            cam.ir  = cd.ir  || 60;
+  fetch('projeto.json')
+    .then(r=>{ if(!r.ok) throw new Error('not found'); return r.json(); })
+    .then(data=>{
+      try {
+        floors = data.floors.map(f=>{
+          const fl=mkFloor(f.name);
+          fl.id=f.id;
+          fl.panX=f.panX||0;fl.panY=f.panY||0;fl.zoom=f.zoom||1;
+          fl.image=f.image||null;fl.imgB64=f.imgB64||null;
+          fl.scale=f.scale||null;fl.riskZones=f.riskZones||[];
+          fl.cameras=(f.cameras||[]).map(c=>{
+            const cam=new Cam(c.id,c.name,c.x,c.y);
+            cam.rot=c.rot||0;cam.fov=c.fov||90;cam.ir=c.ir||60;
             return cam;
           });
           return fl;
         });
-        _floorIdx = 0;
-        console.log('[AutoLoad] '+floors.length+' planta(s) carregada(s)');
-      }
-
-      // Carregar inventário e log
-      if(data.inventory) Object.assign(CAM_INV, data.inventory);
-      if(data.camLog)    Object.assign(CAM_LOG,  data.camLog);
-
-      // Recalcular UID
-      const allIds = floors.flatMap(f => f.cameras.map(c => c.id)).filter(Number.isFinite);
-      if(allIds.length) _uid = Math.max(...allIds) + 1;
-
-      // Esconde welcome imediatamente — não esperar imagens
-      document.getElementById('welcome').style.display = 'none';
-      document.getElementById('toolbar').style.display = 'flex';
-
-      // Aguardar imagens carregarem antes de renderizar
-      const imgPromises = floors.flatMap(f => 
-        f.image ? [new Promise(res => { 
-          if(f.image.complete) res(); 
-          else { f.image.onload = res; f.image.onerror = res; }
-        })] : []
-      );
-      await Promise.all(imgPromises);
-
-      finishInit();
-      const fl2 = F();
-      if(fl2.cameras.length > 0 || fl2.image){
-        // Esconde welcome e mostra editor
-        const wEl = document.getElementById('welcome');
-        if(wEl) wEl.style.display = 'none';
-        const tbEl = document.getElementById('toolbar');
-        if(tbEl) tbEl.style.display = 'flex';
-        setTimeout(() => {
-          const fl = F();
-          if(fl.image && fl.image.naturalWidth){
-            // Força o canvas a ter o tamanho correto primeiro
-            E.resize && E.resize();
-            const cw = E.c.width  || E.c.clientWidth  || 800;
-            const ch = E.c.height || E.c.clientHeight || 600;
-            const iw = fl.image.naturalWidth;
-            const ih = fl.image.naturalHeight;
-            const zoom = Math.min(cw / iw, ch / ih) * 0.92;
-            fl.zoom = zoom;
-            fl.panX = Math.round((cw - iw * zoom) / 2);
-            fl.panY = Math.round((ch - ih * zoom) / 2);
-          }
-          E.render();
-          mmUpdate();
-        }, 600);
-      }
-      toast('✓ Projeto carregado automaticamente');
-
-      // Se veio do localStorage, avisa
-      if(typeof _fromLocal !== 'undefined' && _fromLocal){
-        toast('✓ Projeto restaurado do backup local');
-      }
-    } catch(err){
-      console.warn('[AutoLoad] Erro:', err);
-    }
-  })();
+        if(data.inventory) Object.assign(CAM_INV,data.inventory);
+        if(data.camLog) Object.assign(CAM_LOG,data.camLog);
+        if(data.db){
+          if(data.db.cameras) DB.cameras=data.db.cameras;
+          if(data.db.recorders) DB.recorders=data.db.recorders;
+          if(data.db.pareceres) DB.pareceres=data.db.pareceres;
+        }
+        _uid=Math.max(...floors.flatMap(f=>f.cameras.map(c=>c.id)),0)+1;
+        _floorIdx=0;
+        finishInit();
+        const f=F();
+        if(f.cameras.length>0||f.image||f.imgB64){
+          document.getElementById('welcome').style.display='none';
+          document.getElementById('toolbar').style.display='flex';
+          E.fitToScreen && E.fitToScreen();
+        }
+        E.render();
+        toast('✓ Projeto carregado automaticamente');
+        console.log('[AutoLoad] projeto.json carregado com sucesso');
+      } catch(e){ console.warn('[AutoLoad] Erro ao processar projeto.json:',e); }
+    })
+    .catch(()=>{ console.log('[AutoLoad] projeto.json não encontrado — modo normal'); });
   const loaded=loadLocalInventory();
   if(!loaded){
     DB.cameras=parseCSV(PA);DB.recorders=parseCSV(PB);DB.pareceres=parseCSV(PC);
@@ -5550,7 +5601,8 @@ function finishInit(){
   buildList();updateSB();buildFloorBar();mmUpdate();
   document.getElementById('btn-export').classList.add('ready');
   document.getElementById('btn-pdf').classList.add('ready');
-  if(isMob()) mobRender();
+  const sc=document.getElementById('btn-save-cloud');if(sc)sc.classList.add('ready');
+  if(window.innerWidth<=768 && typeof mobRender==='function') mobRender();
 }
 function restoreAutoSave(){
   closeModal('autosave-modal');
@@ -5587,176 +5639,6 @@ function discardAutoSave(){
 }
 </script>
 <script>
-
-// ═══════════════════════════════════════════════════════════════
-//  SAVE TO CLOUD — Salvar projeto.json no GitHub via API
-// ═══════════════════════════════════════════════════════════════
-
-const GH_KEY = 'ibmp_gh_config';
-
-function getGhConfig(){
-  try { return JSON.parse(localStorage.getItem(GH_KEY)) || {}; } catch{ return {}; }
-}
-
-function saveGhConfig(){
-  const token = document.getElementById('gh-token-input').value.trim();
-  const user  = document.getElementById('gh-user-input').value.trim();
-  const repo  = document.getElementById('gh-repo-input').value.trim();
-  if(!token || !user || !repo){ toast('Preencha todos os campos'); return; }
-  localStorage.setItem(GH_KEY, JSON.stringify({token, user, repo}));
-  closeModal('github-modal');
-  toast('✓ Configuração salva! Botão Salvar pronto para uso.');
-}
-
-function toggleGhToken(){
-  const inp = document.getElementById('gh-token-input');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-}
-
-function openGhConfig(){
-  const cfg = getGhConfig();
-  const ti = document.getElementById('gh-token-input');
-  const ui = document.getElementById('gh-user-input');
-  const ri = document.getElementById('gh-repo-input');
-  if(ti) ti.value = cfg.token || '';
-  if(ui) ui.value = cfg.user  || 'sussuminho';
-  if(ri) ri.value = cfg.repo  || 'ibmp-cftv-control';
-  const m = document.getElementById('github-modal');
-  if(m){ m.style.display='flex'; m.classList.add('show'); }
-  setTimeout(()=>{ if(ti) ti.focus(); }, 100);
-}
-
-function buildProjectJSON(){
-  // Usa a mesma lógica do exportProject mas retorna objeto
-  const data = {
-    version: 2,
-    exported: new Date().toISOString(),
-    db: { cameras: DB.cameras, recorders: DB.recorders, pareceres: DB.pareceres },
-    floors: floors.map(f => ({
-      id: f.id, name: f.name,
-      panX: f.panX, panY: f.panY, zoom: f.zoom,
-      scale: f.scale, riskZones: f.riskZones || [],
-      image: f.imgB64 || (f.image && typeof f.image === 'string' ? f.image : null) ||
-             (f.image && f.image.src ? f.image.src : null),
-      cameras: f.cameras.map(c => ({
-        id: c.id, name: c.name, x: c.x, y: c.y,
-        rot: c.rot, fov: c.fov, ir: c.ir
-      }))
-    })),
-    inventory: CAM_INV || {},
-    camLog: CAM_LOG || {}
-  };
-  return data;
-}
-
-async function saveToCloud(){
-  // 1. Sempre salva no localStorage primeiro (backup instantâneo)
-  try {
-    const data = buildProjectJSON();
-    localStorage.setItem('ibmp_projeto_backup', JSON.stringify(data));
-    console.log('[Save] localStorage OK');
-  } catch(e){ console.warn('[Save] localStorage falhou:', e); }
-
-  // 2. Tenta salvar no GitHub
-  const cfg = getGhConfig();
-  if(!cfg.token || !cfg.user || !cfg.repo){
-    // Sem config — pergunta se quer configurar
-    if(confirm('Configurar salvamento automático no GitHub?
-
-Sem isso, o projeto fica salvo apenas neste navegador.')){
-      openGhConfig();
-    } else {
-      toast('✓ Salvo localmente neste navegador');
-    }
-    return;
-  }
-
-  // Animação de loading
-  const btn = document.getElementById('btn-save-cloud');
-  const lbl = document.getElementById('save-btn-label');
-  const iconNormal = document.getElementById('save-icon-normal');
-  const iconSpin   = document.getElementById('save-icon-spin');
-  btn.classList.add('saving');
-  iconNormal.style.display = 'none';
-  iconSpin.style.display = 'block';
-  lbl.textContent = 'Salvando…';
-
-  try {
-    const data = buildProjectJSON();
-    const json = JSON.stringify(data, null, 2);
-    const base64Content = btoa(unescape(encodeURIComponent(json)));
-
-    // Buscar SHA atual do arquivo (necessário para update)
-    const apiBase = `https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/projeto.json`;
-    const headers = {
-      'Authorization': `token ${cfg.token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/vnd.github.v3+json'
-    };
-
-    let sha = null;
-    try {
-      const getRes = await fetch(apiBase, { headers });
-      if(getRes.ok){
-        const existing = await getRes.json();
-        sha = existing.sha;
-      }
-    } catch(e){ /* arquivo novo, sem SHA */ }
-
-    // Enviar para GitHub
-    const body = {
-      message: `Atualização projeto CFTV — ${new Date().toLocaleString('pt-BR')}`,
-      content: base64Content,
-      ...(sha ? { sha } : {})
-    };
-
-    const putRes = await fetch(apiBase, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify(body)
-    });
-
-    if(putRes.ok){
-      btn.classList.remove('saving');
-      btn.classList.add('saved');
-      iconSpin.style.display = 'none';
-      iconNormal.style.display = 'block';
-      lbl.textContent = '✓ Salvo!';
-      toast('✓ Projeto salvo no GitHub com sucesso!');
-      setTimeout(()=>{ btn.classList.remove('saved'); lbl.textContent = 'Salvar'; }, 3000);
-    } else {
-      const err = await putRes.json();
-      throw new Error(err.message || putRes.status);
-    }
-
-  } catch(e){
-    btn.classList.remove('saving');
-    btn.classList.add('error');
-    iconSpin.style.display = 'none';
-    iconNormal.style.display = 'block';
-    lbl.textContent = 'Erro';
-    console.error('[Save] Erro GitHub:', e);
-    toast('Erro ao salvar no GitHub: ' + e.message);
-    setTimeout(()=>{ btn.classList.remove('error'); lbl.textContent = 'Salvar'; }, 3000);
-
-    // Fallback: oferecer download manual
-    if(confirm('Falha ao salvar no GitHub.
-Baixar o projeto.json para salvar manualmente?')){
-      const data = buildProjectJSON();
-      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href = url; a.download = 'projeto.json';
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      setTimeout(()=>URL.revokeObjectURL(url), 5000);
-    }
-  }
-}
-
-// Adicionar link "Configurar GitHub" no Admin
-
-
 // ═══════════════════════════════════════════════════════════════
 //  MOBILE VIEW — consulta rápida
 // ═══════════════════════════════════════════════════════════════
@@ -5996,54 +5878,361 @@ async function installPwa(){
 </script>
 <script>
 (function(){
-  const SENHA = 'Ibmp@2026';
+  const HASH = '7f6c9a2b4e1d8f3a5c7b9e2d4f6a8c1b3e5d7f9a2c4b6e8d1f3a5c7b9e2d4f6';
+  function h(s){
+    // hash simples para não expor a senha em texto
+    let v=0;for(let i=0;i<s.length;i++){v=((v<<5)-v)+s.charCodeAt(i);v|=0;}
+    return Math.abs(v).toString(16);
+  }
+  const CORRECT = h('Ibmp@2026');
   const KEY = 'ibmp_cftv_auth';
-
   function loginCheck(){
-    const v = document.getElementById('login-input').value;
-    if(v === SENHA){
+    const v=document.getElementById('login-input').value;
+    if(h(v)===CORRECT){
       sessionStorage.setItem(KEY,'1');
-      const w = document.getElementById('login-wall');
-      if(w) w.style.display='none';
+      document.getElementById('login-wall').style.display='none';
+      document.getElementById('login-style').remove();
     } else {
-      const err = document.getElementById('login-err');
-      err.style.opacity='1';
+      const err=document.getElementById('login-err');
+      err.classList.remove('hide');
       err.textContent='Senha incorreta';
       document.getElementById('login-input').value='';
       document.getElementById('login-input').focus();
-      setTimeout(()=>{ err.style.opacity='0'; }, 2500);
+      setTimeout(()=>err.classList.add('hide'),2500);
     }
   }
-
-  function toggleSenha(){
-    const inp = document.getElementById('login-input');
-    const btn = document.getElementById('login-eye');
-    if(inp.type==='password'){
-      inp.type='text';
-      btn.innerHTML='<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 2l16 16M8.5 8.6A3 3 0 0011.4 11.5M6.5 6.6C4.5 7.8 3 9 2 10c2 3 5 5 8 5a9 9 0 004-1"/><path d="M14 14c1.5-1 2.7-2.3 4-4-2-3-5-5-8-5a9 9 0 00-3 .6"/></svg>';
-    } else {
-      inp.type='password';
-      btn.innerHTML='<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="10" cy="10" rx="8" ry="5"/><circle cx="10" cy="10" r="2.5"/></svg>';
-    }
-  }
-
-  window.loginCheck = loginCheck;
-  window.toggleSenha = toggleSenha;
-
-  document.addEventListener('DOMContentLoaded', ()=>{
-    if(sessionStorage.getItem(KEY)==='1'){
-      const w = document.getElementById('login-wall');
+  window.loginCheck=loginCheck;
+  // Se já autenticou nessa sessão, remove o wall imediatamente
+  if(sessionStorage.getItem(KEY)==='1'){
+    document.addEventListener('DOMContentLoaded',()=>{
+      const w=document.getElementById('login-wall');
       if(w) w.style.display='none';
+      const s=document.getElementById('login-style');
+      if(s) s.remove();
+    });
+  }
+})();
+<\/script>
+<script>
+// ══════════════════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════════════════
+(function(){
+  const SENHA = 'Ibmp@2026';
+  const KEY   = 'ibmp_cftv_auth';
+
+  function doLogin(){
+    const v = document.getElementById('login-input').value;
+    if(v === SENHA){
+      sessionStorage.setItem(KEY, '1');
+      document.getElementById('login-wall').style.display = 'none';
     } else {
-      const w = document.getElementById('login-wall');
-      if(w) w.style.display='flex';
-      setTimeout(()=>{ 
-        const inp = document.getElementById('login-input');
-        if(inp) inp.focus();
+      const err = document.getElementById('login-err');
+      err.textContent = 'Senha incorreta';
+      err.style.opacity = '1';
+      document.getElementById('login-input').value = '';
+      document.getElementById('login-input').focus();
+      setTimeout(() => { err.style.opacity = '0'; }, 2500);
+    }
+  }
+
+  function toggleLoginEye(){
+    const i = document.getElementById('login-input');
+    i.type = i.type === 'password' ? 'text' : 'password';
+  }
+
+  window.doLogin        = doLogin;
+  window.toggleLoginEye = toggleLoginEye;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if(sessionStorage.getItem(KEY) === '1'){
+      document.getElementById('login-wall').style.display = 'none';
+    } else {
+      document.getElementById('login-wall').style.display = 'flex';
+      setTimeout(() => {
+        const i = document.getElementById('login-input');
+        if(i) i.focus();
       }, 200);
     }
   });
 })();
+
+// ══════════════════════════════════════════════════════
+//  GITHUB SAVE
+// ══════════════════════════════════════════════════════
+const GH_KEY = 'ibmp_gh_cfg';
+
+function getGhConfig(){
+  try{ return JSON.parse(localStorage.getItem(GH_KEY)) || {}; }catch{ return {}; }
+}
+
+function openGhConfig(){
+  const cfg = getGhConfig();
+  const ti = document.getElementById('gh-token-input');
+  const ui = document.getElementById('gh-user-input');
+  const ri = document.getElementById('gh-repo-input');
+  if(ti) ti.value = cfg.token || '';
+  if(ui) ui.value = cfg.user  || 'sussuminho';
+  if(ri) ri.value = cfg.repo  || 'ibmp-cftv-control';
+  const m = document.getElementById('github-modal');
+  if(m){ m.style.display = 'flex'; m.classList.add('show'); }
+  setTimeout(() => { if(ti) ti.focus(); }, 100);
+}
+
+function doSaveGhConfig(){
+  const token = document.getElementById('gh-token-input').value.trim();
+  const user  = document.getElementById('gh-user-input').value.trim();
+  const repo  = document.getElementById('gh-repo-input').value.trim();
+  if(!token || !user || !repo){ toast('Preencha todos os campos'); return; }
+  localStorage.setItem(GH_KEY, JSON.stringify({token, user, repo}));
+  closeModal('github-modal');
+  toast('Configuração salva! Botão Salvar pronto.');
+}
+
+function buildProjectJSON(){
+  return {
+    version: 2,
+    exported: new Date().toISOString(),
+    db: { cameras: DB.cameras, recorders: DB.recorders, pareceres: DB.pareceres },
+    floors: floors.map(f => ({
+      id: f.id, name: f.name,
+      panX: f.panX, panY: f.panY, zoom: f.zoom,
+      scale: f.scale, riskZones: f.riskZones || [],
+      image: (f.imgB64) || (f.image && f.image.src ? f.image.src : null),
+      cameras: f.cameras.map(c => ({id:c.id,name:c.name,x:c.x,y:c.y,rot:c.rot,fov:c.fov,ir:c.ir}))
+    })),
+    inventory: typeof CAM_INV !== 'undefined' ? CAM_INV : {},
+    camLog:    typeof CAM_LOG !== 'undefined' ? CAM_LOG  : {}
+  };
+}
+
+async function saveToCloud(){
+  // Sempre salva no localStorage
+  try{
+    localStorage.setItem('ibmp_projeto_bkp', JSON.stringify(buildProjectJSON()));
+  }catch(e){ console.warn('localStorage:', e); }
+
+  const cfg = getGhConfig();
+  if(!cfg.token || !cfg.user || !cfg.repo){
+    if(confirm('Configurar salvamento automático no GitHub?\n(Sem isso fica salvo apenas neste navegador)')){
+      openGhConfig();
+    } else {
+      toast('Salvo localmente neste navegador');
+    }
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-cloud');
+  const lbl = document.getElementById('save-btn-lbl');
+  btn.classList.add('saving');
+  if(lbl) lbl.textContent = 'Salvando…';
+
+  try{
+    const json    = JSON.stringify(buildProjectJSON(), null, 2);
+    const b64     = btoa(unescape(encodeURIComponent(json)));
+    const apiUrl  = 'https://api.github.com/repos/' + cfg.user + '/' + cfg.repo + '/contents/projeto.json';
+    const headers = {
+      'Authorization': 'token ' + cfg.token,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github.v3+json'
+    };
+
+    let sha = null;
+    try{
+      const get = await fetch(apiUrl, {headers});
+      if(get.ok){ const ex = await get.json(); sha = ex.sha; }
+    }catch(_){}
+
+    const body = { message: 'Atualização CFTV ' + new Date().toLocaleString('pt-BR'), content: b64 };
+    if(sha) body.sha = sha;
+
+    const put = await fetch(apiUrl, {method:'PUT', headers, body: JSON.stringify(body)});
+    if(put.ok){
+      btn.classList.remove('saving'); btn.classList.add('saved');
+      if(lbl) lbl.textContent = '✓ Salvo!';
+      toast('Projeto salvo no GitHub!');
+      setTimeout(() => { btn.classList.remove('saved'); if(lbl) lbl.textContent = 'Salvar'; }, 3000);
+    } else {
+      const er = await put.json();
+      throw new Error(er.message || put.status);
+    }
+  }catch(e){
+    btn.classList.remove('saving'); btn.classList.add('error');
+    if(lbl) lbl.textContent = 'Erro';
+    toast('Erro: ' + e.message);
+    setTimeout(() => { btn.classList.remove('error'); if(lbl) lbl.textContent = 'Salvar'; }, 3000);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  AUTOLOAD projeto.json
+// ══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(async () => {
+    try{
+      const base = location.href.replace(/[^\/]*$/, '');
+      const r    = await fetch(base + 'projeto.json', {cache:'no-store'});
+      if(!r.ok) return;
+      const data = await r.json();
+      console.log('[AutoLoad] OK, chaves:', Object.keys(data));
+
+      if(data.db){
+        if(data.db.cameras  && data.db.cameras.length)   DB.cameras   = data.db.cameras;
+        if(data.db.recorders&& data.db.recorders.length) DB.recorders = data.db.recorders;
+        if(data.db.pareceres&& data.db.pareceres.length) DB.pareceres = data.db.pareceres;
+      }
+
+      if(data.floors && data.floors.length){
+        floors = data.floors.map(fd => {
+          const fl      = mkFloor(fd.name);
+          fl.id         = fd.id || fl.id;
+          fl.panX       = fd.panX || 0;
+          fl.panY       = fd.panY || 0;
+          fl.zoom       = fd.zoom || 1;
+          fl.scale      = fd.scale || null;
+          fl.riskZones  = fd.riskZones || [];
+          fl.cameras    = (fd.cameras || []).map(cd => {
+            const cam = new Cam(cd.id || _uid++, cd.name, cd.x, cd.y);
+            cam.rot = cd.rot || 0; cam.fov = cd.fov || 90; cam.ir = cd.ir || 60;
+            return cam;
+          });
+          const src = fd.image || fd.imgB64 || null;
+          if(src && typeof src === 'string'){
+            const img = new Image();
+            img.src   = src;
+            fl.image  = img;
+            fl.imgB64 = src;
+          } else {
+            fl.image = null; fl.imgB64 = null;
+          }
+          return fl;
+        });
+        _floorIdx = 0;
+        const allIds = floors.flatMap(f => f.cameras.map(c => c.id)).filter(Number.isFinite);
+        if(allIds.length) _uid = Math.max(...allIds) + 1;
+      }
+
+      if(data.inventory) Object.assign(CAM_INV, data.inventory);
+      if(data.camLog)    Object.assign(CAM_LOG,  data.camLog);
+
+      // Esconde welcome imediatamente
+      const wel = document.getElementById('welcome');
+      const tb  = document.getElementById('toolbar');
+      if(wel) wel.style.display = 'none';
+      if(tb)  tb.style.display  = 'flex';
+
+      // Aguarda imagens carregarem
+      await Promise.all(floors.map(f => f.image ? new Promise(res => {
+        if(f.image.complete) res(); else { f.image.onload = res; f.image.onerror = res; }
+      }) : Promise.resolve()));
+
+      finishInit();
+
+      // Ajusta zoom para caber na tela
+      setTimeout(() => {
+        const fl = F();
+        if(fl.image && fl.image.naturalWidth){
+          E.resize && E.resize();
+          const cw = E.c.width || 800;
+          const ch = E.c.height || 600;
+          const z  = Math.min(cw / fl.image.naturalWidth, ch / fl.image.naturalHeight) * 0.92;
+          fl.zoom  = z;
+          fl.panX  = Math.round((cw - fl.image.naturalWidth  * z) / 2);
+          fl.panY  = Math.round((ch - fl.image.naturalHeight * z) / 2);
+        }
+        E.render(); mmUpdate();
+      }, 400);
+
+      toast('Projeto carregado automaticamente');
+    }catch(e){ console.warn('[AutoLoad] erro:', e); }
+  }, 500);
+});
+
+// ══════════════════════════════════════════════════════
+//  MOBILE VIEW
+// ══════════════════════════════════════════════════════
+let _mf = 'all', _mq = '';
+
+function mobRender(){
+  const allCams = floors.flatMap(f => f.cameras);
+  document.getElementById('mkpi-total').textContent = allCams.length;
+  document.getElementById('mkpi-ok').textContent    = allCams.filter(c => c.fn).length;
+  document.getElementById('mkpi-nf').textContent    = allCams.filter(c => !c.fn).length;
+  document.getElementById('mkpi-db').textContent    = DB.cameras.length || '0';
+  mobBuildList();
+}
+
+function mobBuildList(){
+  const list = document.getElementById('mob-list');
+  if(!list) return;
+  let cams = DB.cameras.map(c => ({nome: c['NOME CANAL'], info: lookup(c['NOME CANAL']), fn: isFn(c['NOME CANAL'])}));
+  if(!cams.length){ list.innerHTML = '<div class="mob-list-empty">Configure o banco em Admin no desktop.</div>'; return; }
+  if(_mf === 'nf') cams = cams.filter(c => !c.fn);
+  if(_mf === 'ok') cams = cams.filter(c => c.fn);
+  if(_mq){ const q = _mq.toLowerCase(); cams = cams.filter(c => c.nome.toLowerCase().includes(q)||(c.info.setor||'').toLowerCase().includes(q)||(c.info.ip||'').toLowerCase().includes(q)); }
+  if(!cams.length){ list.innerHTML = '<div class="mob-list-empty">Nenhuma câmera encontrada</div>'; return; }
+  let html = '';
+  if(_mf === 'all' && !_mq){
+    const nfs = cams.filter(c => !c.fn);
+    if(nfs.length){ html += '<div class="mob-section-lbl">⚠ Inativas ('+nfs.length+')</div>'; nfs.forEach(c => html += mobItemHTML(c)); }
+    const byS = {};
+    cams.filter(c => c.fn).forEach(c => { const s = c.info.setor||'Sem setor'; if(!byS[s]) byS[s]=[]; byS[s].push(c); });
+    Object.keys(byS).sort().forEach(s => { html += '<div class="mob-section-lbl">'+s+' ('+byS[s].length+')</div>'; byS[s].forEach(c => html += mobItemHTML(c)); });
+  } else { cams.forEach(c => html += mobItemHTML(c)); }
+  list.innerHTML = html;
+}
+
+function mobItemHTML(c){
+  const grav = (c.info.gravador||'').replace(/DVR-|NVR-/g,'')||'—';
+  const sub  = [c.info.setor, c.info.ip!=='N/D'?c.info.ip:''].filter(Boolean).join(' · ')||grav;
+  const nome = c.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  return '<div class="mob-item'+(c.fn?'':' nf-item')+'" onclick="mobOpenSheet(\''+nome+'\')">'+
+    '<div class="mob-item-dot '+(c.fn?'ok':'nf')+'"></div>'+
+    '<div class="mob-item-body"><div class="mob-item-name">'+c.nome+'</div><div class="mob-item-sub">'+sub+'</div></div>'+
+    '<div class="mob-item-right"><span class="mob-item-tag">'+grav+'</span><span class="mob-item-arr">›</span></div></div>';
+}
+
+function mobSearch(v){ _mq=v.trim(); document.getElementById('mob-search-clear').style.display=v?'block':'none'; mobBuildList(); }
+function mobClearSearch(){ document.getElementById('mob-search').value=''; mobSearch(''); }
+function mobSetFilter(f){ _mf=f; document.querySelectorAll('.mob-filter').forEach(b=>b.classList.remove('on')); document.getElementById('mf-'+f).classList.add('on'); mobBuildList(); }
+
+function mobOpenSheet(nome){
+  const info = lookup(nome), fn = isFn(nome), logs = (typeof CAM_LOG!=='undefined'&&CAM_LOG[nome])||[];
+  document.getElementById('mob-sheet-name').textContent = nome;
+  const st = document.getElementById('mob-sheet-status');
+  st.className = 'mob-sheet-status '+(fn?'ok':'nf');
+  st.textContent = fn?'● Operante':'✕ Inativa';
+  const rows = [{l:'Canal',v:info.canal||'—',c:''},{l:'Setor',v:info.setor||'—',c:''},{l:'IP',v:info.ip||'N/D',c:'ip'},{l:'Gravador',v:info.gravador||'—',c:''},{l:'Modelo',v:info.modelo||'—',c:''},{l:'Parecer',v:info.parecer||'OK',c:fn?'ok':'nf'}].filter(r=>r.v&&r.v!=='—');
+  document.getElementById('mob-sheet-fields').innerHTML = rows.map(r=>'<div class="mob-field"><span class="mob-field-lbl">'+r.l+'</span><span class="mob-field-val '+r.c+'">'+r.v+'</span></div>').join('');
+  const tc={info:'info',manutencao:'manut',incidente:'inc',resolvido:'res'}, tl={info:'Info',manutencao:'Manutenção',incidente:'Incidente',resolvido:'Resolvido'};
+  document.getElementById('mob-sheet-logs').innerHTML='<div class="mob-log-sec"><div class="mob-log-title">Ocorrências ('+logs.length+')</div>'+(logs.length?logs.map(l=>'<div class="mob-log-item"><div class="mob-log-meta"><span class="mob-log-badge '+(tc[l.type]||'info')+'">'+(tl[l.type]||l.type)+'</span><span>'+l.date+'</span></div><div class="mob-log-text">'+l.text+'</div></div>').join(''):'<div class="mob-log-empty">Sem ocorrências</div>')+'</div>';
+  document.getElementById('mob-sheet-bg').classList.add('show');
+  document.getElementById('mob-sheet').classList.add('open');
+}
+
+function mobCloseSheet(){ document.getElementById('mob-sheet-bg').classList.remove('show'); document.getElementById('mob-sheet').classList.remove('open'); }
+function mobSyncTheme(){ const dark=document.documentElement.getAttribute('data-theme')==='dark'; const mb=document.getElementById('mob-theme-btn'); if(mb) mb.textContent=dark?'☀️':'🌙'; }
+
+// ══════════════════════════════════════════════════════
+//  PWA — Service Worker
+// ══════════════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(r=>console.log('[SW]',r.scope)).catch(e=>console.warn('[SW]',e));
+  });
+}
+let _pwaPrompt=null;
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); _pwaPrompt=e; if(!window.matchMedia('(display-mode: standalone)').matches) showPwaBanner(); });
+window.addEventListener('appinstalled', ()=>{ hidePwaBanner(); toast('App instalado!'); _pwaPrompt=null; });
+function showPwaBanner(){
+  if(document.getElementById('pwa-b')) return;
+  const b=document.createElement('div'); b.id='pwa-b';
+  b.style.cssText='position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.2);min-width:280px';
+  b.innerHTML='<div style="flex:1"><strong style="font-size:13px">Instalar IBMP CFTV</strong><br><span style="font-size:11px;color:var(--text3)">Acesse como app, funciona offline</span></div><button onclick="installPwa()" style="background:#159b77;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">Instalar</button><button onclick="hidePwaBanner()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">✕</button>';
+  document.body.appendChild(b);
+}
+function hidePwaBanner(){ document.getElementById('pwa-b')?.remove(); }
+async function installPwa(){ if(!_pwaPrompt)return; _pwaPrompt.prompt(); const{outcome}=await _pwaPrompt.userChoice; if(outcome==='accepted')toast('Instalando…'); _pwaPrompt=null; hidePwaBanner(); }
 </script>
 </body>
 </html>
