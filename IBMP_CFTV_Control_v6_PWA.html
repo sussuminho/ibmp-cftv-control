@@ -15,8 +15,6 @@
 #login-input:focus{border-color:#159b77}
 #login-btn{width:100%;background:#159b77;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
 #login-btn:hover{background:#0e7a5e}
-#login-err{color:#ef4444;font-size:12px;margin-top:10px;height:16px;transition:opacity .2s}
-#login-err.hide{opacity:0}
 </style>
 <link rel="manifest" href="manifest.json">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -1351,9 +1349,14 @@ canvas.chart { width: 100%; display: block; }
       <span>CFTV <strong>IBMP</strong></span>
     </div>
     <div id="login-title">Sistema de Gestão de Câmeras<br>Segurança do Trabalho — IBMP</div>
-    <input id="login-input" type="password" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')loginCheck()">
+    <div style="position:relative;margin-bottom:12px">
+      <input id="login-input" type="password" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')loginCheck()" style="width:100%;background:#0f1923;border:1.5px solid #2a3a4a;border-radius:10px;padding:12px 44px 12px 14px;font-size:15px;color:#fff;outline:none;font-family:inherit;text-align:center;letter-spacing:2px;box-sizing:border-box;transition:border-color .2s">
+      <button id="login-eye" onclick="toggleSenha()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#64748b;cursor:pointer;padding:4px;display:flex;align-items:center">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="10" cy="10" rx="8" ry="5"/><circle cx="10" cy="10" r="2.5"/></svg>
+      </button>
+    </div>
     <button id="login-btn" onclick="loginCheck()">Entrar</button>
-    <div id="login-err" class="hide">Senha incorreta</div>
+    <div id="login-err" style="color:#ef4444;font-size:12px;margin-top:10px;height:16px;opacity:0;transition:opacity .2s"></div>
   </div>
 </div>
 <!-- ═══ MOBILE VIEW ═══ -->
@@ -5676,47 +5679,54 @@ async function installPwa(){
 </script>
 <script>
 (function(){
-  const HASH = '7f6c9a2b4e1d8f3a5c7b9e2d4f6a8c1b3e5d7f9a2c4b6e8d1f3a5c7b9e2d4f6';
-  function h(s){
-    // hash simples para não expor a senha em texto
-    let v=0;for(let i=0;i<s.length;i++){v=((v<<5)-v)+s.charCodeAt(i);v|=0;}
-    return Math.abs(v).toString(16);
-  }
-  const CORRECT = h('Ibmp@2026');
+  const SENHA = 'Ibmp@2026';
   const KEY = 'ibmp_cftv_auth';
+
   function loginCheck(){
-    const v=document.getElementById('login-input').value;
-    if(h(v)===CORRECT){
+    const v = document.getElementById('login-input').value;
+    if(v === SENHA){
       sessionStorage.setItem(KEY,'1');
-      document.getElementById('login-wall').style.display='none';
-      document.getElementById('login-style').remove();
+      const w = document.getElementById('login-wall');
+      if(w) w.style.display='none';
     } else {
-      const err=document.getElementById('login-err');
-      err.classList.remove('hide');
+      const err = document.getElementById('login-err');
+      err.style.opacity='1';
       err.textContent='Senha incorreta';
       document.getElementById('login-input').value='';
       document.getElementById('login-input').focus();
-      setTimeout(()=>err.classList.add('hide'),2500);
+      setTimeout(()=>{ err.style.opacity='0'; }, 2500);
     }
   }
-  window.loginCheck=loginCheck;
-  // Se já autenticou nessa sessão, remove o wall imediatamente
-  if(sessionStorage.getItem(KEY)==='1'){
-    document.addEventListener('DOMContentLoaded',()=>{
-      const w=document.getElementById('login-wall');
-      if(w) w.style.display='none';
-      const s=document.getElementById('login-style');
-      if(s) s.remove();
-    });
-  } else {
-    // Garante que o wall está visível
-    document.addEventListener('DOMContentLoaded',()=>{
-      const w=document.getElementById('login-wall');
-      if(w){ w.style.display='flex'; w.style.opacity='1'; }
-      setTimeout(()=>{ document.getElementById('login-input') && document.getElementById('login-input').focus(); },100);
-    });
+
+  function toggleSenha(){
+    const inp = document.getElementById('login-input');
+    const btn = document.getElementById('login-eye');
+    if(inp.type==='password'){
+      inp.type='text';
+      btn.innerHTML='<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 2l16 16M8.5 8.6A3 3 0 0011.4 11.5M6.5 6.6C4.5 7.8 3 9 2 10c2 3 5 5 8 5a9 9 0 004-1"/><path d="M14 14c1.5-1 2.7-2.3 4-4-2-3-5-5-8-5a9 9 0 00-3 .6"/></svg>';
+    } else {
+      inp.type='password';
+      btn.innerHTML='<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="10" cy="10" rx="8" ry="5"/><circle cx="10" cy="10" r="2.5"/></svg>';
+    }
   }
+
+  window.loginCheck = loginCheck;
+  window.toggleSenha = toggleSenha;
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    if(sessionStorage.getItem(KEY)==='1'){
+      const w = document.getElementById('login-wall');
+      if(w) w.style.display='none';
+    } else {
+      const w = document.getElementById('login-wall');
+      if(w) w.style.display='flex';
+      setTimeout(()=>{ 
+        const inp = document.getElementById('login-input');
+        if(inp) inp.focus();
+      }, 200);
+    }
+  });
 })();
-<\/script>
+</script>
 </body>
 </html>
