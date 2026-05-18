@@ -1923,10 +1923,10 @@ canvas.chart { width: 100%; display: block; }
 
 <!-- Modal GitHub Config -->
 <div class="overlay" id="github-modal">
-  <div class="modal-panel" style="max-width:480px">
-    <div class="modal-hdr">
-      <span>⚙ Configurar Salvamento Automático</span>
-      <button class="modal-close" onclick="closeModal('github-modal')">✕</button>
+  <div class="mbox" style="width:480px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+      <span style="font-weight:700;font-size:14px">⚙ Configurar Salvamento Automático</span>
+      <button onclick="closeModal('github-modal')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:2px 6px">✕</button>
     </div>
     <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--text2);line-height:1.6">
@@ -5477,11 +5477,24 @@ window.addEventListener('DOMContentLoaded',()=>{
       if(fl2.cameras.length > 0 || fl2.image){
         document.getElementById('welcome').style.display = 'none';
         document.getElementById('toolbar').style.display = 'flex';
-        setTimeout(() => { 
-          E.fitToScreen && E.fitToScreen(); 
-          E.render(); 
+        setTimeout(() => {
+          // Ajusta zoom/pan para a imagem caber na tela
+          const fl = F();
+          if(fl.image && fl.image.naturalWidth){
+            const cw = E.c.clientWidth  || E.c.width;
+            const ch = E.c.clientHeight || E.c.height;
+            const iw = fl.image.naturalWidth;
+            const ih = fl.image.naturalHeight;
+            const zoom = Math.min(cw / iw, ch / ih) * 0.95;
+            fl.zoom = zoom;
+            fl.panX = (cw - iw * zoom) / 2;
+            fl.panY = (ch - ih * zoom) / 2;
+          } else if(E.fitToScreen) {
+            E.fitToScreen();
+          }
+          E.render();
           mmUpdate();
-        }, 300);
+        }, 400);
       }
       toast('✓ Projeto carregado automaticamente');
 
