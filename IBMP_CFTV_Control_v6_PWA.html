@@ -5875,43 +5875,129 @@ function mobSetView(v){
   const kpis    = document.getElementById('mob-kpis');
   const search  = document.getElementById('mob-search-wrap');
   const list    = document.getElementById('mob-list');
-  const overlay = document.getElementById('mob-overlay');
+
+  // Create or reuse overlay container
+  let ov = document.getElementById('mob-overlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'mob-overlay';
+    ov.style.cssText = 'flex:1;overflow-y:auto;background:var(--bg);display:none;';
+    mobView.appendChild(ov);
+  }
 
   if(v === 'list'){
     if(kpis)   kpis.style.display   = '';
     if(search) search.style.display = '';
     if(list)   list.style.display   = '';
-    if(overlay) overlay.style.display = 'none';
+    ov.style.display = 'none';
     mobRender();
     return;
   }
-
-  // For other views, show them in a full-screen overlay within mob-view
-  if(!overlay){
-    const ov = document.createElement('div');
-    ov.id = 'mob-overlay';
-    ov.style.cssText = 'flex:1;overflow-y:auto;background:var(--bg);display:none;';
-    mobView.appendChild(ov);
-  }
-  const ov2 = document.getElementById('mob-overlay');
 
   // Hide list UI, show overlay
   if(kpis)   kpis.style.display   = 'none';
   if(search) search.style.display = 'none';
   if(list)   list.style.display   = 'none';
-  ov2.style.display = 'block';
+  ov.style.display = 'block';
 
-  // Delegate to setMode which renders the view into its own overlay containers
-  // But those containers are inside #app which is hidden on mobile.
-  // So we copy the rendered HTML into mob-overlay instead.
+  const backBtn = `<button onclick="mobSetView('list')" style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;margin-bottom:16px;font-family:inherit;-webkit-tap-highlight-color:transparent">← Voltar à lista</button>`;
+
+  if(v === 'dash'){
+    // Render dashboard natively — never copy canvas from hidden #app
+    const all  = allCams();
+    const ok   = all.filter(c=>c.fn).length;
+    const nfC  = all.filter(c=>!c.fn).length;
+    const tot  = all.length;
+    const cost = all.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+    const pct  = DB.cameras.length ? Math.round(tot/DB.cameras.length*100) : 0;
+
+    // Bar chart data
+    const byRec={};
+    all.filter(c=>!c.fn).forEach(c=>{const k=(c.info.gravador||'N/D').replace('DVR-BLOC','B').replace('DVR-','');byRec[k]=(byRec[k]||0)+1;});
+    const recEntries=Object.entries(byRec).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const maxV=recEntries.length?recEntries[0][1]:1;
+
+    const card = (bg,border,val,lbl) =>
+      `<div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;line-height:1;color:${border}">${val}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.04em">${lbl}</div>
+      </div>`;
+
+    const bars = recEntries.length
+      ? recEntries.map(([k,v])=>`
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+          <div style="font-size:11px;color:var(--text2);width:70px;min-width:70px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${k}">${k}</div>
+          <div style="flex:1;height:18px;background:var(--surface3);border-radius:5px;overflow:hidden">
+            <div style="width:${v/maxV*100}%;height:100%;background:var(--nf);border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:5px">
+              <span style="font-size:11px;font-weight:700;color:#fff">${v}</span>
+            </div>
+          </div>
+        </div>`).join('')
+      : `<div style="color:var(--text3);font-size:13px;padding:16px 0;text-align:center">Nenhuma câmera inativa</div>`;
+
+    ov.innerHTML = `<div style="padding:16px">${backBtn}
+      <div style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--text)">Dashboard</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        ${card('var(--ok-bg)','var(--ok)',ok,'Ativas')}
+        ${card('var(--nf-bg)','var(--nf)',nfC,'Inativas')}
+        ${card('var(--surface2)','var(--border)',tot,'Mapeadas')}
+        ${card('rgba(217,119,6,.08)','var(--warn)','R$ '+cost.toLocaleString('pt-BR',{minimumFractionDigits:2}),'Custo NF')}
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text)">Status das Câmeras</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Todas as plantas</div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <canvas id="mob-donut-c" width="120" height="120" style="flex-shrink:0"></canvas>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--ok);flex-shrink:0"></div><span style="font-weight:700;color:var(--text)">${ok}</span><span style="color:var(--text2)"> Ativas</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--nf);flex-shrink:0"></div><span style="font-weight:700;color:var(--text)">${nfC}</span><span style="color:var(--text2)"> Inativas</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--border);flex-shrink:0"></div><span style="font-weight:700;color:var(--text)">${Math.max(0,DB.cameras.length-tot)}</span><span style="color:var(--text2)"> Não mapeadas</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">${pct}% do banco</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text)">NF por Gravador</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Câmeras inativas por DVR/NVR</div>
+        ${bars}
+      </div>
+    </div>`;
+
+    // Draw donut after DOM is ready
+    requestAnimationFrame(()=>{
+      const cv = document.getElementById('mob-donut-c');
+      if(!cv) return;
+      const ctx=cv.getContext('2d'), cx=60, cy=60, R=50, r=28;
+      const segs=[{v:ok,c:'#16a34a'},{v:nfC,c:'#dc2626'},{v:Math.max(0,DB.cameras.length-tot),c:'#dde1e8'}];
+      const sum=segs.reduce((s,x)=>s+x.v,0)||1;
+      let angle=-Math.PI/2;
+      segs.forEach(s=>{
+        if(!s.v) return;
+        const sw=s.v/sum*Math.PI*2;
+        ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,angle,angle+sw);ctx.closePath();
+        ctx.fillStyle=s.c;ctx.fill();
+        angle+=sw;
+      });
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle=document.documentElement.getAttribute('data-theme')==='dark'?'#0d1520':'#ffffff';
+      ctx.fill();
+      ctx.font='700 16px Inter,sans-serif';ctx.fillStyle=document.body.style.color||'#0f1923';
+      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(tot,cx,cy-6);
+      ctx.font='400 9px Inter,sans-serif';ctx.fillStyle='#8a95a3';ctx.fillText('mapeadas',cx,cy+8);
+    });
+    return;
+  }
+
+  // For other views: call setMode, wait for render, then snapshot innerHTML
   setMode(v);
   setTimeout(()=>{
     const src = document.getElementById('view-'+v);
     if(src){
-      ov2.innerHTML = '<div style="padding:16px"><button onclick="mobSetView(\'list\')" style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;margin-bottom:16px;font-family:inherit">← Voltar à lista</button>'
-        + src.innerHTML + '</div>';
+      ov.innerHTML = '<div style="padding:16px">' + backBtn + src.innerHTML + '</div>';
+      // Re-render coverage canvas if needed
+      if(v === 'coverage') setTimeout(renderCoverage, 50);
     }
-  }, 100);
+  }, 120);
 }
 
 // Close dropdowns on tap outside
