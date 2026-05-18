@@ -2830,7 +2830,7 @@ const E={
     const ctx=this.ctx,f=F(),w=this.c.width,h=this.c.height;
     ctx.clearRect(0,0,w,h);ctx.save();
     ctx.translate(f.panX,f.panY);ctx.scale(f.zoom,f.zoom);
-    if(f.image)ctx.drawImage(f.image,0,0);
+    if(f.image&&f.image.complete&&f.image.naturalWidth)ctx.drawImage(f.image,0,0);
     // Zonas de risco — abaixo das câmeras
     drawRiskZones(ctx);
     f.cameras.forEach(cam=>cam.draw(ctx,_hoverGlow[cam.id]||0));
@@ -3754,7 +3754,7 @@ function mmUpdate(){
   const mm=document.getElementById('mm-c');if(!mm)return;
   mm.width=168;mm.height=112;const ctx=mm.getContext('2d');ctx.clearRect(0,0,168,112);
   const f=F();
-  if(!f.image){ctx.fillStyle='rgba(0,0,0,.05)';ctx.fillRect(0,0,168,112);return;}
+  if(!f.image||!f.image.complete||!f.image.naturalWidth){ctx.fillStyle='rgba(0,0,0,.05)';ctx.fillRect(0,0,168,112);return;}
   const sc=Math.min(168/f.image.width,112/f.image.height);
   const ox=(168-f.image.width*sc)/2,oy=(112-f.image.height*sc)/2;
   ctx.globalAlpha=.6;ctx.drawImage(f.image,ox,oy,f.image.width*sc,f.image.height*sc);ctx.globalAlpha=1;
@@ -5367,9 +5367,16 @@ window.addEventListener('DOMContentLoaded',()=>{
           fl.panY  = fd.panY || 0;
           fl.zoom  = fd.zoom || 1;
           fl.imgB64     = fd.imgB64 || null;
-          fl.image      = fd.image  || null;
           fl.scale      = fd.scale  || null;
           fl.riskZones  = fd.riskZones || [];
+          // Recria o objeto Image a partir do Base64
+          if(fd.imgB64){
+            const img = new Image();
+            img.src = fd.imgB64;
+            fl.image = img;
+          } else {
+            fl.image = null;
+          }
           fl.cameras = (fd.cameras || []).map(cd => {
             const cam = new Cam(cd.id || _uid++, cd.name, cd.x, cd.y);
             cam.rot = cd.rot || 0;
@@ -5391,17 +5398,26 @@ window.addEventListener('DOMContentLoaded',()=>{
       const allIds = floors.flatMap(f => f.cameras.map(c => c.id)).filter(Number.isFinite);
       if(allIds.length) _uid = Math.max(...allIds) + 1;
 
-      finishInit();
+      // Aguardar imagens carregarem antes de renderizar
+      const imgPromises = floors.flatMap(f => 
+        f.image ? [new Promise(res => { 
+          if(f.image.complete) res(); 
+          else { f.image.onload = res; f.image.onerror = res; }
+        })] : []
+      );
+      await Promise.all(imgPromises);
 
-      // Mostrar planta se tiver conteúdo
-      const fl = F();
-      const temConteudo = fl.cameras.length > 0 || fl.imgB64 || fl.image;
-      if(temConteudo){
+      finishInit();
+      const fl2 = F();
+      if(fl2.cameras.length > 0 || fl2.image){
         document.getElementById('welcome').style.display = 'none';
         document.getElementById('toolbar').style.display = 'flex';
-        setTimeout(() => { E.fitToScreen && E.fitToScreen(); E.render(); }, 100);
+        setTimeout(() => { 
+          E.fitToScreen && E.fitToScreen(); 
+          E.render(); 
+          mmUpdate();
+        }, 300);
       }
-
       toast('✓ Projeto carregado automaticamente');
     } catch(err){
       console.warn('[AutoLoad] Erro:', err);
