@@ -5366,16 +5366,22 @@ window.addEventListener('DOMContentLoaded',()=>{
           fl.panX  = fd.panX || 0;
           fl.panY  = fd.panY || 0;
           fl.zoom  = fd.zoom || 1;
-          fl.imgB64     = fd.imgB64 || null;
-          fl.scale      = fd.scale  || null;
-          fl.riskZones  = fd.riskZones || [];
-          // Recria o objeto Image a partir do Base64
-          if(fd.imgB64){
+          fl.scale     = fd.scale || null;
+          fl.riskZones = fd.riskZones || [];
+          // O JSON exportado usa "image" como string base64
+          // Precisa converter para objeto HTMLImageElement
+          const imgSrc = fd.imgB64 || fd.image || null;
+          if(imgSrc && typeof imgSrc === 'string'){
             const img = new Image();
-            img.src = fd.imgB64;
-            fl.image = img;
+            img.src = imgSrc;
+            fl.image  = img;
+            fl.imgB64 = imgSrc;
+          } else if(imgSrc && typeof imgSrc === 'object'){
+            fl.image  = imgSrc;
+            fl.imgB64 = null;
           } else {
-            fl.image = null;
+            fl.image  = null;
+            fl.imgB64 = null;
           }
           fl.cameras = (fd.cameras || []).map(cd => {
             const cam = new Cam(cd.id || _uid++, cd.name, cd.x, cd.y);
