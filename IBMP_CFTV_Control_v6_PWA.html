@@ -177,12 +177,15 @@ input, textarea { font-family: inherit; }
 .rmitem-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
 
 #btn-export, #btn-pdf {
-  opacity: 0; pointer-events: none;
+  opacity: 1; pointer-events: auto;
   transition: opacity .25s ease;
 }
 #btn-export.ready, #btn-pdf.ready {
   opacity: 1; pointer-events: auto;
 }
+/* Old standalone view tabs hidden — now inside Views dropdown */
+#tab-dash, #tab-monitor, #tab-budget, #tab-coverage, #tab-timeline { display: none; }
+
 /* theme toggle */
 #theme-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; }
 #theme-btn:hover { background: var(--surface3); color: var(--text); }
@@ -1384,6 +1387,37 @@ canvas.chart { width: 100%; display: block; }
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12V4"/><path d="M4 12V7"/><path d="M7 12V5"/><path d="M10 12V3"/><path d="M13 12V6"/><path d="M1 14h14"/></svg>
       Timeline
     </button>
+
+    <!-- Views dropdown -->
+    <div class="report-menu-wrap" id="views-wrap">
+      <button class="ntab" id="tab-views-btn" onclick="toggleViewsMenu()" title="Outras visualizações">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>
+        Visualizações
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" style="margin-left:1px"><path d="M2 3.5l3 3 3-3"/></svg>
+      </button>
+      <div class="report-menu-drop" id="views-menu-drop">
+        <button class="rmitem" onclick="setMode('dash');closeViewsMenu()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>
+          <div><div class="rmitem-title">Dashboard</div><div class="rmitem-sub">KPIs e gráficos de status</div></div>
+        </button>
+        <button class="rmitem" onclick="setMode('monitor');closeViewsMenu()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="2" width="14" height="10" rx="1.5"/><path d="M5 15h6M8 12v3"/></svg>
+          <div><div class="rmitem-title">Monitor</div><div class="rmitem-sub">Status de todas as câmeras</div></div>
+        </button>
+        <button class="rmitem" onclick="setMode('budget');closeViewsMenu()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v12M5 5h5a2 2 0 010 4H5M5 9h5"/></svg>
+          <div><div class="rmitem-title">Orçamento</div><div class="rmitem-sub">Custo de câmeras inativas</div></div>
+        </button>
+        <button class="rmitem" onclick="setMode('coverage');closeViewsMenu()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 2v12M2 8h12"/></svg>
+          <div><div class="rmitem-title">Cobertura</div><div class="rmitem-sub">Mapa de cobertura das câmeras</div></div>
+        </button>
+        <button class="rmitem" onclick="setMode('timeline');closeViewsMenu()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12V4M4 12V7M7 12V5M10 12V3M13 12V6M1 14h14"/></svg>
+          <div><div class="rmitem-title">Timeline</div><div class="rmitem-sub">Histórico de ocorrências</div></div>
+        </button>
+      </div>
+    </div>
   </nav>
 
   <div class="hspace"></div>
@@ -1475,10 +1509,10 @@ canvas.chart { width: 100%; display: block; }
     </div>
   </header>
   <div id="mob-kpis">
-    <div class="mob-kpi mob-kpi-total"><div class="mob-kpi-val" id="mkpi-total">—</div><div class="mob-kpi-lbl">Mapeadas</div></div>
-    <div class="mob-kpi mob-kpi-ok"><div class="mob-kpi-val" id="mkpi-ok">—</div><div class="mob-kpi-lbl">Operantes</div></div>
-    <div class="mob-kpi mob-kpi-nf"><div class="mob-kpi-val" id="mkpi-nf">—</div><div class="mob-kpi-lbl">Inativas</div></div>
-    <div class="mob-kpi mob-kpi-db"><div class="mob-kpi-val" id="mkpi-db">—</div><div class="mob-kpi-lbl">No banco</div></div>
+    <div class="mob-kpi mob-kpi-total" onclick="mobSetFilter('all')" style="cursor:pointer"><div class="mob-kpi-val" id="mkpi-total">—</div><div class="mob-kpi-lbl">Mapeadas</div></div>
+    <div class="mob-kpi mob-kpi-ok" onclick="mobSetFilter('ok')" style="cursor:pointer"><div class="mob-kpi-val" id="mkpi-ok">—</div><div class="mob-kpi-lbl">Operantes</div></div>
+    <div class="mob-kpi mob-kpi-nf" onclick="mobSetFilter('nf')" style="cursor:pointer"><div class="mob-kpi-val" id="mkpi-nf">—</div><div class="mob-kpi-lbl">Inativas</div></div>
+    <div class="mob-kpi mob-kpi-db" style="cursor:default"><div class="mob-kpi-val" id="mkpi-db">—</div><div class="mob-kpi-lbl">No banco</div></div>
   </div>
   <div id="mob-search-wrap">
     <div id="mob-search-row">
@@ -3507,9 +3541,13 @@ function confirmFloor(){
 // ═══════════════ MODES ═══════════════
 function setMode(m){
   _mode=m;
+  const viewModes=['dash','monitor','budget','coverage','timeline'];
   ['editor','dash','monitor','budget','coverage','timeline'].forEach(x=>{
     document.getElementById('tab-'+x)?.classList.toggle('active',x===m);
   });
+  // Highlight views dropdown button when a sub-view is active
+  const vBtn=document.getElementById('tab-views-btn');
+  if(vBtn) vBtn.classList.toggle('active', viewModes.includes(m));
   // hide/show views
   ['dash','monitor','budget','coverage','timeline'].forEach(x=>{
     const el=document.getElementById('view-'+x);if(el)el.classList.toggle('show',x===m);
@@ -4064,11 +4102,20 @@ function toggleReportMenu(){
 function closeReportMenu(){
   document.getElementById('report-menu-drop')?.classList.remove('open');
 }
-// Fechar ao clicar fora
+function toggleViewsMenu(){
+  const d=document.getElementById('views-menu-drop');
+  if(d) d.classList.toggle('open');
+}
+function closeViewsMenu(){
+  document.getElementById('views-menu-drop')?.classList.remove('open');
+}
+// Fechar menus ao clicar fora
 document.addEventListener('click',e=>{
-  const wrap=document.querySelector('.report-menu-wrap');
-  if(wrap&&!wrap.contains(e.target))closeReportMenu();
-},{capture:true,passive:true});
+  const repWrap=document.querySelector('.report-menu-wrap:not(#views-wrap)');
+  if(repWrap&&!repWrap.contains(e.target))closeReportMenu();
+  const viewWrap=document.getElementById('views-wrap');
+  if(viewWrap&&!viewWrap.contains(e.target))closeViewsMenu();
+});
 
 function toggleTheme(){
   const t=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
@@ -4080,7 +4127,7 @@ function toggleTheme(){
 }
 
 // ═══════════════ UTILS ═══════════════
-function closeModal(id){document.getElementById(id).classList.remove('show');}
+function closeModal(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('show');el.style.display='';}
 let _tt;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);}
 function onDropWelcome(e){
@@ -6014,6 +6061,15 @@ window.addEventListener('DOMContentLoaded', () => {
       }) : Promise.resolve()));
 
       finishInit();
+
+      // Mostra elementos da UI que dependem do projeto carregado
+      const fl0 = F();
+      const hasCams = floors.some(f => f.cameras.length > 0);
+      const hasImg  = !!fl0.image;
+      document.getElementById('sbar').classList.toggle('visible', true);
+      document.getElementById('minimap').classList.toggle('visible', hasImg);
+      const rpIdle = document.getElementById('rp-idle');
+      if(rpIdle && hasCams){ rpIdle.classList.add('show'); updateRpIdle && updateRpIdle(); }
 
       // Ajusta zoom para caber na tela
       setTimeout(() => {
