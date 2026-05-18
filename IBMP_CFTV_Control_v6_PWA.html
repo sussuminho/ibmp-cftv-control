@@ -5725,20 +5725,14 @@ function mobBuildList(){
 function mobItemHTML(c){
   const grav = (c.info.gravador||'').replace(/DVR-|NVR-/g,'')||'—';
   const sub  = [c.info.setor, c.info.ip!=='N/D'?c.info.ip:''].filter(Boolean).join(' · ')||grav;
-  const dot  = c.fn ? 'ok' : 'nf';
-  const row  = c.fn ? '' : 'nf-item';
-  const nome = c.nome.replace(/'/g,"\'");
-  return `<div class="mob-item ${row}" onclick="mobOpenSheet('${nome}')">
-    <div class="mob-item-dot ${dot}"></div>
-    <div class="mob-item-body">
-      <div class="mob-item-name">${c.nome}</div>
-      <div class="mob-item-sub">${sub}</div>
-    </div>
-    <div class="mob-item-right">
-      <span class="mob-item-tag">${grav}</span>
-      <span class="mob-item-arr">›</span>
-    </div>
-  </div>`;
+  const nomeEnc = encodeURIComponent(c.nome);
+  const cls = 'mob-item' + (c.fn ? '' : ' nf-item');
+  const dot = c.fn ? 'ok' : 'nf';
+  return '<div class="' + cls + '" onclick="mobOpenSheet(decodeURIComponent(\'' + nomeEnc + '\'))">' +
+    '<div class="mob-item-dot ' + dot + '"></div>' +
+    '<div class="mob-item-body"><div class="mob-item-name">' + c.nome + '</div><div class="mob-item-sub">' + sub + '</div></div>' +
+    '<div class="mob-item-right"><span class="mob-item-tag">' + grav + '</span><span class="mob-item-arr">›</span></div>' +
+    '</div>';
 }
 
 function mobSearch(v){
