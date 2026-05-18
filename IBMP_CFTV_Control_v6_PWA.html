@@ -567,186 +567,154 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
 /* ═══════════════════════════════════════════════
    MOBILE RESPONSIVE — telas até 768px
 ═══════════════════════════════════════════════ */
+
+/* Botões flutuantes: escondidos por padrão no desktop */
+#mob-cam-btn, #mob-prop-btn { display: none !important; }
+#mob-overlay { display: none !important; }
+
 @media (max-width: 768px) {
 
-  /* ── Variáveis mobile ── */
-  :root {
-    --head-h: 52px;
-    --panel-w: 100%;
-    --floor-h: 54px;
-  }
+  /* ── Variáveis ── */
+  :root { --head-h: 52px; --floor-h: 54px; }
 
-  /* ── Header compacto ── */
-  #hdr { padding: 0 10px; gap: 6px; }
-  .logo-sub, .v-chip { display: none; }
-  .logo-name { font-size: 14px; }
-  .logo-wrap { margin-right: 0; gap: 7px; }
-  .logo-icon svg { width: 28px; height: 28px; }
+  /* ── Header: uma linha, sem quebrar ── */
+  #hdr { padding: 0 10px; gap: 4px; flex-wrap: nowrap; overflow: hidden; height: var(--head-h); }
+  .logo-wrap { gap: 6px; margin-right: 4px; flex-shrink: 0; }
+  .logo-icon svg { width: 26px !important; height: 26px !important; }
+  .logo-name { font-size: 13px; white-space: nowrap; }
+  .logo-sub, .v-chip { display: none !important; }
+  #nav { display: none !important; }
+  .hsep { display: none !important; }
+  .hspace { flex: 1; min-width: 0; }
 
-  /* Esconde abas de nav no header — vira menu hambúrguer */
-  #nav { display: none; }
+  /* Esconde botões que nao cabem — mantém só Exportar e tema */
+  .hbtn { display: none !important; }
+  #btn-export { display: flex !important; padding: 6px 10px; font-size: 12px; flex-shrink: 0; }
+  .report-menu-wrap { display: none !important; }
+  #theme-btn { width: 32px; height: 32px; flex-shrink: 0; }
 
-  /* Esconde botões de ação do header que não cabem */
-  #btn-xlsx, #btn-proj, #btn-admin { display: none; }
-  .hsep { display: none; }
-
-  /* Botões restantes ficam menores */
-  .hbtn { padding: 6px 10px; font-size: 12px; gap: 4px; }
-  .hbtn svg { width: 14px; height: 14px; }
-  .hbtn.icon-only { padding: 6px 8px; }
-  #btn-export { padding: 6px 10px; font-size: 12px; }
-
-  /* ── Layout: empilha verticalmente ── */
-  #app { flex-direction: column; position: relative; }
-
-  /* ── Painel esquerdo vira gaveta lateral deslizante ── */
+  /* ── Painel esquerdo: gaveta oculta ── */
   #lpanel {
-    position: fixed;
-    top: var(--head-h);
-    left: 0;
-    bottom: var(--floor-h);
-    width: 88vw;
-    max-width: 320px;
-    z-index: 500;
-    transform: translateX(-100%);
-    transition: transform .28s cubic-bezier(.4,0,.2,1);
-    box-shadow: 4px 0 24px rgba(0,0,0,.22);
+    position: fixed !important;
+    top: var(--head-h) !important; left: 0 !important;
+    bottom: var(--floor-h) !important;
+    width: 85vw !important; max-width: 300px !important;
+    z-index: 600 !important;
+    transform: translateX(-105%) !important;
+    transition: transform .28s cubic-bezier(.4,0,.2,1) !important;
+    box-shadow: 6px 0 28px rgba(0,0,0,.35) !important;
   }
-  #lpanel.mob-open {
-    transform: translateX(0);
-  }
+  #lpanel.mob-open { transform: translateX(0) !important; }
 
-  /* Overlay escuro atrás da gaveta */
-  #mob-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.45);
-    z-index: 499;
-    backdrop-filter: blur(2px);
-  }
-  #mob-overlay.show { display: block; }
-
-  /* ── Painel direito vira bottom sheet ── */
+  /* ── Painel direito: bottom sheet oculto ── */
   #rpanel {
-    position: fixed;
-    bottom: var(--floor-h);
-    left: 0; right: 0;
-    height: 65vh;
-    width: 100%;
-    z-index: 500;
-    border-left: none;
-    border-top: 1px solid var(--border);
-    border-radius: 20px 20px 0 0;
-    transform: translateY(100%);
-    transition: transform .3s cubic-bezier(.4,0,.2,1);
-    box-shadow: 0 -8px 32px rgba(0,0,0,.18);
+    position: fixed !important;
+    bottom: var(--floor-h) !important; left: 0 !important; right: 0 !important;
+    width: 100% !important; height: 60vh !important;
+    z-index: 600 !important;
+    border-left: none !important;
+    border-radius: 20px 20px 0 0 !important;
+    transform: translateY(110%) !important;
+    transition: transform .3s cubic-bezier(.4,0,.2,1) !important;
+    box-shadow: 0 -8px 32px rgba(0,0,0,.2) !important;
+    overflow-y: auto !important;
   }
-  #rpanel.mob-open {
-    transform: translateY(0);
-  }
-
-  /* Puxador visual no topo do bottom sheet */
+  #rpanel.mob-open { transform: translateY(0) !important; }
   #rpanel::before {
-    content: '';
-    display: block;
-    width: 40px; height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin: 10px auto 0;
-    flex-shrink: 0;
+    content: ''; display: block;
+    width: 36px; height: 4px;
+    background: var(--border); border-radius: 2px;
+    margin: 10px auto 6px;
   }
 
   /* ── Canvas ocupa tudo ── */
-  #cwrap { flex: 1; width: 100%; }
+  #cwrap { flex: 1 !important; width: 100% !important; }
 
-  /* ── Toolbar flutua menor ── */
-  #toolbar {
-    top: 10px;
-    padding: 5px 7px;
-    gap: 2px;
-  }
-  .tbtn { padding: 5px 8px; font-size: 12px; gap: 4px; }
+  /* ── Toolbar compacta ── */
+  #toolbar { top: 8px; padding: 4px 6px; gap: 1px; }
+  .tbtn { padding: 5px 7px; }
+  .tbtn > span:not(.kbd) { display: none; }
   .tbtn .kbd { display: none; }
-  .tbtn span:not(.kbd) { display: none; } /* esconde texto, mantém ícone */
-  .tbtn svg { width: 16px; height: 16px; }
-  .tsep { height: 18px; margin: 0 1px; }
+  .tbtn svg { width: 15px; height: 15px; }
+  .tsep { height: 16px; margin: 0 1px; }
 
-  /* ── Barra de plantas (floor bar) mobile ── */
-  #floorbar {
-    height: var(--floor-h);
-    padding: 0 8px;
-    gap: 5px;
-  }
-  .ftab { padding: 5px 10px; font-size: 12px; max-width: 130px; }
+  /* ── Floor bar ── */
+  #floorbar { height: var(--floor-h); padding: 0 8px; gap: 4px; }
+  .ftab { padding: 5px 10px; font-size: 12px; max-width: 120px; }
 
-  /* ── Botões flutuantes mobile ── */
-  #mob-cam-btn, #mob-prop-btn {
-    position: fixed;
-    bottom: calc(var(--floor-h) + 14px);
-    z-index: 450;
-    width: 46px; height: 46px;
-    border-radius: 14px;
-    border: none;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 16px rgba(0,0,0,.25);
-    cursor: pointer;
-    transition: transform .15s, box-shadow .15s;
-  }
-  #mob-cam-btn:active, #mob-prop-btn:active {
-    transform: scale(.93);
-    box-shadow: 0 2px 8px rgba(0,0,0,.2);
-  }
-  #mob-cam-btn {
-    left: 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text2);
-  }
-  #mob-cam-btn.active {
-    background: var(--g-light);
-    border-color: var(--g);
-    color: var(--g);
-  }
-  #mob-prop-btn {
-    right: 14px;
-    background: var(--g);
-    color: #fff;
-  }
-  #mob-prop-btn.hidden { display: none; }
-
-  /* Badge de contagem no botão câmeras */
-  #mob-cam-badge {
-    position: absolute;
-    top: -4px; right: -4px;
-    background: var(--g);
-    color: #fff;
-    font-size: 10px; font-weight: 700;
-    min-width: 18px; height: 18px;
-    border-radius: 9px;
-    display: flex; align-items: center; justify-content: center;
-    padding: 0 4px;
-    border: 2px solid var(--surface);
-  }
-
-  /* ── Minimap some no mobile ── */
+  /* ── Minimap ── */
   #minimap { display: none !important; }
 
-  /* ── Status bar simplificada ── */
-  #sbar { font-size: 11px; padding: 0 10px; gap: 10px; }
+  /* ── Status bar ── */
+  #sbar { font-size: 11px; padding: 0 10px; gap: 8px; }
   #sb-cur { display: none; }
 
-  /* ── Welcome card ajustado ── */
-  .welcome-card { padding: 28px 20px; margin: 0 16px; }
+  /* ── Overlay ── */
+  #mob-overlay {
+    display: none !important;
+    position: fixed !important; inset: 0 !important;
+    background: rgba(0,0,0,.5) !important;
+    z-index: 599 !important;
+    backdrop-filter: blur(2px) !important;
+  }
+  #mob-overlay.show { display: block !important; }
+
+  /* ── Botão câmeras (gaveta) ── */
+  #mob-cam-btn {
+    display: flex !important;
+    position: fixed !important;
+    bottom: calc(var(--floor-h) + 12px) !important; left: 14px !important;
+    width: 48px !important; height: 48px !important;
+    border-radius: 14px !important; z-index: 550 !important;
+    background: var(--surface) !important;
+    border: 1.5px solid var(--border) !important;
+    color: var(--text2) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2) !important;
+    cursor: pointer !important;
+    align-items: center !important; justify-content: center !important;
+  }
+  #mob-cam-btn.active {
+    background: var(--g-light) !important;
+    border-color: var(--g) !important; color: var(--g) !important;
+  }
+
+  /* ── Botão fechar propriedades ── */
+  #mob-prop-btn {
+    position: fixed !important;
+    bottom: calc(var(--floor-h) + 12px) !important; right: 14px !important;
+    width: 48px !important; height: 48px !important;
+    border-radius: 14px !important; z-index: 550 !important;
+    background: var(--g) !important; border: none !important; color: #fff !important;
+    box-shadow: 0 4px 16px rgba(21,155,119,.4) !important;
+    cursor: pointer !important;
+    align-items: center !important; justify-content: center !important;
+  }
+  #mob-prop-btn.hidden { display: none !important; }
+  #mob-prop-btn:not(.hidden) { display: flex !important; }
+
+  /* ── Badge ── */
+  #mob-cam-badge {
+    position: absolute !important;
+    top: -5px !important; right: -5px !important;
+    background: var(--g) !important; color: #fff !important;
+    font-size: 10px !important; font-weight: 700 !important;
+    min-width: 18px !important; height: 18px !important;
+    border-radius: 9px !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    padding: 0 4px !important;
+    border: 2px solid var(--surface) !important;
+  }
+
+  /* ── Welcome ── */
+  .welcome-card { padding: 24px 18px; margin: 0 12px; max-width: 100%; }
   .wc-title { font-size: 18px; }
-  .wc-sub { font-size: 13px; margin-bottom: 20px; }
-  .wc-actions { grid-template-columns: 1fr; }
+  .wc-sub { font-size: 13px; margin-bottom: 18px; }
+  .wc-actions { grid-template-columns: 1fr; gap: 8px; }
+  .wc-drag-hint { display: none; }
 
-  /* ── View overlays (dashboard etc) ── */
-  .view-overlay { padding: 12px; }
-
-  /* ── Relatórios dropdown ── */
-  .report-menu-drop { right: auto; left: 0; }
+  /* ── Dashboard ── */
+  #dash-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .dash-row { grid-template-columns: 1fr; }
 }
 
 /* ═══════════════════════════════════════════════
