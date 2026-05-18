@@ -1,18 +1,11 @@
 /**
- * IBMP CFTV Control — Service Worker
- * Versão: 6.0-pwa
- * Estratégia: Cache-First para assets locais, Network-First para CDNs
- *
- * Como funciona:
- *  - No install: armazena o HTML principal e assets no cache
- *  - No fetch: serve do cache se disponível (funciona offline)
- *  - Atualização: novo SW espera até que todas as abas fechem
+ * IBMP CFTV Control — Service Worker v7
+ * Cache atualizado — força limpeza do cache anterior
  */
 
-const CACHE_NAME = 'ibmp-cftv-v6';
-const CACHE_CDN  = 'ibmp-cftv-cdn-v6';
+const CACHE_NAME = 'ibmp-cftv-v7';
+const CACHE_CDN  = 'ibmp-cftv-cdn-v7';
 
-// Assets locais — sempre cacheados no install
 const LOCAL_ASSETS = [
   './IBMP_CFTV_Control_v6_PWA.html',
   './manifest.json',
@@ -20,7 +13,6 @@ const LOCAL_ASSETS = [
   './icon-512.png'
 ];
 
-// Domínios externos (CDN) — cacheados após primeiro uso
 const CDN_HOSTS = [
   'fonts.googleapis.com',
   'fonts.gstatic.com',
@@ -28,72 +20,45 @@ const CDN_HOSTS = [
   'cdnjs.cloudflare.com'
 ];
 
-// ─── INSTALL ──────────────────────────────────────────────────
 self.addEventListener('install', (event) => {
-  console.log('[SW] Instalando IBMP CFTV Control PWA…');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        // Tenta cachear um a um para não falhar tudo se um asset faltar
-        return Promise.allSettled(
-          LOCAL_ASSETS.map(url =>
-            cache.add(url).catch(err =>
-              console.warn(`[SW] Não foi possível cachear ${url}:`, err)
-            )
-          )
-        );
-      })
-      .then(() => {
-        console.log('[SW] Assets locais cacheados');
-        // Ativa imediatamente sem esperar fechar abas
-        return self.skipWaiting();
-      })
+      .then(cache => Promise.allSettled(LOCAL_ASSETS.map(url => cache.add(url).catch(()=>{}))))
+      .then(() => self.skipWaiting())
   );
 });
 
-// ─── ACTIVATE ─────────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Ativando nova versão…');
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(k => k !== CACHE_NAME && k !== CACHE_CDN)
-          .map(k => {
-            console.log('[SW] Removendo cache antigo:', k);
-            return caches.delete(k);
-          })
-      )
+      Promise.all(keys.filter(k => k !== CACHE_NAME && k !== CACHE_CDN).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// ─── FETCH ────────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // Ignora requisições não-GET (POST, PUT etc.)
   if (event.request.method !== 'GET') return;
-
-  // Ignora chrome-extension e outros protocolos não-http
   if (!event.request.url.startsWith('http')) return;
 
-  const isCDN = CDN_HOSTS.some(host => url.hostname.includes(host));
+  const url = new URL(event.request.url);
 
+  // Nunca cachear projeto.json — sempre busca o mais recente
+  if (url.pathname.endsWith('projeto.json')) {
+    event.respondWith(fetch(event.request).catch(() => new Response('{}', {status: 200})));
+    return;
+  }
+
+  const isCDN = CDN_HOSTS.some(host => url.hostname.includes(host));
   if (isCDN) {
-    // CDN: Network-First com fallback para cache
     event.respondWith(networkFirstCDN(event.request));
   } else {
-    // Local: Cache-First com fallback para rede
     event.respondWith(cacheFirstLocal(event.request));
   }
 });
 
-// Cache-First: serve do cache; se não tiver, busca na rede e armazena
 async function cacheFirstLocal(request) {
   const cached = await caches.match(request);
   if (cached) return cached;
-
   try {
     const response = await fetch(request);
     if (response && response.status === 200) {
@@ -102,12 +67,10 @@ async function cacheFirstLocal(request) {
     }
     return response;
   } catch {
-    // Offline e não tem cache: retorna página de fallback
     return caches.match('./IBMP_CFTV_Control_v6_PWA.html');
   }
 }
 
-// Network-First para CDN: tenta rede; se falhar, usa cache
 async function networkFirstCDN(request) {
   try {
     const response = await fetch(request);
@@ -122,12 +85,6 @@ async function networkFirstCDN(request) {
   }
 }
 
-// ─── MENSAGENS DO CLIENTE ─────────────────────────────────────
 self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-  if (event.data === 'CACHE_VERSION') {
-    event.source.postMessage({ version: CACHE_NAME });
-  }
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });

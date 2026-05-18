@@ -19,6 +19,8 @@
 #login-err.hide{opacity:0}
 </style>
 <link rel="manifest" href="manifest.json">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <meta name="theme-color" content="#159b77">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5334,7 +5336,7 @@ function loadLocalInventory(){
 window.addEventListener('DOMContentLoaded',()=>{
   E.init();
   // Auto-load projeto.json se existir no servidor
-  fetch('projeto.json')
+  const _base=location.href.replace(/[^/]*$/,''); fetch(_base+'projeto.json')
     .then(r=>{ if(!r.ok) throw new Error('not found'); return r.json(); })
     .then(data=>{
       try {
@@ -5705,6 +5707,13 @@ async function installPwa(){
       if(w) w.style.display='none';
       const s=document.getElementById('login-style');
       if(s) s.remove();
+    });
+  } else {
+    // Garante que o wall está visível
+    document.addEventListener('DOMContentLoaded',()=>{
+      const w=document.getElementById('login-wall');
+      if(w){ w.style.display='flex'; w.style.opacity='1'; }
+      setTimeout(()=>{ document.getElementById('login-input') && document.getElementById('login-input').focus(); },100);
     });
   }
 })();
