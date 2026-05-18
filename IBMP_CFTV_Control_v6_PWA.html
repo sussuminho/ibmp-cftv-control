@@ -578,7 +578,7 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
 
 @media (max-width: 768px) {
   /* Esconde todo o app desktop */
-  #hdr, #app-wrapper { display: none !important; }
+  #hdr, #app { display: none !important; }
 
   /* Mostra view mobile */
   #mob-view {
@@ -5339,45 +5339,74 @@ function loadLocalInventory(){
 window.addEventListener('DOMContentLoaded',()=>{
   E.init();
   // Auto-load projeto.json se existir no servidor
-  const _base=location.href.replace(/[^/]*$/,''); fetch(_base+'projeto.json')
-    .then(r=>{ if(!r.ok) throw new Error('not found'); return r.json(); })
-    .then(data=>{
-      try {
-        floors = data.floors.map(f=>{
-          const fl=mkFloor(f.name);
-          fl.id=f.id;
-          fl.panX=f.panX||0;fl.panY=f.panY||0;fl.zoom=f.zoom||1;
-          fl.image=f.image||null;fl.imgB64=f.imgB64||null;
-          fl.scale=f.scale||null;fl.riskZones=f.riskZones||[];
-          fl.cameras=(f.cameras||[]).map(c=>{
-            const cam=new Cam(c.id,c.name,c.x,c.y);
-            cam.rot=c.rot||0;cam.fov=c.fov||90;cam.ir=c.ir||60;
+  // Auto-load projeto.json
+  (async function(){
+    try {
+      const _base = location.href.replace(/[^\/]*$/, '');
+      const url = _base + 'projeto.json';
+      console.log('[AutoLoad] Buscando:', url);
+      const r = await fetch(url, {cache: 'no-store'});
+      if(!r.ok){ console.log('[AutoLoad] projeto.json não encontrado ('+r.status+')'); return; }
+      const data = await r.json();
+      console.log('[AutoLoad] JSON recebido, chaves:', Object.keys(data));
+
+      // Carregar banco de dados
+      if(data.db){
+        if(data.db.cameras && data.db.cameras.length) DB.cameras = data.db.cameras;
+        if(data.db.recorders && data.db.recorders.length) DB.recorders = data.db.recorders;
+        if(data.db.pareceres && data.db.pareceres.length) DB.pareceres = data.db.pareceres;
+        console.log('[AutoLoad] DB carregado: '+DB.cameras.length+' câmeras');
+      }
+
+      // Carregar plantas
+      if(data.floors && data.floors.length){
+        floors = data.floors.map(fd => {
+          const fl = mkFloor(fd.name);
+          fl.id    = fd.id || fl.id;
+          fl.panX  = fd.panX || 0;
+          fl.panY  = fd.panY || 0;
+          fl.zoom  = fd.zoom || 1;
+          fl.imgB64     = fd.imgB64 || null;
+          fl.image      = fd.image  || null;
+          fl.scale      = fd.scale  || null;
+          fl.riskZones  = fd.riskZones || [];
+          fl.cameras = (fd.cameras || []).map(cd => {
+            const cam = new Cam(cd.id || _uid++, cd.name, cd.x, cd.y);
+            cam.rot = cd.rot || 0;
+            cam.fov = cd.fov || 90;
+            cam.ir  = cd.ir  || 60;
             return cam;
           });
           return fl;
         });
-        if(data.inventory) Object.assign(CAM_INV,data.inventory);
-        if(data.camLog) Object.assign(CAM_LOG,data.camLog);
-        if(data.db){
-          if(data.db.cameras) DB.cameras=data.db.cameras;
-          if(data.db.recorders) DB.recorders=data.db.recorders;
-          if(data.db.pareceres) DB.pareceres=data.db.pareceres;
-        }
-        _uid=Math.max(...floors.flatMap(f=>f.cameras.map(c=>c.id)),0)+1;
-        _floorIdx=0;
-        finishInit();
-        const f=F();
-        if(f.cameras.length>0||f.image||f.imgB64){
-          document.getElementById('welcome').style.display='none';
-          document.getElementById('toolbar').style.display='flex';
-          E.fitToScreen && E.fitToScreen();
-        }
-        E.render();
-        toast('✓ Projeto carregado automaticamente');
-        console.log('[AutoLoad] projeto.json carregado com sucesso');
-      } catch(e){ console.warn('[AutoLoad] Erro ao processar projeto.json:',e); }
-    })
-    .catch(()=>{ console.log('[AutoLoad] projeto.json não encontrado — modo normal'); });
+        _floorIdx = 0;
+        console.log('[AutoLoad] '+floors.length+' planta(s) carregada(s)');
+      }
+
+      // Carregar inventário e log
+      if(data.inventory) Object.assign(CAM_INV, data.inventory);
+      if(data.camLog)    Object.assign(CAM_LOG,  data.camLog);
+
+      // Recalcular UID
+      const allIds = floors.flatMap(f => f.cameras.map(c => c.id)).filter(Number.isFinite);
+      if(allIds.length) _uid = Math.max(...allIds) + 1;
+
+      finishInit();
+
+      // Mostrar planta se tiver conteúdo
+      const fl = F();
+      const temConteudo = fl.cameras.length > 0 || fl.imgB64 || fl.image;
+      if(temConteudo){
+        document.getElementById('welcome').style.display = 'none';
+        document.getElementById('toolbar').style.display = 'flex';
+        setTimeout(() => { E.fitToScreen && E.fitToScreen(); E.render(); }, 100);
+      }
+
+      toast('✓ Projeto carregado automaticamente');
+    } catch(err){
+      console.warn('[AutoLoad] Erro:', err);
+    }
+  })();
   const loaded=loadLocalInventory();
   if(!loaded){
     DB.cameras=parseCSV(PA);DB.recorders=parseCSV(PB);DB.pareceres=parseCSV(PC);
