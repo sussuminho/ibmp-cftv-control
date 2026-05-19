@@ -2084,7 +2084,7 @@ canvas.chart { width: 100%; display: block; }
 <div id="floorbar">
   <div style="position:relative" id="fadd-wrap">
     <button class="fadd" onclick="toggleFloorAdd(event)" title="Adicionar / carregar planta">+</button>
-    <div id="fadd-drop" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px;min-width:190px;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,.15);flex-direction:column;gap:2px;">
+    <div id="fadd-drop" style="display:none;position:fixed;bottom:auto;left:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px;min-width:190px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);flex-direction:column;gap:2px;">
       <button class="fadd-item" onclick="addFloor();closeFloorAdd()">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M8 4v8M4 8h8"/></svg>
         Nova Planta (vazia)
@@ -2303,7 +2303,7 @@ canvas.chart { width: 100%; display: block; }
 </div>
 
 <div id="toast"></div>
-<input type="file" id="img-in" accept="image/*" style="display:none" onchange="E.loadImg(event)">
+<input type="file" id="img-in" accept="image/*,.pdf,application/pdf" style="display:none" onchange="E.loadImg(event)">
 <input type="file" id="json-in" accept=".json" style="display:none" onchange="importProject(event)">
 <input type="file" id="xlsx-in" accept=".xlsx,.csv" style="display:none" onchange="importInventory(event)">
 
@@ -3560,10 +3560,15 @@ function switchFloor(i){
 function toggleFloorAdd(e){
   if(e){ e.stopPropagation(); e.preventDefault(); }
   const d=document.getElementById('fadd-drop');
-  if(!d)return;
+  const btn=document.getElementById('fadd-wrap');
+  if(!d||!btn)return;
   const isOpen = d.style.display==='flex';
-  // Se fechado, adia a abertura por 1ms para sair do ciclo de evento atual
   if(!isOpen){
+    // Posiciona acima do botão +
+    const rect=btn.getBoundingClientRect();
+    d.style.left = rect.left+'px';
+    d.style.top  = (rect.top - 8)+'px';
+    d.style.transform = 'translateY(-100%)';
     d.style.display='flex';
     d._justOpened=true;
     setTimeout(()=>{ d._justOpened=false; },50);
