@@ -1584,7 +1584,10 @@ canvas.chart { width: 100%; display: block; }
   <header id="mob-hdr">
     <div id="mob-hdr-left">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#159b77" stroke-width="1.7"><rect x="1" y="4" width="14" height="11" rx="2"/><circle cx="8" cy="9.5" r="2.5"/><path d="M15 7l5-2v7l-5-2"/></svg>
-      <span>CFTV <strong>IBMP</strong></span>
+      <div>
+        <span style="font-size:14px;font-weight:700;color:var(--text)">CFTV <strong>IBMP</strong></span>
+        <div style="font-size:9px;color:var(--text3);margin-top:-1px;line-height:1.2">by Luan Hachiguti · <span style="color:var(--g3)">v6.2</span></div>
+      </div>
     </div>
     <div id="mob-hdr-right">
       <!-- Views dropdown -->
@@ -6048,6 +6051,25 @@ function closeMobReports(){
 }
 
 // Switch between mobile views (list vs overlays)
+function mobNavPills(active){
+  const items=[
+    {v:'list', label:'Lista', icon:'<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h10M3 8h10M3 12h6"/></svg>'},
+    {v:'dash',     label:'Dashboard'},
+    {v:'budget',   label:'Orçamento'},
+    {v:'coverage', label:'Cobertura'},
+    {v:'timeline', label:'Timeline'},
+  ];
+  const btns = items.map(it=>{
+    const isActive = it.v === active;
+    const bg    = isActive ? 'var(--g-light)' : 'var(--surface2)';
+    const col   = isActive ? 'var(--g3)'      : 'var(--text3)';
+    const bord  = isActive ? 'var(--g)'       : 'var(--border)';
+    const icon  = it.icon ? it.icon+' ' : '';
+    return `<button onclick="mobSetView('${it.v}')" style="flex-shrink:0;display:flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:6px 11px;border-radius:20px;border:1px solid ${bord};background:${bg};color:${col};cursor:pointer;font-family:inherit;white-space:nowrap">${icon}${it.label}</button>`;
+  }).join('');
+  return `<div style="display:flex;gap:5px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none">${btns}</div>`;
+}
+
 function mobSetView(v){
   closeMobViews();
   const mobView = document.getElementById('mob-view');
@@ -6055,12 +6077,11 @@ function mobSetView(v){
   const search  = document.getElementById('mob-search-wrap');
   const list    = document.getElementById('mob-list');
 
-  // Create or reuse overlay container
   let ov = document.getElementById('mob-overlay');
   if(!ov){
     ov = document.createElement('div');
     ov.id = 'mob-overlay';
-    ov.style.cssText = 'flex:1;overflow-y:auto;background:var(--bg);display:none;';
+    ov.style.cssText = 'flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);display:none;';
     mobView.appendChild(ov);
   }
 
@@ -6073,113 +6094,68 @@ function mobSetView(v){
     return;
   }
 
-  // Hide list UI, show overlay
   if(kpis)   kpis.style.display   = 'none';
   if(search) search.style.display = 'none';
   if(list)   list.style.display   = 'none';
   ov.style.display = 'block';
 
-  const backBtn = `<button onclick="mobSetView('list')" style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;margin-bottom:16px;font-family:inherit;-webkit-tap-highlight-color:transparent">← Voltar à lista</button>`;
+  // Pill nav shared across all views
 
   if(v === 'dash'){
-    // Render dashboard natively — never copy canvas from hidden #app
     const all  = allCams();
     const ok   = all.filter(c=>c.fn).length;
     const nfC  = all.filter(c=>!c.fn).length;
     const tot  = all.length;
     const cost = all.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
     const pct  = DB.cameras.length ? Math.round(tot/DB.cameras.length*100) : 0;
-
-    // Bar chart data
     const byRec={};
     all.filter(c=>!c.fn).forEach(c=>{const k=(c.info.gravador||'N/D').replace('DVR-BLOC','B').replace('DVR-','');byRec[k]=(byRec[k]||0)+1;});
     const recEntries=Object.entries(byRec).sort((a,b)=>b[1]-a[1]).slice(0,8);
     const maxV=recEntries.length?recEntries[0][1]:1;
-
-    const card = (bg,border,val,lbl) =>
-      `<div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:14px;text-align:center">
-        <div style="font-size:22px;font-weight:800;line-height:1;color:${border}">${val}</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.04em">${lbl}</div>
-      </div>`;
-
-    const bars = recEntries.length
-      ? recEntries.map(([k,v])=>`
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-          <div style="font-size:11px;color:var(--text2);width:70px;min-width:70px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${k}">${k}</div>
-          <div style="flex:1;height:18px;background:var(--surface3);border-radius:5px;overflow:hidden">
-            <div style="width:${v/maxV*100}%;height:100%;background:var(--nf);border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:5px">
-              <span style="font-size:11px;font-weight:700;color:#fff">${v}</span>
-            </div>
-          </div>
-        </div>`).join('')
-      : `<div style="color:var(--text3);font-size:13px;padding:16px 0;text-align:center">Nenhuma câmera inativa</div>`;
-
-    ov.innerHTML = `<div style="padding:16px">${backBtn}
-      <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
-        ${VIEW_ORDER.map(vv=>`<button onclick="mobSetView('${vv}')" style="font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:${vv===v?'var(--g-light)':'var(--surface2)'};color:${vv===v?'var(--g3)':'var(--text3)'};cursor:pointer;font-family:inherit">${VIEW_LABELS[vv]}</button>`).join('')}
-      </div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:14px;color:var(--text)">Dashboard</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-        ${card('var(--ok-bg)','var(--ok)',ok,'Ativas')}
-        ${card('var(--nf-bg)','var(--nf)',nfC,'Inativas')}
-        ${card('var(--surface2)','var(--border)',tot,'Mapeadas')}
-        ${card('rgba(217,119,6,.08)','var(--warn)','R$ '+cost.toLocaleString('pt-BR',{minimumFractionDigits:2}),'Custo NF')}
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text)">Status das Câmeras</div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Todas as plantas</div>
-        <div style="display:flex;align-items:center;gap:16px">
-          <canvas id="mob-donut-c" width="120" height="120" style="flex-shrink:0"></canvas>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--ok);flex-shrink:0"></div><span style="font-weight:700;color:var(--text)">${ok}</span><span style="color:var(--text2)"> Ativas</span></div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--nf);flex-shrink:0"></div><span style="font-weight:700;color:var(--text)">${nfC}</span><span style="color:var(--text2)"> Inativas</span></div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--border);flex-shrink:0"></div><span style="font-weight:700;color:var(--text)">${Math.max(0,DB.cameras.length-tot)}</span><span style="color:var(--text2)"> Não mapeadas</span></div>
-            <div style="font-size:11px;color:var(--text3);margin-top:4px">${pct}% do banco</div>
-          </div>
-        </div>
-      </div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text)">NF por Gravador</div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Câmeras inativas por DVR/NVR</div>
-        ${bars}
-      </div>
-    </div>`;
-
-    // Draw donut after DOM is ready
+    const card=(bg,border,val,lbl)=>`<div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:14px;text-align:center"><div style="font-size:22px;font-weight:800;line-height:1;color:${border}">${val}</div><div style="font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.04em">${lbl}</div></div>`;
+    const bars=recEntries.length?recEntries.map(([k,val])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><div style="font-size:11px;color:var(--text2);width:60px;min-width:60px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${k}</div><div style="flex:1;height:18px;background:var(--surface3);border-radius:5px;overflow:hidden"><div style="width:${val/maxV*100}%;height:100%;background:var(--nf);border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:5px"><span style="font-size:11px;font-weight:700;color:#fff">${val}</span></div></div></div>`).join(''):`<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center">Nenhuma câmera inativa</div>`;
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${card('var(--ok-bg)','var(--ok)',ok,'Ativas')}${card('var(--nf-bg)','var(--nf)',nfC,'Inativas')}${card('var(--surface2)','var(--border)',tot,'Mapeadas')}${card('rgba(217,119,6,.08)','var(--warn)','R$ '+cost.toLocaleString('pt-BR',{minimumFractionDigits:2}),'Custo NF')}</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text)">Status das Câmeras</div><div style="display:flex;align-items:center;gap:16px"><canvas id="mob-donut-c" width="110" height="110" style="flex-shrink:0"></canvas><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--ok);flex-shrink:0"></div><b>${ok}</b><span style="color:var(--text2)"> Ativas</span></div><div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--nf);flex-shrink:0"></div><b>${nfC}</b><span style="color:var(--text2)"> Inativas</span></div><div style="font-size:11px;color:var(--text3);margin-top:2px">${pct}% do banco mapeado</div></div></div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px"><div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text)">NF por Gravador</div>${bars}</div></div>`;
     requestAnimationFrame(()=>{
-      const cv = document.getElementById('mob-donut-c');
-      if(!cv) return;
-      const ctx=cv.getContext('2d'), cx=60, cy=60, R=50, r=28;
+      const cv=document.getElementById('mob-donut-c');if(!cv)return;
+      const ctx=cv.getContext('2d'),cx=55,cy=55,R=46,r=26;
       const segs=[{v:ok,c:'#16a34a'},{v:nfC,c:'#dc2626'},{v:Math.max(0,DB.cameras.length-tot),c:'#dde1e8'}];
-      const sum=segs.reduce((s,x)=>s+x.v,0)||1;
-      let angle=-Math.PI/2;
-      segs.forEach(s=>{
-        if(!s.v) return;
-        const sw=s.v/sum*Math.PI*2;
-        ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,angle,angle+sw);ctx.closePath();
-        ctx.fillStyle=s.c;ctx.fill();
-        angle+=sw;
-      });
-      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-      ctx.fillStyle=document.documentElement.getAttribute('data-theme')==='dark'?'#0d1520':'#ffffff';
-      ctx.fill();
-      ctx.font='700 16px Inter,sans-serif';ctx.fillStyle=document.body.style.color||'#0f1923';
-      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(tot,cx,cy-6);
-      ctx.font='400 9px Inter,sans-serif';ctx.fillStyle='#8a95a3';ctx.fillText('mapeadas',cx,cy+8);
+      const sum=segs.reduce((s,x)=>s+x.v,0)||1;let angle=-Math.PI/2;
+      segs.forEach(s=>{if(!s.v)return;const sw=s.v/sum*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,angle,angle+sw);ctx.closePath();ctx.fillStyle=s.c;ctx.fill();angle+=sw;});
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=document.documentElement.getAttribute('data-theme')==='dark'?'#0d1520':'#fff';ctx.fill();
+      ctx.font='700 14px Inter,sans-serif';ctx.fillStyle='var(--text)';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(tot,cx,cy-5);
+      ctx.font='400 8px Inter,sans-serif';ctx.fillStyle='#8a95a3';ctx.fillText('mapeadas',cx,cy+7);
     });
     return;
   }
 
-  // For other views: call setMode, wait for render, then snapshot innerHTML
-  setMode(v);
-  setTimeout(()=>{
-    const src = document.getElementById('view-'+v);
-    if(src){
-      ov.innerHTML = '<div style="padding:16px">' + backBtn + src.innerHTML + '</div>';
-      // Re-render coverage canvas if needed
-      if(v === 'coverage') setTimeout(renderCoverage, 50);
-    }
-  }, 120);
+  if(v === 'budget'){
+    const all = allCams();
+    const nfCams = all.filter(c=>!c.fn);
+    const total = nfCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+    const rows = nfCams.length
+      ? nfCams.map(c=>`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:12px;font-weight:600;color:var(--text)">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.info.modelo||'—'}</div></div><div style="text-align:right"><div style="font-size:12px;font-weight:700;color:var(--warn)">R$ ${(PRICES[c.info.modelo]||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div style="font-size:11px;color:var(--text3)">${c.info.setor||c.info.gravador||'—'}</div></div></div>`).join('')
+      : `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">Nenhuma câmera inativa</div>`;
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="background:rgba(217,119,6,.08);border:1px solid var(--warn);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center"><div style="font-size:11px;font-weight:600;color:var(--warn);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Total Estimado (Câmeras Inativas)</div><div style="font-size:28px;font-weight:800;color:var(--warn)">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px">${rows}</div></div>`;
+    return;
+  }
+
+  if(v === 'coverage'){
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;color:var(--text3);font-size:13px"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto 12px;opacity:.4"><circle cx="20" cy="20" r="16"/><path d="M20 4v32M4 20h32"/></svg>Mapa de cobertura disponível apenas no desktop — acesse pelo computador para visualizar a planta completa.</div></div>`;
+    return;
+  }
+
+  if(v === 'timeline'){
+    const allLogs = Object.entries(typeof CAM_LOG!=='undefined'?CAM_LOG:{});
+    const total = allLogs.reduce((s,[,logs])=>s+logs.length,0);
+    const recent = allLogs.flatMap(([cam,logs])=>logs.map(l=>({...l,cam}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);
+    const tcMap={info:'#3b82f6',manutencao:'#f59e0b',incidente:'#ef4444',resolvido:'#10b981'};
+    const tlMap={info:'Info',manutencao:'Manutenção',incidente:'Incidente',resolvido:'Resolvido'};
+    const items = recent.length
+      ? recent.map(l=>`<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:${tcMap[l.type]||'#8a95a3'}22;color:${tcMap[l.type]||'#8a95a3'}">${tlMap[l.type]||l.type}</span><span style="font-size:11px;color:var(--text3)">${l.date}</span></div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">${l.cam}</div><div style="font-size:12px;color:var(--text2)">${l.text}</div></div>`).join('')
+      : `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">Nenhuma ocorrência registrada</div>`;
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="font-size:13px;font-weight:600;color:var(--text3);margin-bottom:12px">${total} ocorrência(s) registrada(s)</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px">${items}</div></div>`;
+    return;
+  }
 }
 
 // Close dropdowns on tap outside
