@@ -3558,14 +3558,23 @@ function switchFloor(i){
   if(_mode==='monitor'||_mode==='budget'||_mode==='dash')updateRpSummary();
 }
 function toggleFloorAdd(e){
-  if(e) e.stopPropagation(); // prevent document click from closing immediately
+  if(e){ e.stopPropagation(); e.preventDefault(); }
   const d=document.getElementById('fadd-drop');
   if(!d)return;
-  d.style.display=d.style.display==='flex'?'none':'flex';
+  const isOpen = d.style.display==='flex';
+  // Se fechado, adia a abertura por 1ms para sair do ciclo de evento atual
+  if(!isOpen){
+    d.style.display='flex';
+    d._justOpened=true;
+    setTimeout(()=>{ d._justOpened=false; },50);
+  } else {
+    d.style.display='none';
+  }
 }
 function closeFloorAdd(){
   const d=document.getElementById('fadd-drop');
-  if(d)d.style.display='none';
+  if(!d||d._justOpened)return; // não fecha se acabou de abrir
+  d.style.display='none';
 }
 document.addEventListener('click',e=>{
   const w=document.getElementById('fadd-wrap');
