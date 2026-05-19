@@ -3964,9 +3964,20 @@ function checkPass(){
   });
 }
 function showAdmin(){
-  document.getElementById('csv-a').value=PA;
-  document.getElementById('csv-b').value=PB;
-  document.getElementById('csv-c').value=PC;
+  // Gera CSV do banco atual para exibir nos campos de edição
+  function toCSV(arr, cols){
+    if(!arr.length) return cols.join(',');
+    return [cols.join(','), ...arr.map(r=>cols.map(c=>{
+      const v=String(r[c]||'').replace(/,/g,';').replace(/\n/g,' ');
+      return v;
+    }).join(','))].join('\n');
+  }
+  document.getElementById('csv-a').value = toCSV(DB.cameras,
+    ['NOME CANAL','GRAVADOR','MODELO CÂMERA','CANAL','STATUS DE OPERAÇÃO']);
+  document.getElementById('csv-b').value = toCSV(DB.recorders,
+    ['NOME DO GRAVADOR','IP DE ACESSO','MODELO','LOCALIZAÇÃO']);
+  document.getElementById('csv-c').value = toCSV(DB.pareceres,
+    ['Câmera','Localização/Bloco','Parecer']);
   buildPriceRows();aTab('db');
   document.getElementById('admin-modal').classList.add('show');
 }
@@ -5412,17 +5423,7 @@ function importInventory(e){
 
       // ── ABA CÂMERAS ──────────────────────────────────────────────────────
       const wsCam=findSheet('Câmera','Camera','Relação','cameras','cam')||wb.Sheets[sheetNames[0]];
-      // Lê todas as linhas como arrays para detectar onde começa o header real
-      const allRowsCam=XLSX.utils.sheet_to_json(wsCam,{header:1,defval:''});
-      // Encontra a linha que contém 'NOME CANAL' (pode estar na linha 1, 2 ou 3)
-      const hdrIdxCam=allRowsCam.findIndex(r=>r.some(c=>String(c).trim().toUpperCase()==='NOME CANAL'));
-      if(hdrIdxCam===-1){toast('Aba de câmeras: cabeçalho NOME CANAL não encontrado');return;}
-      const hdrsCam=allRowsCam[hdrIdxCam].map(c=>String(c).trim());
-      const rowsCam=allRowsCam.slice(hdrIdxCam+1)
-        .filter(r=>r.some(c=>c!==''))  // ignora linhas completamente vazias
-        .map(r=>{const o={};hdrsCam.forEach((h,i)=>o[h]=r[i]??'');return o;})
-        .filter(r=>String(r['NOME CANAL']||'').trim() &&
-                   !String(r['NOME CANAL']||'').includes('Obrigatório')); // ignora linha de dicas
+      const rowsCam=XLSX.utils.sheet_to_json(wsCam,{defval:''});
       if(!rowsCam.length){toast('Aba de câmeras vazia ou não encontrada');return;}
 
       DB.cameras=rowsCam.map(r=>{
@@ -5451,16 +5452,8 @@ function importInventory(e){
       // ── ABA GRAVADORES ───────────────────────────────────────────────────
       const wsGrav=findSheet('Gravador','Recorder','NVR','DVR');
       if(wsGrav){
-        const allRowsGrav=XLSX.utils.sheet_to_json(wsGrav,{header:1,defval:''});
-        const hdrIdxGrav=allRowsGrav.findIndex(r=>r.some(c=>String(c).trim().toUpperCase()==='NOME DO GRAVADOR'));
-        if(hdrIdxGrav!==-1){
-          const hdrsGrav=allRowsGrav[hdrIdxGrav].map(c=>String(c).trim());
-          const rowsGrav=allRowsGrav.slice(hdrIdxGrav+1)
-            .filter(r=>r.some(c=>c!==''))
-            .map(r=>{const o={};hdrsGrav.forEach((h,i)=>o[h]=r[i]??'');return o;})
-            .filter(r=>String(r['NOME DO GRAVADOR']||'').trim() &&
-                       !String(r['NOME DO GRAVADOR']||'').includes('Chave'));
-          DB.recorders=rowsGrav.map(r=>({
+        const rowsGrav=XLSX.utils.sheet_to_json(wsGrav,{defval:''});
+        DB.recorders=rowsGrav.map(r=>({
           'NOME DO GRAVADOR': String(r['NOME DO GRAVADOR']||r['GRAVADOR']||r['Nome']||'').trim(),
           'MODELO':           String(r['MODELO']||'').trim(),
           'IP DE ACESSO':     String(r['IP DE ACESSO']||r['IP']||'').trim(),
@@ -5469,49 +5462,34 @@ function importInventory(e){
           'TIPO DE GRAVADOR': String(r['TIPO DE GRAVADOR']||'').trim(),
           'Armazenamento':    String(r['Armazenamento']||'').trim(),
         })).filter(r=>r['NOME DO GRAVADOR']);
-        } // fecha if hdrIdxGrav
       }
 
       // ── ABA PARECER ──────────────────────────────────────────────────────
       const wsPar=findSheet('Parecer','Mapeamento','Status','Par');
       if(wsPar){
-        const allRowsPar=XLSX.utils.sheet_to_json(wsPar,{header:1,defval:''});
-        const hdrIdxPar=allRowsPar.findIndex(r=>r.some(c=>String(c).trim()==='Câmera'||String(c).trim()==='Camera'));
-        if(hdrIdxPar!==-1){
-          const hdrsPar=allRowsPar[hdrIdxPar].map(c=>String(c).trim());
-          const rowsPar=allRowsPar.slice(hdrIdxPar+1)
-            .filter(r=>r.some(c=>c!==''))
-            .map(r=>{const o={};hdrsPar.forEach((h,i)=>o[h]=r[i]??'');return o;})
-            .filter(r=>(r['Câmera']||r['Camera'])&&!String(r['Câmera']||'').includes('Número'));
-          DB.pareceres=rowsPar.map(r=>({
+        const rowsPar=XLSX.utils.sheet_to_json(wsPar,{defval:''});
+        DB.pareceres=rowsPar
+          .filter(r=>r['Câmera']||r['Camera'])
+          .map(r=>({
             'Câmera':            r['Câmera']||r['Camera']||'',
-            'Localização/Bloco': String(r['Localização/Bloco']||r['Locaização /Bloco']||r['LOCAL']||'').trim(),
+            'Localização/Bloco': String(r['Localização/Bloco']||r['LOCAL']||'').trim(),
             'Parecer':           String(r['Parecer']||r['PARECER']||'OK').trim(),
           }));
-        }
       }
 
       // ── ABA REFERÊNCIA DE PREÇOS (opcional) ─────────────────────────────
       const wsPrecos=findSheet('Preço','Preco','Referência','Referencia','Price','prec');
       if(wsPrecos){
-        const allRowsPrecos=XLSX.utils.sheet_to_json(wsPrecos,{header:1,defval:''});
-        const hdrIdxPrecos=allRowsPrecos.findIndex(r=>r.some(c=>String(c).trim().toUpperCase()==='MODELO'));
-        if(hdrIdxPrecos!==-1){
-          const hdrsPrecos=allRowsPrecos[hdrIdxPrecos].map(c=>String(c).trim());
-          const rowsPrecos=allRowsPrecos.slice(hdrIdxPrecos+1)
-            .filter(r=>r.some(c=>c!==''))
-            .map(r=>{const o={};hdrsPrecos.forEach((h,i)=>o[h]=r[i]??'');return o;})
-            .filter(r=>String(r['MODELO']||'').trim() && !String(r['MODELO']||'').includes('Modelo exato'));
-          let atualizados=0;
-          rowsPrecos.forEach(r=>{
-            const modelo=String(r['MODELO']||r['Modelo']||'').trim();
-            const valor=parseFloat(String(r['VALOR MERCADO (R$)']||r['VALOR']||r['Valor']||r['Preço']||'').replace(/[^\d.,]/g,'').replace(',','.'));
-            const vida=parseInt(r['VIDA ÚTIL (anos)']||r['VIDA UTIL']||r['Vida Útil']||'');
-            if(modelo&&!isNaN(valor)&&valor>0){ PRICES[modelo]=valor; atualizados++; }
-            if(modelo&&!isNaN(vida)&&vida>0)   LIFESPAN[modelo]=vida;
-          });
-          if(atualizados>0) console.log(`[Import] ${atualizados} preços atualizados do Excel`);
-        }
+        const rowsPrecos=XLSX.utils.sheet_to_json(wsPrecos,{defval:''});
+        let atualizados=0;
+        rowsPrecos.forEach(r=>{
+          const modelo=String(r['MODELO']||r['Modelo']||'').trim();
+          const valor=parseFloat(String(r['VALOR MERCADO (R$)']||r['VALOR']||r['Valor']||'').replace(/[^\d.,]/g,'').replace(',','.'));
+          const vida=parseInt(r['VIDA ÚTIL (anos)']||r['VIDA UTIL']||r['Vida Útil']||'');
+          if(modelo&&!isNaN(valor)&&valor>0){ PRICES[modelo]=valor; atualizados++; }
+          if(modelo&&!isNaN(vida)&&vida>0)   LIFESPAN[modelo]=vida;
+        });
+        if(atualizados>0) console.log(`[Import] ${atualizados} preços atualizados do Excel`);
       }
       floors.forEach(f=>f.cameras.forEach(c=>{
         c.info=lookup(c.name);
