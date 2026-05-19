@@ -2297,6 +2297,7 @@ let LIFESPAN={"VIP-3220-D": 6, "VIP-1130-D": 6, "VIP-1130-D-G3": 6, "VIP-1130-D-
 let INSTALL_YEAR={};
 
 // Dados financeiros por câmera: {valor, dataInstalacao:'YYYY-MM', vidaUtil, garantia:'YYYY-MM'}
+let CAM_INV={};  // inventário patrimonial por câmera (compatibilidade)
 let CAM_FIN={};
 let CAM_OBS={};  // observações simples (compatibilidade)
 let CAM_LOG={};  // histórico de ocorrências: {camName: [{id,date,text,type}]}
@@ -3436,7 +3437,7 @@ function updateSB(){
 function buildFloorBar(){
   const bar=document.getElementById('floorbar');
   bar.querySelectorAll('.ftab').forEach(e=>e.remove());
-  const addbtn=bar.querySelector('.fadd');
+  const addbtn=document.getElementById('fadd-wrap')||bar.querySelector('.fadd');
   floors.forEach((f,i)=>{
     const btn=document.createElement('button');
     btn.className='ftab'+(i===activeFloor?' active':'');
@@ -5530,55 +5531,10 @@ let _autoLoaded = false;
 
 window.addEventListener('DOMContentLoaded',()=>{
   E.init();
-  // Auto-load projeto.json se existir no servidor
-  fetch('projeto.json')
-    .then(r=>{ if(!r.ok) throw new Error('not found'); return r.json(); })
-    .then(data=>{
-      try {
-        floors = data.floors.map(f=>{
-          const fl=mkFloor(f.name);
-          fl.id=f.id;
-          fl.panX=f.panX||0;fl.panY=f.panY||0;fl.zoom=f.zoom||1;
-          fl.image=f.image||null;fl.imgB64=f.imgB64||null;
-          fl.scale=f.scale||null;fl.riskZones=f.riskZones||[];
-          fl.cameras=(f.cameras||[]).map(c=>{
-            const cam=new Cam(c.id,c.name,c.x,c.y);
-            cam.rot=c.rot||0;cam.fov=c.fov||90;cam.ir=c.ir||60;
-            return cam;
-          });
-          return fl;
-        });
-        if(data.inventory) Object.assign(CAM_INV,data.inventory);
-        if(data.camLog) Object.assign(CAM_LOG,data.camLog);
-        if(data.db){
-          if(data.db.cameras) DB.cameras=data.db.cameras;
-          if(data.db.recorders) DB.recorders=data.db.recorders;
-          if(data.db.pareceres) DB.pareceres=data.db.pareceres;
-        }
-        _uid=Math.max(...floors.flatMap(f=>f.cameras.map(c=>c.id)),0)+1;
-        _floorIdx=0;
-        finishInit();
-
-        // Esconde welcome se qualquer planta tiver imagem ou câmeras
-        const hasAnyCams  = floors.some(f=>f.cameras.length>0);
-        const hasAnyImage = floors.some(f=>f.image||f.imgB64);
-        const hasProject  = hasAnyCams || hasAnyImage;
-        _autoLoaded = true; // sempre marca como carregado ao ter projeto.json válido
-        document.getElementById('welcome').style.display  = 'none';
-        document.getElementById('toolbar').style.display  = hasProject ? 'flex' : 'none';
-        document.getElementById('sbar').classList.toggle('visible', hasProject);
-        document.getElementById('minimap').classList.toggle('visible', hasAnyImage);
-        if(hasProject) E.fitToScreen && E.fitToScreen();
-        E.render();
-        toast('✓ Projeto carregado automaticamente');
-        console.log('[AutoLoad] projeto.json carregado com sucesso');
-      } catch(e){ console.warn('[AutoLoad] Erro ao processar projeto.json:',e); }
-    })
-    .catch(()=>{ console.log('[AutoLoad] projeto.json não encontrado — modo normal'); });
   const loaded=loadLocalInventory();
-  if(!loaded){
+  // Sempre carrega o banco embutido se o DB estiver vazio
+  if(!loaded || !DB.cameras.length){
     DB.cameras=_DB_CAMERAS;DB.recorders=_DB_RECORDERS;DB.pareceres=_DB_PARECERES;
-    // Pre-load install years from embedded data
     Object.assign(INSTALL_YEAR, {"01 - Cromatografia - DT": 2021, "02 - Cultivo Procariotos - DT": 2021, "03 - Sintese de Acidos Nucleicos - DT": 2021, "05 - Sintese Quimica - DT": 2021, "06 - Acesso a Convivencia - DT": 2021, "07 - Sala de Freezers - DT": 2021, "08 - Convivencia 1 - DT": 2021, "09 - Data Center - DT": 2020, "10 - Cultivo Eucariotos 2 - DT": 2021, "11 - Cultivo Eucariotos - DT": 2021, "12 - Convivencia 2 - DT": 2021, "13 - Hall Entrada - DT": 2021, "14 - Piso Tecnico - DT": 2021, "Externo 1": 2020, "0.15": 2021, "0.5": 2021, "PRM": 2021, "Extracao": 2021, "Porta Data Center": 2021, "Sala Nilson": 2021, "Esterilizacao": 2021, "Entrada Lab Central": 2021, "Lab Central": 2021, "Corredor Lab Central": 2021, "07 - Corredor/Escada 1 - Bloco D": 2022, "08 - Corredor/SAC - Bloco D": 2022, "09 - Corredor/DN - Bloco D": 2022, "10 - Estoque TI - Bloco D": 2022, "11 - Convivencia - Bloco C1": 2021, "Preparo e Tampoes": 2021, "Envase 3": 2021, "Envase 2": 2021, "Corredor Sujo 1": 2021, "Empacotamento 1a": 2021, "Corredor Sujo 2": 2022, "Envase 1": 2021, "Corredor Limpo": 2021, "Purificacao": 2021, "Teste rapido": 2021, "Empacotamento 2a": 2021, "Sala Lise": 2021, "Empacotamento 1b": 2022, "Sala de Crescimento": 2021, "Sala de Impressao": 2022, "02 - Secretaria Bloco C1": 2020, "03 - Hall de Entrada - Bloco C1": 2020, "05 - Sala de Reuniao Mezanino": 2021, "09 - Corredor Sujo Saida de Rejeitos": 2020, "10 - Subida Mezanino - Producao": 2020, "11 - Corredor Sujo 2 - Producao": 2020, "12 - Corredor Sujo 3 - Producao": 2020, "13 - Empacotamento 2 - Producao 2": 2020, "Entrada - CQ": 2020, "Microbiologia - CQ": 2020, "PCR - CQ": 2020, "Externo Expedicao": 2020, "Escritorio Logistica": 2020, "Externo Controle Positivo": 2020, "Entrada Logistica 1": 2020, "Estoque Logistica": 2020, "Corredor Estoque 1": 2020, "Corredor Estoque 2": 2020, "Corredor Estoque 3": 2020, "Escritorio Estoque": 2020, "Corredor Estoque 4": 2020, "Quarentena Estoque": 2020, "Escritorio Recebimento": 2020, "Entrada Logistica 2": 2020, "Externo Fundos": 2020});
   }
   // Verificar se há auto-save com câmeras mapeadas
@@ -5592,13 +5548,12 @@ window.addEventListener('DOMContentLoaded',()=>{
         document.getElementById('autosave-info').textContent=
           `${totalCams} câmeras em ${data.floors?.length||1} planta(s) · Salvo em ${ts}`;
         document.getElementById('autosave-modal').classList.add('show');
-        return; // Aguarda decisão do usuário
+        finishInit();
+        return;
       }
     }
   }catch(e){}
   finishInit();
-  // Se não há autoload nem autosave, mas DB tem câmeras, esconde o welcome
-  // (o welcome só faz sentido quando não há absolutamente nada)
 });
 function finishInit(){
   buildList();updateSB();buildFloorBar();mmUpdate();
