@@ -558,7 +558,16 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
   display: flex; align-items: center; padding: 0 12px; gap: 6px;
   overflow-x: auto; z-index: 50;
 }
-#floorbar::-webkit-scrollbar { height: 3px; }
+.fadd-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 12px; border-radius: 8px; cursor: pointer;
+  background: none; border: none; font-family: inherit;
+  font-size: 12px; font-weight: 500; color: var(--text2);
+  text-align: left; width: 100%; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.fadd-item:hover { background: var(--surface2); color: var(--text); }
+.fadd-item svg { flex-shrink: 0; color: var(--text3); }
 .ftab {
   background: var(--surface2); border: 1px solid var(--border);
   color: var(--text2); font-size: 13px; font-weight: 500;
@@ -1679,22 +1688,22 @@ canvas.chart { width: 100%; display: block; }
         <div class="wc-sub">Gerencie todas as câmeras do IBMP em um único lugar — plante, visualize status e identifique falhas por planta baixa.</div>
 
         <div class="wc-actions">
-          <div class="wc-action-card primary" onclick="document.getElementById('img-in').click()">
-            <div class="wc-ac-icon green">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" stroke-width="1.8"><rect x="1" y="4" width="14" height="11" rx="2"/><circle cx="8" cy="9.5" r="2.5"/><path d="M15 7l5-2v7l-5-2"/></svg>
-            </div>
-            <div>
-              <div class="wc-ac-title">Carregar Planta</div>
-              <div class="wc-ac-sub">Imagem PNG, JPG ou PDF da planta baixa</div>
-            </div>
-          </div>
-          <div class="wc-action-card" onclick="document.getElementById('json-in').click()">
+          <div class="wc-action-card primary" onclick="document.getElementById('json-in').click()">
             <div class="wc-ac-icon gray">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--text2)" stroke-width="1.8"><path d="M3 3h8l5 5v11H3z"/><path d="M11 3v5h5"/><path d="M7 12h6M7 15h4"/></svg>
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3 3h8l5 5v11H3z"/><path d="M11 3v5h5"/><path d="M7 12h6M7 15h4"/></svg>
             </div>
             <div>
               <div class="wc-ac-title">Abrir Projeto</div>
               <div class="wc-ac-sub">Retomar um mapeamento salvo (.json)</div>
+            </div>
+          </div>
+          <div class="wc-action-card" onclick="document.getElementById('img-in').click()">
+            <div class="wc-ac-icon green">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--text2)" stroke-width="1.8"><rect x="1" y="4" width="14" height="11" rx="2"/><circle cx="8" cy="9.5" r="2.5"/><path d="M15 7l5-2v7l-5-2"/></svg>
+            </div>
+            <div>
+              <div class="wc-ac-title">Carregar Planta</div>
+              <div class="wc-ac-sub">Imagem PNG, JPG da planta baixa</div>
             </div>
           </div>
         </div>
@@ -2036,7 +2045,19 @@ canvas.chart { width: 100%; display: block; }
 
 <!-- FLOOR BAR (inside app-wrapper so canvas height is calculated correctly) -->
 <div id="floorbar">
-  <button class="fadd" onclick="addFloor()" title="Nova planta">+</button>
+  <div style="position:relative" id="fadd-wrap">
+    <button class="fadd" onclick="toggleFloorAdd()" title="Adicionar / carregar planta">+</button>
+    <div id="fadd-drop" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px;min-width:190px;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,.15);flex-direction:column;gap:2px;">
+      <button class="fadd-item" onclick="addFloor();closeFloorAdd()">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M8 4v8M4 8h8"/></svg>
+        Nova Planta (vazia)
+      </button>
+      <button class="fadd-item" onclick="document.getElementById('img-in').click();closeFloorAdd()">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="11" height="9" rx="1.5"/><circle cx="6" cy="7.5" r="1.8"/><path d="M12 5l3-1.2v5.2l-3-1.2"/></svg>
+        Carregar Planta (imagem)
+      </button>
+    </div>
+  </div>
 </div>
 </div><!-- /app-wrapper -->
 
@@ -3573,6 +3594,20 @@ function switchFloor(i){
   if(_mode==='timeline')renderTimeline();
   if(_mode==='monitor'||_mode==='budget'||_mode==='dash')updateRpSummary();
 }
+function toggleFloorAdd(){
+  const d=document.getElementById('fadd-drop');
+  if(!d)return;
+  d.style.display=d.style.display==='flex'?'none':'flex';
+}
+function closeFloorAdd(){
+  const d=document.getElementById('fadd-drop');
+  if(d)d.style.display='none';
+}
+document.addEventListener('click',e=>{
+  const w=document.getElementById('fadd-wrap');
+  if(w&&!w.contains(e.target))closeFloorAdd();
+});
+
 function addFloor(){
   document.getElementById('floor-name-in').value='';
   document.getElementById('floor-modal').classList.add('show');
@@ -3603,9 +3638,11 @@ function setMode(m){
   const inEditor=m==='editor';
   if(inEditor){
     const hasImg=!!F().image||!!F().imgB64;
-    document.getElementById('welcome').style.display=hasImg?'none':'flex';
-    document.getElementById('toolbar').style.display=hasImg?'flex':'none';
-    document.getElementById('sbar').classList.toggle('visible',hasImg);
+    const hasCams=floors.some(f=>f.cameras.length>0);
+    const hasProject=hasImg||hasCams;
+    document.getElementById('welcome').style.display=hasProject?'none':'flex';
+    document.getElementById('toolbar').style.display=hasProject?'flex':'none';
+    document.getElementById('sbar').classList.toggle('visible',hasProject);
     document.getElementById('minimap').classList.toggle('visible',hasImg);
   }else{
     document.getElementById('welcome').style.display='none';
@@ -5516,7 +5553,20 @@ function importInventory(e){
           }));
       }
 
-      // ── Atualizar câmeras já plotadas ────────────────────────────────────
+      // ── ABA REFERÊNCIA DE PREÇOS (opcional) ─────────────────────────────
+      const wsPrecos=findSheet('Preço','Preco','Referência','Referencia','Price','prec');
+      if(wsPrecos){
+        const rowsPrecos=XLSX.utils.sheet_to_json(wsPrecos);
+        let atualizados=0;
+        rowsPrecos.forEach(r=>{
+          const modelo=String(r['MODELO']||r['Modelo']||r['modelo']||'').trim();
+          const valor=parseFloat(String(r['VALOR MERCADO (R$)']||r['VALOR']||r['Valor']||r['Preço']||r['PREÇO']||'').replace(/[^\d.,]/g,'').replace(',','.'));
+          const vida=parseInt(r['VIDA ÚTIL (anos)']||r['VIDA UTIL']||r['Vida Útil']||r['vida_util']||'');
+          if(modelo&&!isNaN(valor)&&valor>0){ PRICES[modelo]=valor; atualizados++; }
+          if(modelo&&!isNaN(vida)&&vida>0)   LIFESPAN[modelo]=vida;
+        });
+        if(atualizados>0) console.log(`[Import] ${atualizados} preços atualizados do Excel`);
+      }
       floors.forEach(f=>f.cameras.forEach(c=>{
         c.info=lookup(c.name);
         // Sync status: se a coluna STATUS DE OPERAÇÃO disser "Inativo" ou similar
