@@ -3639,7 +3639,7 @@ function setMode(m){
   if(inEditor){
     const hasImg=!!F().image||!!F().imgB64;
     const hasCams=floors.some(f=>f.cameras.length>0);
-    const hasProject=hasImg||hasCams;
+    const hasProject=hasImg||hasCams||_autoLoaded;
     document.getElementById('welcome').style.display=hasProject?'none':'flex';
     document.getElementById('toolbar').style.display=hasProject?'flex':'none';
     document.getElementById('sbar').classList.toggle('visible',hasProject);
@@ -5613,6 +5613,8 @@ function loadLocalInventory(){
 }
 
 // ═══════════════ INIT ═══════════════
+let _autoLoaded = false;
+
 window.addEventListener('DOMContentLoaded',()=>{
   E.init();
   // Auto-load projeto.json se existir no servidor
@@ -5643,12 +5645,16 @@ window.addEventListener('DOMContentLoaded',()=>{
         _uid=Math.max(...floors.flatMap(f=>f.cameras.map(c=>c.id)),0)+1;
         _floorIdx=0;
         finishInit();
-        const f=F();
-        if(f.cameras.length>0||f.image||f.imgB64){
-          document.getElementById('welcome').style.display='none';
-          document.getElementById('toolbar').style.display='flex';
-          E.fitToScreen && E.fitToScreen();
-        }
+
+        // Esconde welcome se qualquer planta tiver imagem ou câmeras
+        const hasAnyCams  = floors.some(f=>f.cameras.length>0);
+        const hasAnyImage = floors.some(f=>f.image||f.imgB64);
+        const hasProject  = hasAnyCams || hasAnyImage;
+        document.getElementById('welcome').style.display  = 'none';
+        document.getElementById('toolbar').style.display  = hasProject ? 'flex' : 'none';
+        document.getElementById('sbar').classList.toggle('visible', hasProject);
+        document.getElementById('minimap').classList.toggle('visible', hasAnyImage);
+        if(hasProject){ _autoLoaded=true; E.fitToScreen && E.fitToScreen(); }
         E.render();
         toast('✓ Projeto carregado automaticamente');
         console.log('[AutoLoad] projeto.json carregado com sucesso');
@@ -5675,6 +5681,7 @@ window.addEventListener('DOMContentLoaded',()=>{
     }
   }catch(e){}
   finishInit();
+  // Não sobrescreve se o autoload já escondeu o welcome
 });
 function finishInit(){
   buildList();updateSB();buildFloorBar();mmUpdate();
