@@ -3548,6 +3548,8 @@ function buildList(){
     }
   }
 }
+
+function printList(){
   if(!DB.cameras.length){toast('Nenhum inventário carregado');return;}
   const now=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const dateFmt=new Date().toISOString().slice(0,10);
@@ -5796,6 +5798,7 @@ function importInventory(e){
           }));
         if(DB.recommended.length) console.log(`[Import] ${DB.recommended.length} câmeras recomendadas`);
       }
+      floors.forEach(f=>f.cameras.forEach(c=>{
         c.info=lookup(c.name);
         // Sync status: se a coluna STATUS DE OPERAÇÃO disser "Inativo" ou similar
         const dbCam=DB.cameras.find(x=>x['NOME CANAL']===c.name);
