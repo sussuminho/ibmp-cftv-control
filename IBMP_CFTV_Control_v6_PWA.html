@@ -2355,7 +2355,7 @@ canvas.chart { width: 100%; display: block; }
 </div>
 
 <div id="toast"></div>
-<input type="file" id="img-in" accept="image/*" style="display:none" onchange="E.loadImg(event)">
+<input type="file" id="img-in" accept="image/*,.pdf,application/pdf" style="display:none" onchange="E.loadImg(event)">
 <input type="file" id="json-in" accept=".json" style="display:none" onchange="importProject(event)">
 <input type="file" id="xlsx-in" accept=".xlsx,.csv" style="display:none" onchange="importInventory(event)">
 
@@ -3135,72 +3135,118 @@ const E={
   loadImg(e){
     const file=e.target.files[0];if(!file)return;
     e.target.value='';
-    // PDF: render first page to canvas via PDF.js
+
+    // ── PDF ───────────────────────────────────────────────────────────────
     if(file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf')){
-      const loadPDF=()=>{
-        const fr=new FileReader();
-        fr.onload=async ev=>{
-          try{
-            const pdfjsLib=window['pdfjs-dist/build/pdf'];
-            pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-            const pdf=await pdfjsLib.getDocument({data:new Uint8Array(ev.target.result)}).promise;
-            const page=await pdf.getPage(1);
-            const vp=page.getViewport({scale:2.0});
-            const offscreen=document.createElement('canvas');
-            offscreen.width=vp.width;offscreen.height=vp.height;
-            await page.render({canvasContext:offscreen.getContext('2d'),viewport:vp}).promise;
-            const dataUrl=offscreen.toDataURL('image/png');
-            const img=new Image();
-            img.onload=()=>{
-              const f=F();f.image=img;f.imgB64=dataUrl;
-              const w=this.c.width,h=this.c.height;
-              f.zoom=Math.min(w/img.width,h/img.height,1)*0.9;
-              f.panX=(w-img.width*f.zoom)/2;f.panY=(h-img.height*f.zoom)/2;
-              document.getElementById('welcome').style.display='none';
-              document.getElementById('toolbar').style.display='flex';
-              document.getElementById('sbar').classList.add('visible');
-              document.getElementById('minimap').classList.add('visible');
-              document.getElementById('btn-export').classList.add('ready');document.getElementById('btn-pdf').classList.add('ready');
-              document.getElementById('rp-empty').style.display='none';
-              document.getElementById('rp-idle').classList.add('show');
-              updateRpIdle();
-              this.render();mmUpdate();toast(`✓ PDF carregado: ${F().name} (pág. 1)`);
-            };
-            img.src=dataUrl;
-          }catch(err){toast('Erro ao carregar PDF: '+err.message);}
-        };
-        fr.readAsArrayBuffer(file);
+      const SCALE = 4.0; // 4x = ~288 DPI — alta qualidade
+      toast('Carregando PDF…');
+
+      const doRender = async (pdfData) => {
+        try{
+          const lib = window['pdfjs-dist/build/pdf'];
+
+          // Inline worker via Blob — sem arquivo externo, funciona offline
+          if(!lib.GlobalWorkerOptions.workerSrc || lib.GlobalWorkerOptions.workerSrc.includes('blob')){
+            // Use fake worker (single-thread) se CDN não disponível
+          }
+          lib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+          const pdf    = await lib.getDocument({data: pdfData}).promise;
+          const nPages = pdf.numPages;
+
+          // Se mais de 1 página, pergunta qual
+          let pageNum = 1;
+          if(nPages > 1){
+            const ans = prompt(`PDF com ${nPages} páginas. Qual página carregar como planta? (1–${nPages})`, '1');
+            pageNum = Math.min(Math.max(parseInt(ans)||1, 1), nPages);
+          }
+
+          const page = await pdf.getPage(pageNum);
+          const vp   = page.getViewport({scale: SCALE});
+
+          const off   = document.createElement('canvas');
+          off.width   = vp.width;
+          off.height  = vp.height;
+          const ctx2d = off.getContext('2d', {willReadFrequently: true});
+          ctx2d.fillStyle = '#fff';
+          ctx2d.fillRect(0, 0, off.width, off.height);
+
+          await page.render({canvasContext: ctx2d, viewport: vp}).promise;
+
+          // Converte para PNG de alta qualidade
+          const dataUrl = off.toDataURL('image/png', 1.0);
+          const img = new Image();
+          img.onload = () => {
+            const f = F();
+            f.image  = img;
+            f.imgB64 = dataUrl;
+            const w = this.c.width, h = this.c.height;
+            f.zoom = Math.min(w/img.width, h/img.height) * 0.92;
+            f.panX = Math.round((w - img.width  * f.zoom) / 2);
+            f.panY = Math.round((h - img.height * f.zoom) / 2);
+            document.getElementById('welcome').style.display='none';
+            document.getElementById('toolbar').style.display='flex';
+            document.getElementById('sbar').classList.add('visible');
+            document.getElementById('minimap').classList.add('visible');
+            document.getElementById('btn-export').classList.add('ready');
+            document.getElementById('btn-pdf').classList.add('ready');
+            document.getElementById('rp-empty').style.display='none';
+            document.getElementById('rp-idle').classList.add('show');
+            updateRpIdle();
+            this.render(); mmUpdate();
+            toast(`✓ PDF carregado — pág.${pageNum}/${nPages} · ${Math.round(img.width/SCALE)}×${Math.round(img.height/SCALE)}px`);
+          };
+          img.src = dataUrl;
+        }catch(err){
+          toast('Erro ao processar PDF: '+err.message);
+          console.error(err);
+        }
       };
-      // Load PDF.js if not already loaded
-      if(!window['pdfjs-dist/build/pdf']){
-        const s=document.createElement('script');
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-        s.onload=loadPDF;
-        s.onerror=()=>toast('Falha ao carregar PDF.js — verifique sua conexão');
-        document.head.appendChild(s);
-      } else { loadPDF(); }
+
+      const fr = new FileReader();
+      fr.onload = ev => {
+        const data = new Uint8Array(ev.target.result);
+        if(window['pdfjs-dist/build/pdf']){
+          doRender(data);
+        } else {
+          // Carrega PDF.js do CDN se ainda não carregado
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          s.onload  = () => doRender(data);
+          s.onerror = () => {
+            toast('Sem conexão para carregar PDF.js. Converta o PDF para JPG/PNG primeiro.');
+          };
+          document.head.appendChild(s);
+        }
+      };
+      fr.readAsArrayBuffer(file);
       return;
     }
-    // Image files (JPG, PNG, etc.)
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      const img=new Image();
-      img.onload=()=>{
-        const f=F();f.image=img;f.imgB64=ev.target.result;
-        const w=this.c.width,h=this.c.height;
-        f.zoom=Math.min(w/img.width,h/img.height,1)*0.9;
-        f.panX=(w-img.width*f.zoom)/2;f.panY=(h-img.height*f.zoom)/2;
+
+    // ── Imagem (JPG/PNG/etc) ──────────────────────────────────────────────
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const f = F(); f.image = img; f.imgB64 = ev.target.result;
+        const w = this.c.width, h = this.c.height;
+        f.zoom = Math.min(w/img.width, h/img.height) * 0.92;
+        f.panX = Math.round((w - img.width  * f.zoom) / 2);
+        f.panY = Math.round((h - img.height * f.zoom) / 2);
         document.getElementById('welcome').style.display='none';
         document.getElementById('toolbar').style.display='flex';
         document.getElementById('sbar').classList.add('visible');
         document.getElementById('minimap').classList.add('visible');
-        document.getElementById('btn-export').classList.add('ready');document.getElementById('btn-pdf').classList.add('ready');
+        document.getElementById('btn-export').classList.add('ready');
+        document.getElementById('btn-pdf').classList.add('ready');
         document.getElementById('rp-empty').style.display='none';
         document.getElementById('rp-idle').classList.add('show');
         updateRpIdle();
-        this.render();mmUpdate();toast(`✓ Planta carregada: ${f.name}`);
+        this.render(); mmUpdate();
+        toast(`✓ Planta carregada: ${f.name}`);
       };
-      img.src=ev.target.result;
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   },
