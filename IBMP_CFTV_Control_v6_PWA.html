@@ -1511,6 +1511,11 @@ canvas.chart { width: 100%; display: block; }
           <div><div class="rmitem-title">Lista de Inventário</div><div class="rmitem-sub">Tabela completa · A4 paisagem</div></div>
         </button>
         <div class="report-menu-sep"></div>
+        <button class="rmitem" onclick="printFloorMap();closeReportMenu()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="12" height="12" rx="1"/><path d="M4 4h8M4 7h8M4 10h5"/><circle cx="11" cy="10" r="2.5"/><path d="M12.5 11.5l1.5 1.5"/></svg>
+          <div><div class="rmitem-title">Imprimir Planta</div><div class="rmitem-sub">Planta em qualidade original com câmeras</div></div>
+        </button>
+        <div class="report-menu-sep"></div>
         <button class="rmitem" onclick="exportCSV();closeReportMenu()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 4h8l3 3v6H2z"/><path d="M10 4v3h3"/><path d="M5 9h4M5 11h3"/></svg>
           <div><div class="rmitem-title">Exportar Planilha</div><div class="rmitem-sub">XLSX / CSV com todos os dados</div></div>
@@ -2271,7 +2276,16 @@ canvas.chart { width: 100%; display: block; }
       <button class="floor-sel-link" onclick="floorSelAll(true)">Selecionar todas</button>
       <button class="floor-sel-link" onclick="floorSelAll(false)">Desmarcar todas</button>
     </div>
-    <div id="floor-sel-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px"></div>
+    <div id="floor-sel-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px"></div>
+    <div id="floor-sel-extras" style="display:none;margin-bottom:14px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text)">
+        <input type="checkbox" id="chk-show-rec" style="width:16px;height:16px;accent-color:var(--g);cursor:pointer">
+        <div>
+          <div style="font-weight:600">Incluir câmeras recomendadas</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1px">Mostra pontos sugeridos (ícone laranja) no relatório</div>
+        </div>
+      </label>
+    </div>
     <div class="mbtns">
       <button class="mbtn cancel" onclick="closeModal('floor-sel-modal')">Cancelar</button>
       <button class="mbtn primary" id="floor-sel-confirm" onclick="confirmFloorSel()">Gerar Relatório</button>
@@ -5174,7 +5188,8 @@ function exportExecutivo(selectedFloors){
     openFloorSel(
       'Relatório Executivo — Plantas',
       'Escolha quais plantas incluir no relatório executivo.',
-      (sel)=>exportExecutivo(sel)
+      (sel)=>exportExecutivo(sel),
+      true
     );
     return;
   }
@@ -5377,12 +5392,53 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
 let _floorSelCallback=null; // função a chamar com as plantas selecionadas
 let _floorSelChecked=new Set(); // IDs das plantas marcadas
 
-function openFloorSel(title, sub, callback){
+// ── Imprimir planta com câmeras em qualidade original
+function printFloorMap(){
+  if(floors.length === 1){
+    return _doPrintFloorMap([floors[0]]);
+  }
+  openFloorSel(
+    'Imprimir Planta — Selecione',
+    'Escolha quais plantas imprimir. Cada planta abre em página separada.',
+    (sel) => _doPrintFloorMap(sel),
+    true // showExtras = true
+  );
+}
+
+function _doPrintFloorMap(selectedFloors){
+  const showRec = document.getElementById('chk-show-rec')?.checked || false;
+  const pages = selectedFloors.map(fl => {
+    const img = capturePlantImg(fl, showRec);
+    if(!img) return `<p style="font-family:sans-serif;padding:20px">Planta "${fl.name}" sem imagem carregada.</p>`;
+    return `
+      <div style="page-break-after:always;text-align:center">
+        <h2 style="font-family:sans-serif;font-size:14px;margin:0 0 8px;color:#555">${fl.name} · ${fl.cameras.length} câmera(s)</h2>
+        <img src="${img}" style="max-width:100%;max-height:calc(100vh - 60px);object-fit:contain">
+      </div>`;
+  }).join('');
+
+  const w = window.open('','_blank','width=1000,height=800');
+  w.document.write(`<!DOCTYPE html><html><head>
+    <title>Plantas CFTV — IBMP</title>
+    <style>
+      @media print { body{margin:0} @page{margin:10mm} }
+      body{margin:12px;background:#fff}
+    </style>
+  </head><body>${pages}<script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  w.document.close();
+}
+
+function openFloorSel(title, sub, callback, showExtras=false){
   _floorSelCallback=callback;
   _floorSelChecked=new Set(floors.map(f=>f.id)); // todas marcadas por padrão
   document.getElementById('floor-sel-title').textContent=title;
   document.getElementById('floor-sel-sub').textContent=sub;
   renderFloorSelList();
+  // Show/hide extras (câmeras recomendadas checkbox)
+  const extras = document.getElementById('floor-sel-extras');
+  if(extras) extras.style.display = showExtras ? 'block' : 'none';
+  const chkRec = document.getElementById('chk-show-rec');
+  if(chkRec) chkRec.checked = false;
   document.getElementById('floor-sel-modal').classList.add('show');
 }
 
@@ -5419,7 +5475,8 @@ function confirmFloorSel(){
   if(_floorSelCallback)_floorSelCallback(selected);
 }
 // Renderiza qualquer planta num canvas temporário com câmeras + zonas
-function capturePlantImg(fl){
+// showRec=true também renderiza câmeras recomendadas (CamRec)
+function capturePlantImg(fl, showRec=false){
   try{
     if(!fl.image)return'';
     const iw=fl.image.width, ih=fl.image.height;
@@ -5473,7 +5530,11 @@ function capturePlantImg(fl){
     fl.zoom=1; fl.panX=0; fl.panY=0;
     ctx.save();
     ctx.translate(0,0); // sem pan
-    fl.cameras.forEach(cam=>cam.draw(ctx,0));
+    fl.cameras.forEach(cam=>{
+      // Filtra câmeras recomendadas se showRec=false
+      if(!showRec && cam.rec) return;
+      cam.draw(ctx,0);
+    });
     ctx.restore();
     fl.zoom=savedZoom; fl.panX=savedPanX; fl.panY=savedPanY;
 
@@ -5494,7 +5555,8 @@ function exportPDF(selectedFloors) {
     openFloorSel(
       'Relatório Técnico — Plantas',
       'Escolha quais plantas incluir no relatório técnico PDF.',
-      (sel)=>exportPDF(sel)
+      (sel)=>exportPDF(sel),
+      true // showExtras: opção de incluir câmeras recomendadas
     );
     return;
   }
@@ -5512,7 +5574,8 @@ function exportPDF(selectedFloors) {
   const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
 
   // Planta em resolução original
-  const plantImgSrc = capturePlantImg(f); // para compatibilidade com table-pg
+  const showRec = document.getElementById('chk-show-rec')?.checked || false;
+  const plantImgSrc = capturePlantImg(f, showRec); // para compatibilidade com table-pg
 
   const nfRows = allCams.filter(c=>!c.fn).map(cam=>{
     const price=PRICES[cam.info.modelo]||0;
