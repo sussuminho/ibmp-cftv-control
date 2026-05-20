@@ -5710,6 +5710,10 @@ function importInventory(e){
       // ── ABA CÂMERAS ──────────────────────────────────────────────────────
       const wsCam=findSheet('Câmera','Camera','Relação','cameras','cam')||wb.Sheets[sheetNames[0]];
       const rowsCam=XLSX.utils.sheet_to_json(wsCam,{defval:''});
+      console.log('[Import] Abas:', sheetNames);
+      console.log('[Import] wsCam encontrada:', !!wsCam);
+      console.log('[Import] rowsCam total:', rowsCam.length);
+      if(rowsCam.length) console.log('[Import] primeira linha:', JSON.stringify(rowsCam[0]).slice(0,120));
       if(!rowsCam.length){toast('Aba de câmeras vazia ou não encontrada');return;}
 
       DB.cameras=rowsCam.map(r=>{
@@ -5804,6 +5808,7 @@ function importInventory(e){
       }));
 
       saveLocalInventory();
+      console.log('[Import] DB.cameras após save:', DB.cameras.length, DB.cameras[0]?.['NOME CANAL']);
       buildList();updateSB();E.render();
       const gravInfo=DB.recorders.length?` · ${DB.recorders.length} gravadores`:'';
       toast(`✓ Inventário atualizado: ${DB.cameras.length} câmeras${gravInfo}`);
@@ -5816,7 +5821,12 @@ function importInventory(e){
 // ═══════════════ LOCALSTORAGE (só inventário — sem imagens) ═══════════════
 function saveLocalInventory(){
   try{
-    const payload={cameras:DB.cameras,recorders:DB.recorders,pareceres:DB.pareceres,installYear:INSTALL_YEAR,camFin:CAM_FIN,camObs:CAM_OBS};
+    const payload={
+      _userImport:true,
+      cameras:DB.cameras,recorders:DB.recorders,pareceres:DB.pareceres,
+      recommended:DB.recommended||[],
+      installYear:INSTALL_YEAR,camFin:CAM_FIN,camObs:CAM_OBS
+    };
     localStorage.setItem('ibmp_inventory',JSON.stringify(payload));
   }catch(err){console.warn('localStorage cheio ou indisponível:',err);}
 }
@@ -5825,13 +5835,22 @@ function loadLocalInventory(){
     const raw=localStorage.getItem('ibmp_inventory');
     if(!raw)return false;
     const d=JSON.parse(raw);
-    if(d.cameras?.length){
+    // Só sobrescreve o banco de câmeras se foi importado manualmente (tem flag _userImport)
+    // Anotações (CAM_FIN, CAM_OBS) sempre são aplicadas
+    if(d._userImport && d.cameras?.length){
       DB.cameras=d.cameras;DB.recorders=d.recorders||[];DB.pareceres=d.pareceres||[];
-      if(d.installYear)Object.assign(INSTALL_YEAR,d.installYear);
-      if(d.camFin)Object.assign(CAM_FIN,d.camFin);
-      if(d.camObs)Object.assign(CAM_OBS,d.camObs);
-      return true;
+      if(d.recommended?.length) DB.recommended=d.recommended;
+      console.log('[Init] Banco do localStorage (importado manualmente):', DB.cameras.length, 'câmeras');
+    } else {
+      // Banco embutido já foi carregado — só aplica extras
+      if(d.recorders?.length) DB.recorders=d.recorders;
+      if(d.pareceres?.length) DB.pareceres=d.pareceres;
+      if(d.recommended?.length) DB.recommended=d.recommended;
     }
+    if(d.installYear)Object.assign(INSTALL_YEAR,d.installYear);
+    if(d.camFin)Object.assign(CAM_FIN,d.camFin);
+    if(d.camObs)Object.assign(CAM_OBS,d.camObs);
+    return !!(d.cameras?.length);
   }catch(err){console.warn('Erro ao carregar localStorage:',err);}
   return false;
 }
@@ -5841,12 +5860,11 @@ let _autoLoaded = false;
 
 window.addEventListener('DOMContentLoaded',()=>{
   E.init();
-  const loaded=loadLocalInventory();
-  // Sempre carrega o banco embutido se o DB estiver vazio
-  if(!loaded || !DB.cameras.length){
-    DB.cameras=_DB_CAMERAS;DB.recorders=_DB_RECORDERS;DB.pareceres=_DB_PARECERES;
-    Object.assign(INSTALL_YEAR, {"01 - Cromatografia - DT": 2021, "02 - Cultivo Procariotos - DT": 2021, "03 - Sintese de Acidos Nucleicos - DT": 2021, "05 - Sintese Quimica - DT": 2021, "06 - Acesso a Convivencia - DT": 2021, "07 - Sala de Freezers - DT": 2021, "08 - Convivencia 1 - DT": 2021, "09 - Data Center - DT": 2020, "10 - Cultivo Eucariotos 2 - DT": 2021, "11 - Cultivo Eucariotos - DT": 2021, "12 - Convivencia 2 - DT": 2021, "13 - Hall Entrada - DT": 2021, "14 - Piso Tecnico - DT": 2021, "Externo 1": 2020, "0.15": 2021, "0.5": 2021, "PRM": 2021, "Sala de PCR": 2021, "Extracao": 2021, "Porta Data Center": 2021, "Sala Nilson": 2021, "Esterilizacao": 2021, "Entrada Lab Central": 2021, "Lab Central": 2021, "Corredor Lab Central": 2021, "05 - Sala de Manutencao Bloco C1": 2022, "06 - Entrada Piso Tecnico - Bloco C1": 2021, "07 - Corredor/Escada 1 - Bloco D": 2022, "08 - Corredor/SAC - Bloco D": 2022, "09 - Corredor/DN - Bloco D": 2022, "10 - Estoque TI - Bloco D": 2022, "11 - Convivencia - Bloco C1": 2021, "Preparo e Tampoes": 2021, "Envase 3": 2021, "Envase 2": 2021, "Corredor Sujo 1": 2021, "Empacotamento 1a": 2021, "Corredor Sujo 2": 2022, "Envase 1": 2021, "Corredor Limpo": 2021, "Purificacao": 2021, "Teste rapido": 2021, "Empacotamento 2a": 2021, "Sala Lise": 2021, "Empacotamento 1b": 2022, "Sala de Crescimento": 2021, "Sala de Impressao": 2022, "02 - Secretaria Bloco C1": 2020, "03 - Hall de Entrada - Bloco C1": 2020, "05 - Sala de Reuniao Mezanino": 2021, "09 - Corredor Sujo Saida de Rejeitos": 2020, "10 - Subida Mezanino - Producao": 2020, "11 - Corredor Sujo 2 - Producao": 2020, "12 - Corredor Sujo 3 - Producao": 2020, "13 - Empacotamento 2 - Producao 2": 2020, "Entrada - CQ": 2020, "Microbiologia - CQ": 2020, "PCR - CQ": 2020, "Externo Expedicao": 2020, "Escritorio Logistica": 2020, "Externo Controle Positivo": 2020, "Entrada Logistica 1": 2020, "Estoque Logistica": 2020, "Corredor Estoque 1": 2020, "Corredor Estoque 2": 2020, "Corredor Estoque 3": 2020, "Escritorio Estoque": 2020, "Corredor Estoque 4": 2020, "Quarentena Estoque": 2020, "Escritorio Recebimento": 2020, "Entrada Logistica 2": 2020, "Externo Fundos": 2020});
-  }
+  // Sempre começa com o banco embutido
+  DB.cameras=_DB_CAMERAS;DB.recorders=_DB_RECORDERS;DB.pareceres=_DB_PARECERES;
+  Object.assign(INSTALL_YEAR, {"01 - Cromatografia - DT": 2021, "02 - Cultivo Procariotos - DT": 2021, "03 - Sintese de Acidos Nucleicos - DT": 2021, "05 - Sintese Quimica - DT": 2021, "06 - Acesso a Convivencia - DT": 2021, "07 - Sala de Freezers - DT": 2021, "08 - Convivencia 1 - DT": 2021, "09 - Data Center - DT": 2020, "10 - Cultivo Eucariotos 2 - DT": 2021, "11 - Cultivo Eucariotos - DT": 2021, "12 - Convivencia 2 - DT": 2021, "13 - Hall Entrada - DT": 2021, "14 - Piso Tecnico - DT": 2021, "Externo 1": 2020, "0.15": 2021, "0.5": 2021, "PRM": 2021, "Sala de PCR": 2021, "Extracao": 2021, "Porta Data Center": 2021, "Sala Nilson": 2021, "Esterilizacao": 2021, "Entrada Lab Central": 2021, "Lab Central": 2021, "Corredor Lab Central": 2021, "05 - Sala de Manutencao Bloco C1": 2022, "06 - Entrada Piso Tecnico - Bloco C1": 2021, "07 - Corredor/Escada 1 - Bloco D": 2022, "08 - Corredor/SAC - Bloco D": 2022, "09 - Corredor/DN - Bloco D": 2022, "10 - Estoque TI - Bloco D": 2022, "11 - Convivencia - Bloco C1": 2021, "Preparo e Tampoes": 2021, "Envase 3": 2021, "Envase 2": 2021, "Corredor Sujo 1": 2021, "Empacotamento 1a": 2021, "Corredor Sujo 2": 2022, "Envase 1": 2021, "Corredor Limpo": 2021, "Purificacao": 2021, "Teste rapido": 2021, "Empacotamento 2a": 2021, "Sala Lise": 2021, "Empacotamento 1b": 2022, "Sala de Crescimento": 2021, "Sala de Impressao": 2022, "02 - Secretaria Bloco C1": 2020, "03 - Hall de Entrada - Bloco C1": 2020, "05 - Sala de Reuniao Mezanino": 2021, "09 - Corredor Sujo Saida de Rejeitos": 2020, "10 - Subida Mezanino - Producao": 2020, "11 - Corredor Sujo 2 - Producao": 2020, "12 - Corredor Sujo 3 - Producao": 2020, "13 - Empacotamento 2 - Producao 2": 2020, "Entrada - CQ": 2020, "Microbiologia - CQ": 2020, "PCR - CQ": 2020, "Externo Expedicao": 2020, "Escritorio Logistica": 2020, "Externo Controle Positivo": 2020, "Entrada Logistica 1": 2020, "Estoque Logistica": 2020, "Corredor Estoque 1": 2020, "Corredor Estoque 2": 2020, "Corredor Estoque 3": 2020, "Escritorio Estoque": 2020, "Corredor Estoque 4": 2020, "Quarentena Estoque": 2020, "Escritorio Recebimento": 2020, "Entrada Logistica 2": 2020, "Externo Fundos": 2020});
+  // Aplica por cima qualquer banco importado manualmente via XLSX (guardado no localStorage)
+  loadLocalInventory();
   // Verificar se há auto-save com câmeras mapeadas
   try{
     const raw=localStorage.getItem('ibmp_autosave');
