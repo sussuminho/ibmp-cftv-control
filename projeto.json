@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "exported": "2026-05-20T14:21:31.104Z",
+  "exported": "2026-05-20T15:11:51.674Z",
   "db": {
     "cameras": [
       {
-        "NOME CANAL": "01 - Cromatografia - DT",
+        "NOME CANAL": "Cromatografia - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -15,7 +15,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "02 - Cultivo Procariotos - DT",
+        "NOME CANAL": "Cultivo Procariotos - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -26,7 +26,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "03 - Sintese de Acidos Nucleicos - DT",
+        "NOME CANAL": "Sintese de Acidos Nucleicos - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -37,7 +37,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "05 - Sintese Quimica - DT",
+        "NOME CANAL": "Sintese Quimica - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -48,7 +48,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "06 - Acesso a Convivencia - DT",
+        "NOME CANAL": "Acesso a Convivencia - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -59,7 +59,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "07 - Sala de Freezers - DT",
+        "NOME CANAL": "Sala de Freezers - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -70,7 +70,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "08 - Convivencia 1 - DT",
+        "NOME CANAL": "Convivencia 1 - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -81,7 +81,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "09 - Data Center - DT",
+        "NOME CANAL": "Data Center - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-1130-D",
         "MODELO GRAVADOR": "",
@@ -92,7 +92,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "10 - Cultivo Eucariotos 2 - DT",
+        "NOME CANAL": "Cultivo Eucariotos 2 - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -103,7 +103,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "11 - Cultivo Eucariotos - DT",
+        "NOME CANAL": "Cultivo Eucariotos - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -114,7 +114,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "12 - Convivencia 2 - DT",
+        "NOME CANAL": "Convivencia 2 - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -125,7 +125,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "13 - Hall Entrada - DT",
+        "NOME CANAL": "Hall Entrada - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -136,7 +136,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "14 - Piso Tecnico - DT",
+        "NOME CANAL": "Piso Tecnico - DT",
         "GRAVADOR": "DVR-BLOCOB-01",
         "MODELO CÂMERA": "VIP-1130-D-G3",
         "MODELO GRAVADOR": "",
@@ -158,7 +158,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "0.15",
+        "NOME CANAL": "0.15%",
         "GRAVADOR": "DVR-BLOCOB-02",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -169,7 +169,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "0.5",
+        "NOME CANAL": "0.50%",
         "GRAVADOR": "DVR-BLOCOB-02",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -279,7 +279,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "05 - Sala de Manutencao Bloco C1",
+        "NOME CANAL": "Sala de Manutencao Bloco C1",
         "GRAVADOR": "DVR-BLOCOC-01",
         "MODELO CÂMERA": "VIP-1230-B-G4",
         "MODELO GRAVADOR": "",
@@ -290,7 +290,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "06 - Entrada Piso Tecnico - Bloco C1",
+        "NOME CANAL": "Entrada Piso Tecnico - Bloco C1",
         "GRAVADOR": "DVR-BLOCOC-01",
         "MODELO CÂMERA": "VIP-1230-B-G3",
         "MODELO GRAVADOR": "",
@@ -301,7 +301,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "07 - Corredor/Escada 1 - Bloco D",
+        "NOME CANAL": "Corredor/Escada 1 - Bloco D",
         "GRAVADOR": "DVR-BLOCOC-01",
         "MODELO CÂMERA": "VIP-1230-D-G4",
         "MODELO GRAVADOR": "",
@@ -312,7 +312,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "08 - Corredor/SAC - Bloco D",
+        "NOME CANAL": "Corredor/SAC - Bloco D",
         "GRAVADOR": "DVR-BLOCOC-01",
         "MODELO CÂMERA": "VIP-1230-D-G4",
         "MODELO GRAVADOR": "",
@@ -323,7 +323,7 @@
         "STATUS ATIVO": "Com ativo"
       },
       {
-        "NOME CANAL": "09 - Corredor/DN - Bloco D",
+        "NOME CANAL": "Corredor/DN - Bloco D",
         "GRAVADOR": "DVR-BLOCOC-01",
         "MODELO CÂMERA": "VIP-1230-D-G4",
         "MODELO GRAVADOR": "",
@@ -334,7 +334,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "10 - Estoque TI - Bloco D",
+        "NOME CANAL": "Estoque TI - Bloco D",
         "GRAVADOR": "DVR-BLOCOC-01",
         "MODELO CÂMERA": "VIP-1230-D-G4",
         "MODELO GRAVADOR": "",
@@ -345,7 +345,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "11 - Convivencia - Bloco C1",
+        "NOME CANAL": "Convivencia - Bloco C1",
         "GRAVADOR": "DVR-BLOCOC-01",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -521,7 +521,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "02 - Secretaria Bloco C1",
+        "NOME CANAL": "Secretaria Bloco C1",
         "GRAVADOR": "DVR-BLOCOC-03",
         "MODELO CÂMERA": "VIP-1230-D-G2",
         "MODELO GRAVADOR": "",
@@ -532,7 +532,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "03 - Hall de Entrada - Bloco C1",
+        "NOME CANAL": "Hall de Entrada - Bloco C1",
         "GRAVADOR": "DVR-BLOCOC-03",
         "MODELO CÂMERA": "VIP-1230-D-G2",
         "MODELO GRAVADOR": "",
@@ -543,7 +543,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "05 - Sala de Reuniao Mezanino",
+        "NOME CANAL": "Sala de Reuniao Mezanino",
         "GRAVADOR": "DVR-BLOCOC-03",
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
@@ -554,7 +554,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "09 - Corredor Sujo Saida de Rejeitos",
+        "NOME CANAL": "Corredor Sujo Saida de Rejeitos",
         "GRAVADOR": "DVR-BLOCOC-03",
         "MODELO CÂMERA": "VIP-1130-D-G2",
         "MODELO GRAVADOR": "",
@@ -565,7 +565,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "10 - Subida Mezanino - Producao",
+        "NOME CANAL": "Subida Mezanino - Producao",
         "GRAVADOR": "DVR-BLOCOC-03",
         "MODELO CÂMERA": "VIP-1130-D-G2",
         "MODELO GRAVADOR": "",
@@ -576,7 +576,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "11 - Corredor Sujo 2 - Producao",
+        "NOME CANAL": "Corredor Sujo 2 - Producao",
         "GRAVADOR": "DVR-BLOCOC-03",
         "MODELO CÂMERA": "VIP-1130-D-G2",
         "MODELO GRAVADOR": "",
@@ -587,7 +587,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "12 - Corredor Sujo 3 - Producao",
+        "NOME CANAL": "Corredor Sujo 3 - Producao",
         "GRAVADOR": "DVR-BLOCOC-03",
         "MODELO CÂMERA": "VIP-1130-D-G2",
         "MODELO GRAVADOR": "",
@@ -598,7 +598,7 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "13 - Empacotamento 2 - Producao 2",
+        "NOME CANAL": "Empacotamento 2 - Producao 2",
         "GRAVADOR": "DVR-BLOCOC-03",
         "MODELO CÂMERA": "VIP-1130-D-G2",
         "MODELO GRAVADOR": "",
@@ -791,6 +791,160 @@
         "MODELO GRAVADOR": "",
         "CANAL": 14,
         "STATUS DE OPERAÇÃO": "Ativo",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Coredor prox. Sala equipamentos",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Corredor /Frente Preparo soluções",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Corredor C",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Corredor Sujo Produção C",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Entrada Copa C",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Entrada sala Distribuição Piso Técnico",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Escritório Produção C",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Expedição C",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Expedição C",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Preparo soluções",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Sala de Distribuição Piso Técnico",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Sala de Preparo  C",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Sala Equipamentos",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
+        "NOME CANAL": "Sala principal (Lise, Purificação e Crescimento C",
+        "GRAVADOR": "",
+        "MODELO CÂMERA": "VIP-3220-D",
+        "MODELO GRAVADOR": "",
+        "CANAL": "",
+        "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
         "STATUS ATIVO": "Sem ativo"
@@ -1226,6 +1380,7 @@
   },
   "floors": [
     {
+      "id": 1779289844396.7139,
       "name": "Planta Principal",
       "panX": 440.5,
       "panY": 40.14999999999998,
@@ -1242,10 +1397,38 @@
           "rot": 318,
           "fov": 90,
           "ir": 154
+        },
+        {
+          "id": 7,
+          "name": "Entrada Copa C",
+          "x": 259.6575342465753,
+          "y": 293.07534246575347,
+          "rot": 32,
+          "fov": 90,
+          "ir": 154
+        },
+        {
+          "id": 8,
+          "name": "Cromatografia - DT",
+          "x": 59.38356164383561,
+          "y": 470.06164383561645,
+          "rot": 39,
+          "fov": 90,
+          "ir": 184
         }
       ]
     }
   ],
   "inventory": {},
-  "camLog": {}
+  "camLog": {
+    "Entrada Copa C": [
+      {
+        "id": 1,
+        "date": "—",
+        "text": "SEM SERIAL DAS CAMERAS",
+        "type": "info",
+        "_migrated": true
+      }
+    ]
+  }
 }
