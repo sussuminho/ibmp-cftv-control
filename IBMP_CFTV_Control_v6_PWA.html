@@ -5100,41 +5100,54 @@ function doExportCSV(escopo, formato){
       const BD = {style:'thin',color:{rgb:'d1d5db'}};
       const BDR= {top:BD,bottom:BD,left:BD,right:BD};
 
-      // Helper: create a styled cell
+      // Helper: create a styled cell — numFmt goes on cell.z not s.numFmt
       function sc(v, opts={}){
-        const t = typeof v==='number'?'n': typeof v==='boolean'?'b':'s';
-        const cell = {t, v: v===null||v===undefined?'':v};
+        // Ensure value is always a primitive
+        let val = (v===null||v===undefined) ? '' : v;
+        if(typeof val === 'object') val = String(val);
+        const t = typeof val==='number' ? 'n' : typeof val==='boolean' ? 'b' : 's';
+        const cell = {t, v: val};
         const s = {};
-        if(opts.fill) s.fill = opts.fill;
-        if(opts.font) s.font = opts.font;
-        if(opts.border!==false) s.border = BDR;
-        if(opts.align) s.alignment = opts.align;
-        else s.alignment = {vertical:'center', horizontal: t==='n'?'right':'left', wrapText:!!opts.wrap};
-        if(opts.fmt) s.numFmt = opts.fmt;
+        if(opts.fill)   s.fill   = opts.fill;
+        if(opts.font)   s.font   = opts.font   || BK;
+        else            s.font   = BK;
+        if(opts.border !== false) s.border = BDR;
+        s.alignment = opts.align || {
+          vertical:'center',
+          horizontal: t==='n' ? 'right' : 'left',
+          wrapText: !!opts.wrap
+        };
         cell.s = s;
+        // numFmt goes on cell.z (xlsx-js-style convention)
+        if(opts.fmt) cell.z = opts.fmt;
         return cell;
       }
 
-      // Helper: add a sheet from array of row arrays (each cell is already a cell object or a plain value)
+      // Helper: add sheet — skips truly empty rows, fills missing cells as empty strings
       function addSheet(name, rows, colWidths){
         const ws = {};
-        let maxR = 0, maxC = 0;
+        let maxR = -1, maxC = 0;
         rows.forEach((row, r)=>{
+          if(!row || !row.length) return; // skip empty rows
           row.forEach((cell, c)=>{
+            if(c > maxC) maxC = c;
             const addr = XLSX.utils.encode_cell({r,c});
             if(cell && typeof cell === 'object' && 't' in cell){
               ws[addr] = cell;
             } else {
-              const v = cell===null||cell===undefined?'':cell;
-              ws[addr] = {t: typeof v==='number'?'n':'s', v, s:{
-                font: BK, border: BDR,
-                alignment:{vertical:'center', horizontal: typeof v==='number'?'right':'left'}
-              }};
+              const v2 = (cell===null||cell===undefined) ? '' : cell;
+              ws[addr] = {
+                t: typeof v2==='number' ? 'n' : 's',
+                v: v2,
+                s: { font:BK, border:BDR,
+                     alignment:{vertical:'center',
+                       horizontal:typeof v2==='number'?'right':'left'} }
+              };
             }
-            if(r>maxR) maxR=r;
-            if(c>maxC) maxC=c;
+            if(r > maxR) maxR = r;
           });
         });
+        if(maxR < 0) maxR = 0;
         ws['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0},e:{r:maxR,c:maxC}});
         if(colWidths) ws['!cols'] = colWidths.map(w=>({wch:w}));
         XLSX.utils.book_append_sheet(wb, name, ws);
