@@ -1552,7 +1552,7 @@ canvas.chart { width: 100%; display: block; }
 #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 10px; opacity: 0; transition: all .22s; pointer-events: none; z-index: 9999; box-shadow: var(--shadow2); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <!-- ═══════════════════ PDF.js v5.6.205 EMBEDDED (offline) ═══════════════════ -->
@@ -5086,218 +5086,106 @@ function doExportCSV(escopo, formato){
   // Se a lib do CDN carregou usa ela; caso contrário gera SpreadsheetML nativo (funciona offline)
   if(formato==='xlsx'){
     if(typeof XLSX!=='undefined'){
+      // ── Geração limpa sem estilos (compatível com XLSX Community) ──
       const wb  = XLSX.utils.book_new();
-      const now = new Date();
-      const nowFmt = now.toLocaleString('pt-BR');
-      const G  = {patternType:'solid',fgColor:{rgb:'16a34a'},bgColor:{rgb:'16a34a'}};
-      const G2 = {patternType:'solid',fgColor:{rgb:'d1fae5'},bgColor:{rgb:'d1fae5'}};
-      const R  = {patternType:'solid',fgColor:{rgb:'fee2e2'},bgColor:{rgb:'fee2e2'}};
-      const Y  = {patternType:'solid',fgColor:{rgb:'fef3c7'},bgColor:{rgb:'fef3c7'}};
-      const WH = {name:'Calibri',sz:10,color:{rgb:'FFFFFF'},bold:true};
-      const BK = {name:'Calibri',sz:10,color:{rgb:'1f2937'}};
-      const BKB= {name:'Calibri',sz:10,color:{rgb:'1f2937'},bold:true};
-      const RD = {name:'Calibri',sz:10,color:{rgb:'991b1b'},bold:true};
-      const BD = {style:'thin',color:{rgb:'d1d5db'}};
-      const BDR= {top:BD,bottom:BD,left:BD,right:BD};
+      const now = new Date().toLocaleString('pt-BR');
+      const G  = '#16a34a';
 
-      // Helper: create a styled cell — numFmt goes on cell.z not s.numFmt
-      function sc(v, opts={}){
-        // Ensure value is always a primitive
-        let val = (v===null||v===undefined) ? '' : v;
-        if(typeof val === 'object') val = String(val);
-        const t = typeof val==='number' ? 'n' : typeof val==='boolean' ? 'b' : 's';
-        const cell = {t, v: val};
-        const s = {};
-        if(opts.fill)   s.fill   = opts.fill;
-        if(opts.font)   s.font   = opts.font   || BK;
-        else            s.font   = BK;
-        if(opts.border !== false) s.border = BDR;
-        s.alignment = opts.align || {
-          vertical:'center',
-          horizontal: t==='n' ? 'right' : 'left',
-          wrapText: !!opts.wrap
-        };
-        cell.s = s;
-        // numFmt goes on cell.z (xlsx-js-style convention)
-        if(opts.fmt) cell.z = opts.fmt;
-        return cell;
-      }
-
-      // Helper: add sheet — skips truly empty rows, fills missing cells as empty strings
-      function addSheet(name, rows, colWidths){
-        const ws = {};
-        let maxR = -1, maxC = 0;
-        rows.forEach((row, r)=>{
-          if(!row || !row.length) return; // skip empty rows
-          row.forEach((cell, c)=>{
-            if(c > maxC) maxC = c;
-            const addr = XLSX.utils.encode_cell({r,c});
-            if(cell && typeof cell === 'object' && 't' in cell){
-              ws[addr] = cell;
-            } else {
-              const v2 = (cell===null||cell===undefined) ? '' : cell;
-              ws[addr] = {
-                t: typeof v2==='number' ? 'n' : 's',
-                v: v2,
-                s: { font:BK, border:BDR,
-                     alignment:{vertical:'center',
-                       horizontal:typeof v2==='number'?'right':'left'} }
-              };
-            }
-            if(r > maxR) maxR = r;
-          });
-        });
-        if(maxR < 0) maxR = 0;
-        ws['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0},e:{r:maxR,c:maxC}});
-        if(colWidths) ws['!cols'] = colWidths.map(w=>({wch:w}));
-        XLSX.utils.book_append_sheet(wb, name, ws);
-      }
-
-      // ── ABA 1: RESUMO EXECUTIVO ─────────────────────────────────────
-      const totalAll = floors.reduce((s,f)=>s+f.cameras.length,0);
-      const okAll    = floors.reduce((s,f)=>s+f.cameras.filter(c=>c.fn).length,0);
+      // ── ABA RESUMO ──────────────────────────────────────────────────
+      const totalAll = allRows.length;
+      const okAll    = allRows.filter(r=>r['Status']==='Ativo').length;
       const nfAll    = totalAll - okAll;
-      const pat      = floors.reduce((s,f)=>s+f.cameras.reduce((sc2,c)=>sc2+(CAM_FIN[c.name]?.valor||PRICES[c.info.modelo]||0),0),0);
-      const custoNF  = floors.reduce((s,f)=>s+f.cameras.filter(c=>!c.fn).reduce((sc2,c)=>sc2+(PRICES[c.info.modelo]||0),0),0);
-      const H = (v)=>sc(v,{fill:G,font:WH,align:{horizontal:'left',vertical:'center'}});
-      const D = (v,bold)=>sc(v,{font:bold?BKB:BK});
-      const N = (v,fmt)=>sc(v,{font:BKB,align:{horizontal:'right',vertical:'center'},fmt});
-      addSheet('Resumo', [
-        [H('IBMP — CFTV Control · Relatório de Mapeamento')],
-        [D('Responsável SST:',true), D('Luan Hachiguti'), D('E-mail:',true), D('luan.hachiguti@ibmp.org.br')],
-        [D('Gerado em:',true), D(nowFmt)],
-        [],
-        [sc('INDICADORES OPERACIONAIS',{fill:G,font:WH})],
-        [sc('Métrica',{fill:G2,font:{...BK,bold:true},align:{horizontal:'center',vertical:'center'}}), sc('Valor',{fill:G2,font:{...BK,bold:true},align:{horizontal:'right',vertical:'center'}}), sc('%',{fill:G2,font:{...BK,bold:true},align:{horizontal:'right',vertical:'center'}})],
-        [D('Total de câmeras mapeadas',true), N(totalAll), sc('100%',{font:BK})],
-        [D('Câmeras operantes',true), N(okAll), sc(totalAll?Math.round(okAll/totalAll*100)+'%':'—',{font:{...BK,color:{rgb:'15803d'}}})],
-        [D('Câmeras inoperantes',true), N(nfAll), sc(totalAll?Math.round(nfAll/totalAll*100)+'%':'—',{font:{...BK,color:{rgb:'991b1b'}}})],
-        [D('Câmeras no banco de dados',true), N(DB.cameras.length)],
-        [],
-        [sc('PATRIMÔNIO E ORÇAMENTO',{fill:G,font:WH})],
-        [D('Patrimônio total estimado (R$)',true), N(pat,'#,##0.00')],
-        [D('Custo reposição câmeras NF (R$)',true), N(custoNF,'#,##0.00')],
-        [D('Custo médio por câmera (R$)',true), N(totalAll?Math.round(pat/totalAll):0,'#,##0.00')],
-        [],
-        [sc('ESTRUTURA',{fill:G,font:WH})],
-        [D('Plantas mapeadas',true), N(floors.length)],
-        [D('Gravadores cadastrados',true), N(DB.recorders.length)],
-      ], [38,20,10,32]);
+      const pat      = allRows.reduce((s,r)=>s+(PRICES[r['Modelo']]||0),0);
+      const custoNF  = allRows.filter(r=>r['Status']==='Inativo').reduce((s,r)=>s+(PRICES[r['Modelo']]||0),0);
+      const wsRes = XLSX.utils.json_to_sheet([
+        {'IBMP — CFTV Control v6.3': 'Relatório de Mapeamento', '': ''},
+        {'IBMP — CFTV Control v6.3': 'Responsável SST', '': 'Luan Hachiguti'},
+        {'IBMP — CFTV Control v6.3': 'E-mail', '': 'luan.hachiguti@ibmp.org.br'},
+        {'IBMP — CFTV Control v6.3': 'Gerado em', '': now},
+        {'IBMP — CFTV Control v6.3': '---', '': '---'},
+        {'IBMP — CFTV Control v6.3': 'Total câmeras no banco', '': DB.cameras.length},
+        {'IBMP — CFTV Control v6.3': 'Câmeras plotadas no mapa', '': totalAll},
+        {'IBMP — CFTV Control v6.3': 'Câmeras operantes', '': okAll},
+        {'IBMP — CFTV Control v6.3': 'Câmeras inoperantes', '': nfAll},
+        {'IBMP — CFTV Control v6.3': 'Gravadores cadastrados', '': DB.recorders.length},
+        {'IBMP — CFTV Control v6.3': '---', '': '---'},
+        {'IBMP — CFTV Control v6.3': 'Patrimônio total est. (R$)', '': pat},
+        {'IBMP — CFTV Control v6.3': 'Custo reposição NF (R$)', '': custoNF},
+        {'IBMP — CFTV Control v6.3': 'Custo médio por câmera (R$)', '': totalAll?Math.round(pat/totalAll):0},
+      ]);
+      wsRes['!cols'] = [{wch:34},{wch:28}];
+      XLSX.utils.book_append_sheet(wb, 'Resumo', wsRes);
 
-      // ── ABA 2: INVENTÁRIO COMPLETO ──────────────────────────────────
-      const invH = ['Planta','Câmera','Status','Modelo','Gravador','IP','Canal','Valor (R$)','Instalação','Vida Útil','Troca Recom.','Saúde'];
-      const invHRow = invH.map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
-      const invRows = allRows.map((r,i)=>{
-        const isNF = r['Status']==='Inativo';
-        const alt = i%2===1 ? {patternType:'solid',fgColor:{rgb:'f0fdf4'},bgColor:{rgb:'f0fdf4'}} : null;
-        const base = (v,bold)=>sc(v,{fill:alt||undefined,font:isNF&&bold?RD:bold?BKB:BK});
-        const num  = (v,fmt)=>sc(v,{fill:alt||undefined,font:isNF?RD:BK,fmt,align:{horizontal:'right',vertical:'center'}});
-        return [
-          base(r['Planta']), base(r['Câmera'],true),
-          sc(r['Status'],{fill:isNF?R:alt||undefined,font:isNF?RD:BK,align:{horizontal:'center',vertical:'center'}}),
-          base(r['Modelo']), base(r['Gravador']), base(r['IP de Acesso']),
-          sc(r['Canal'],{fill:alt||undefined,font:BK,align:{horizontal:'center',vertical:'center'}}),
-          num(r['Valor Aquisição (R$)'],'#,##0.00'),
-          base(r['Mês/Ano Instalação']),
-          sc(r['Vida Útil (anos)'],{fill:alt||undefined,font:BK,align:{horizontal:'center',vertical:'center'}}),
-          base(r['Troca Recomendada']),
-          base(r['Saúde']),
-        ];
-      });
-      addSheet('Inventário', [invHRow, ...invRows],
-        [18,30,12,18,16,16,8,14,14,10,14,10]);
+      // ── ABA INVENTÁRIO ──────────────────────────────────────────────
+      const wsInv = XLSX.utils.json_to_sheet(allRows);
+      wsInv['!cols'] = Object.keys(allRows[0]||{}).map(k=>({wch:Math.max(k.length+2,16)}));
+      XLSX.utils.book_append_sheet(wb, 'Inventário Completo', wsInv);
 
-      // ── ABA 3: CÂMERAS INATIVAS ──────────────────────────────────────
-      const nfRows = floors.flatMap(f=>getCamRows(f)).filter(r=>r['Status']==='Inativo');
+      // ── ABA POR PLANTA ──────────────────────────────────────────────
+      if(escopo==='all' && targetFloors.length>1){
+        targetFloors.forEach(fl=>{
+          const rows=getCamRows(fl); if(!rows.length)return;
+          const ws=XLSX.utils.json_to_sheet(rows);
+          ws['!cols']=Object.keys(rows[0]).map(k=>({wch:Math.max(k.length+2,14)}));
+          XLSX.utils.book_append_sheet(wb,fl.name.slice(0,28).replace(/[:\/?*[\]]/g,'_'),ws);
+        });
+      }
+
+      // ── ABA INATIVAS ────────────────────────────────────────────────
+      const nfRows=allRows.filter(r=>r['Status']==='Inativo');
       if(nfRows.length){
-        const nfHRow = ['Planta','Câmera','Modelo','Gravador','IP','Custo Reposição (R$)']
-          .map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
-        const nfData = nfRows.map((r,i)=>{
-          const alt = i%2===1?{patternType:'solid',fgColor:{rgb:'fff7f7'},bgColor:{rgb:'fff7f7'}}:null;
-          return [
-            sc(r['Planta'],{fill:alt||undefined,font:BK}),
-            sc(r['Câmera'],{fill:alt||undefined,font:BKB}),
-            sc(r['Modelo'],{fill:alt||undefined,font:{...BK,color:{rgb:'b45309'}}}),
-            sc(r['Gravador'],{fill:alt||undefined,font:BK}),
-            sc(r['IP de Acesso'],{fill:alt||undefined,font:BK}),
-            sc(PRICES[r['Modelo']]||0,{fill:alt||undefined,font:RD,fmt:'#,##0.00',align:{horizontal:'right',vertical:'center'}}),
-          ];
-        });
-        const totalNF = nfRows.reduce((s,r)=>s+(PRICES[r['Modelo']]||0),0);
-        addSheet('Câmeras Inativas', [
-          nfHRow, ...nfData,
-          [],
-          [sc('TOTAL ESTIMADO REPOSIÇÃO',{fill:Y,font:BKB}), sc('',{fill:Y,font:BK}),
-           sc('',{fill:Y,font:BK}), sc('',{fill:Y,font:BK}), sc('',{fill:Y,font:BK}),
-           sc(totalNF,{fill:Y,font:{...BKB,color:{rgb:'92400e'}},fmt:'#,##0.00',align:{horizontal:'right',vertical:'center'}})],
-        ], [18,30,18,18,16,22]);
+        const wsNF=XLSX.utils.json_to_sheet(nfRows.map(r=>({
+          'Câmera':r['Câmera'],'Modelo':r['Modelo'],'Gravador':r['Gravador'],
+          'IP de Acesso':r['IP de Acesso'],
+          'Custo Reposição (R$)':PRICES[r['Modelo']]||0,
+          'Planta':r['Planta'],
+        })));
+        wsNF['!cols']=[{wch:30},{wch:18},{wch:18},{wch:16},{wch:20},{wch:20}];
+        XLSX.utils.book_append_sheet(wb,'Câmeras Inativas',wsNF);
       }
 
-      // ── ABA 4: ANÁLISE POR PLANTA ────────────────────────────────────
-      const aH = ['Planta','Total','Ativas','Inativas','% Operantes','Patrimônio (R$)','Custo NF (R$)'];
-      const aHRow = aH.map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
-      const aData = floors.map((f,i)=>{
-        const ok2=f.cameras.filter(c=>c.fn).length;
-        const nf2=f.cameras.length-ok2;
-        const pat2=f.cameras.reduce((s,c)=>s+(CAM_FIN[c.name]?.valor||PRICES[c.info.modelo]||0),0);
-        const nfc2=f.cameras.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
-        const alt=i%2===1?{patternType:'solid',fgColor:{rgb:'f0fdf4'},bgColor:{rgb:'f0fdf4'}}:null;
-        const n=(v,fmt)=>sc(v,{fill:alt||undefined,font:BK,fmt,align:{horizontal:'right',vertical:'center'}});
-        return [
-          sc(f.name,{fill:alt||undefined,font:BKB}), n(f.cameras.length), n(ok2), n(nf2),
-          sc(f.cameras.length?Math.round(ok2/f.cameras.length*100)+'%':'—',{fill:alt||undefined,font:{...BK,color:{rgb:'15803d'}},align:{horizontal:'center',vertical:'center'}}),
-          n(pat2,'#,##0.00'), n(nfc2,'#,##0.00'),
-        ];
-      });
-      addSheet('Análise por Planta', [aHRow, ...aData], [28,10,10,10,14,20,20]);
-
-      // ── ABA 5: ANÁLISE POR MODELO ────────────────────────────────────
+      // ── ABA ANÁLISE MODELO ──────────────────────────────────────────
       const mMap={};
-      floors.flatMap(f=>f.cameras).forEach(c=>{
-        const m=c.info.modelo||'Não identificado';
-        if(!mMap[m])mMap[m]={tot:0,ok:0,nf:0};
-        mMap[m].tot++; if(c.fn)mMap[m].ok++; else mMap[m].nf++;
+      allRows.forEach(r=>{
+        const m=r['Modelo']||'-';
+        if(!mMap[m])mMap[m]={Modelo:m,Quantidade:0,Operantes:0,Inoperantes:0,'Valor Unit (R$)':0,'Total (R$)':0};
+        mMap[m].Quantidade++;
+        if(r['Status']==='Ativo')mMap[m].Operantes++; else mMap[m].Inoperantes++;
+        mMap[m]['Valor Unit (R$)']=PRICES[m]||0;
+        mMap[m]['Total (R$)']=(PRICES[m]||0)*mMap[m].Quantidade;
       });
-      const mH=['Modelo','Qtd','Operantes','Inoperantes','Valor Unit. (R$)','Investimento Total (R$)'];
-      const mHRow=mH.map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
-      const mData=Object.entries(mMap).sort((a,b)=>b[1].tot-a[1].tot).map(([m,d],i)=>{
-        const alt=i%2===1?{patternType:'solid',fgColor:{rgb:'f0fdf4'},bgColor:{rgb:'f0fdf4'}}:null;
-        const n=(v,fmt)=>sc(v,{fill:alt||undefined,font:BK,fmt,align:{horizontal:'right',vertical:'center'}});
-        return [sc(m,{fill:alt||undefined,font:BKB}),n(d.tot),n(d.ok),n(d.nf),
-                n(PRICES[m]||0,'#,##0.00'),n((PRICES[m]||0)*d.tot,'#,##0.00')];
-      });
-      addSheet('Análise por Modelo', [mHRow,...mData],[28,8,12,12,18,22]);
+      const wsMod=XLSX.utils.json_to_sheet(Object.values(mMap).sort((a,b)=>b.Quantidade-a.Quantidade));
+      wsMod['!cols']=[{wch:22},{wch:12},{wch:12},{wch:14},{wch:18},{wch:16}];
+      XLSX.utils.book_append_sheet(wb,'Análise por Modelo',wsMod);
 
-      // ── ABA 6: GRAVADORES ───────────────────────────────────────────
+      // ── ABA GRAVADORES ──────────────────────────────────────────────
       if(DB.recorders.length){
-        const gH=['Gravador','IP de Acesso','Modelo','Localização','Armazenamento','Câmeras'];
-        const gHRow=gH.map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
-        const gData=DB.recorders.map((g,i)=>{
-          const cnt=floors.flatMap(f=>f.cameras).filter(c=>c.info.gravador===g['NOME DO GRAVADOR']).length;
-          const alt=i%2===1?{patternType:'solid',fgColor:{rgb:'f0fdf4'},bgColor:{rgb:'f0fdf4'}}:null;
-          const d=(v)=>sc(v,{fill:alt||undefined,font:BK});
-          return [d(g['NOME DO GRAVADOR']),
-                  sc(g['IP DE ACESSO']||'',{fill:alt||undefined,font:{...BK,color:{rgb:'1d4ed8'}}}),
-                  d(g['MODELO']||''), d(g['LOCALIZAÇÃO']||''), d(g['Armazenamento']||''),
-                  sc(cnt,{fill:alt||undefined,font:BKB,align:{horizontal:'center',vertical:'center'}})];
-        });
-        addSheet('Gravadores',[gHRow,...gData],[24,18,18,26,16,12]);
+        const camCount={};
+        allRows.forEach(r=>{camCount[r['Gravador']]=(camCount[r['Gravador']]||0)+1;});
+        const wsGrav=XLSX.utils.json_to_sheet(DB.recorders.map(g=>({
+          'Gravador':g['NOME DO GRAVADOR'],'Modelo':g['MODELO']||'',
+          'IP de Acesso':g['IP DE ACESSO']||'','Localização':g['LOCALIZAÇÃO']||'',
+          'Imagens':g['IMAGENS']||'','Armazenamento':g['Armazenamento']||'',
+          'Câmeras Conectadas':camCount[g['NOME DO GRAVADOR']]||0,
+        })));
+        wsGrav['!cols']=[{wch:22},{wch:16},{wch:16},{wch:26},{wch:22},{wch:16},{wch:16}];
+        XLSX.utils.book_append_sheet(wb,'Gravadores',wsGrav);
       }
 
-      // ── SALVA ────────────────────────────────────────────────────────
+      // ── DOWNLOAD ────────────────────────────────────────────────────
       try{
-        const out = XLSX.write(wb,{bookType:'xlsx',type:'array',cellStyles:true});
-        const blob= new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-        const url = URL.createObjectURL(blob);
-        const a   = document.createElement('a');
-        a.href=url;
-        a.download=`IBMP_CFTV_${escopo==='current'?F().name.replace(/\s+/g,'_'):'Completo'}_${dateFmt}.xlsx`;
-        document.body.appendChild(a); a.click();
-        setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+        const fname=`IBMP_CFTV_${escopo==='current'?F().name.replace(/\s+/g,'_'):'Completo'}_${dateFmt}.xlsx`;
+        XLSX.writeFile(wb, fname);
         toast(`✓ Planilha exportada — ${allRows.length} câmeras · ${wb.SheetNames.length} abas`);
-      }catch(err){
-        console.error('[XLSX error]',err);
-        toast('Erro ao exportar: '+err.message);
+      }catch(e){
+        // Fallback: manual blob download
+        const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+        const url=URL.createObjectURL(new Blob([out],{type:'application/octet-stream'}));
+        const a=document.createElement('a');a.href=url;
+        a.download=`IBMP_CFTV_${dateFmt}.xlsx`;
+        document.body.appendChild(a);a.click();
+        setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+        toast(`✓ Planilha exportada — ${allRows.length} câmeras`);
       }
       return;
     }
