@@ -189,9 +189,14 @@ input, textarea { font-family: inherit; }
 .hbtn.icon-only { padding: 6px 8px; min-width: 32px; justify-content: center; }
 .view-nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 0 10px 0; margin-bottom: 4px;
+  padding: 6px 0 10px 0; margin-bottom: 4px; gap: 8px;
 }
-.view-nav-pills { display: flex; gap: 4px; align-items: center; }
+.view-nav-pills {
+  display: flex; gap: 4px; align-items: center;
+  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  flex: 1; padding-bottom: 2px;
+}
+.view-nav-pills::-webkit-scrollbar { display: none; }
 .view-pill {
   font-size: 11px; font-weight: 600; padding: 4px 11px; border-radius: 20px;
   border: 1px solid var(--border); background: var(--surface2); color: var(--text3);
@@ -258,13 +263,13 @@ input, textarea { font-family: inherit; }
 .hbtn:active, .tbtn:active, .ntab:active, .fbtn:active,
 .view-pill:active, .ci:active, .fadd-item:active, .ctx-item:active,
 .mob-filter:active, .rmitem:active, .mob-views-item:active, .mob-drop-item:active {
-  transform: scale(0.96);
-  transition: transform 0.08s;
+  transform: scale(0.96) !important;
+  transition: transform 0.08s !important;
 }
 
-/* Animações em modais (overlays) */
-.overlay { animation: fadeIn 0.18s ease-out; }
-.overlay > div { animation: scaleIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1); }
+/* Modais (overlay.show → display:flex) */
+.overlay.show { animation: fadeIn 0.2s ease-out; }
+.overlay.show > div { animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
 /* View overlays (Dashboard, Orçamento, etc) */
 .view-overlay.show { animation: fadeIn 0.22s ease-out; }
@@ -1020,12 +1025,12 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
 #btn-save-cloud.saved { color: var(--ok); border-color: var(--ok); }
 #btn-save-cloud.error { color: var(--nf); border-color: var(--nf); }
 #btn-save-cloud.saving { opacity: .7; pointer-events: none; }
-@keyframes spin { to { transform: rotate(360deg); } }
+
 /* ═══════════════════════════════════════════════
    VIEW OVERLAYS
 ═══════════════════════════════════════════════ */
 .view-overlay { display: none; position: absolute; inset: 0; z-index: 30; overflow-y: auto; background: var(--bg); padding: 16px 24px; pointer-events: none; }
-.view-overlay.show { display: block; pointer-events: auto; }
+.view-overlay.show { display: block; pointer-events: auto; animation: fadeIn 0.2s ease-out; }
 
 /* ─ DASHBOARD ─ */
 #dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px; }
@@ -1547,7 +1552,7 @@ canvas.chart { width: 100%; display: block; }
 #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 10px; opacity: 0; transition: all .22s; pointer-events: none; z-index: 9999; box-shadow: var(--shadow2); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 </head>
 <body>
 <!-- ═══════════════════ PDF.js v5.6.205 EMBEDDED (offline) ═══════════════════ -->
@@ -1773,7 +1778,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <!-- Versão -->
     <div style="position:relative" id="ver-wrap">
       <button class="hbtn icon-only" id="btn-version" onclick="toggleChangelog()" title="Versão e histórico de mudanças" style="font-size:9px;font-weight:700;letter-spacing:.02em;color:var(--text3);min-width:36px">
-        v6.2
+        v6.3
       </button>
       <div id="changelog-drop" style="display:none;position:fixed;top:52px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;width:320px;z-index:9000;box-shadow:0 8px 32px rgba(0,0,0,.18);max-height:70vh;overflow-y:auto;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -1809,7 +1814,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#159b77" stroke-width="1.7"><rect x="1" y="4" width="14" height="11" rx="2"/><circle cx="8" cy="9.5" r="2.5"/><path d="M15 7l5-2v7l-5-2"/></svg>
       <div>
         <span style="font-size:14px;font-weight:700;color:var(--text)">CFTV <strong>IBMP</strong></span>
-        <div style="font-size:9px;color:var(--text3);margin-top:-1px;line-height:1.2">by Luan Hachiguti · <span style="color:var(--g3)">v6.2</span></div>
+        <div style="font-size:9px;color:var(--text3);margin-top:-1px;line-height:1.2">by Luan Hachiguti · <span style="color:var(--g3)">v6.3</span></div>
       </div>
     </div>
     <div id="mob-hdr-right">
@@ -2611,7 +2616,13 @@ const _DB_RECORDERS = [{"NOME DO GRAVADOR": "DVR-BLOCOB-01", "IP DE ACESSO": "17
 const _DB_PARECERES = [{"Câmera": "1", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "2", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "3", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "5", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "6", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "7", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "8", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "9", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "10", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "11", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "12", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "13", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "14", "Localização/Bloco": "DT — DVR-BLOCOB-01", "Parecer": "OK"}, {"Câmera": "1", "Localização/Bloco": "Externo — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "3", "Localização/Bloco": "Lab — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "4", "Localização/Bloco": "Lab — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "5", "Localização/Bloco": "PRM — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "6", "Localização/Bloco": "Sala de PCR — DVR-BLOCOB-02", "Parecer": "Não funcional"}, {"Câmera": "7", "Localização/Bloco": "Extracao — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "8", "Localização/Bloco": "Porta Data Center — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "9", "Localização/Bloco": "Sala Nilson — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "10", "Localização/Bloco": "Esterilizacao — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "14", "Localização/Bloco": "Entrada Lab Central — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "15", "Localização/Bloco": "Lab Central — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "16", "Localização/Bloco": "Corredor Lab Central — DVR-BLOCOB-02", "Parecer": "OK"}, {"Câmera": "5", "Localização/Bloco": "Sala de Manutencao Bloco C1 — DVR-BLOCOC-01", "Parecer": "Não funcional"}, {"Câmera": "6", "Localização/Bloco": "Entrada Piso Tecnico Bloco C1 — DVR-BLOCOC-01", "Parecer": "Não funcional"}, {"Câmera": "7", "Localização/Bloco": "Corredor Escada 1 Bloco D — DVR-BLOCOC-01", "Parecer": "OK"}, {"Câmera": "8", "Localização/Bloco": "Corredor SAC Bloco D — DVR-BLOCOC-01", "Parecer": "OK"}, {"Câmera": "9", "Localização/Bloco": "Corredor DN Bloco D — DVR-BLOCOC-01", "Parecer": "OK"}, {"Câmera": "10", "Localização/Bloco": "Estoque TI Bloco D — DVR-BLOCOC-01", "Parecer": "OK"}, {"Câmera": "11", "Localização/Bloco": "Convivencia Bloco C1 — DVR-BLOCOC-01", "Parecer": "OK"}, {"Câmera": "1", "Localização/Bloco": "Preparo e Tampoes — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "2", "Localização/Bloco": "Envase 3 — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "3", "Localização/Bloco": "Envase 2 — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "4", "Localização/Bloco": "Corredor Sujo 1 — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "5", "Localização/Bloco": "Empacotamento 1a — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "6", "Localização/Bloco": "Corredor Sujo 2 — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "7", "Localização/Bloco": "Envase 1 — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "8", "Localização/Bloco": "Corredor Limpo — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "10", "Localização/Bloco": "Purificacao — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "11", "Localização/Bloco": "Teste rapido — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "12", "Localização/Bloco": "Empacotamento 2a — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "13", "Localização/Bloco": "Sala Lise — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "14", "Localização/Bloco": "Empacotamento 1b — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "15", "Localização/Bloco": "Sala de Crescimento — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "16", "Localização/Bloco": "Sala de Impressao — DVR-BLOCOC-02", "Parecer": "OK"}, {"Câmera": "2", "Localização/Bloco": "Secretaria Bloco C1 — DVR-BLOCOC-03", "Parecer": "OK"}, {"Câmera": "3", "Localização/Bloco": "Hall Entrada Bloco C1 — DVR-BLOCOC-03", "Parecer": "OK"}, {"Câmera": "5", "Localização/Bloco": "Sala Reuniao Mezanino — DVR-BLOCOC-03", "Parecer": "OK"}, {"Câmera": "9", "Localização/Bloco": "Corredor Sujo Rejeitos — DVR-BLOCOC-03", "Parecer": "OK"}, {"Câmera": "10", "Localização/Bloco": "Subida Mezanino Producao — DVR-BLOCOC-03", "Parecer": "OK"}, {"Câmera": "11", "Localização/Bloco": "Corredor Sujo 2 Producao — DVR-BLOCOC-03", "Parecer": "OK"}, {"Câmera": "12", "Localização/Bloco": "Corredor Sujo 3 Producao — DVR-BLOCOC-03", "Parecer": "OK"}, {"Câmera": "13", "Localização/Bloco": "Empacotamento 2 Producao 2 — DVR-BLOCOC-03", "Parecer": "OK"}, {"Câmera": "1", "Localização/Bloco": "Entrada CQ — DVR-CQ-01", "Parecer": "OK"}, {"Câmera": "2", "Localização/Bloco": "Microbiologia CQ — DVR-CQ-01", "Parecer": "OK"}, {"Câmera": "3", "Localização/Bloco": "PCR CQ — DVR-CQ-01", "Parecer": "OK"}, {"Câmera": "1", "Localização/Bloco": "Externo Expedicao — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "2", "Localização/Bloco": "Escritorio Logistica — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "3", "Localização/Bloco": "Externo Controle Positivo — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "4", "Localização/Bloco": "Entrada Logistica 1 — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "5", "Localização/Bloco": "Estoque Logistica — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "6", "Localização/Bloco": "Corredor Estoque 1 — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "7", "Localização/Bloco": "Corredor Estoque 2 — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "8", "Localização/Bloco": "Corredor Estoque 3 — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "9", "Localização/Bloco": "Escritorio Estoque — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "10", "Localização/Bloco": "Corredor Estoque 4 — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "11", "Localização/Bloco": "Quarentena Estoque — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "12", "Localização/Bloco": "Escritorio Recebimento — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "13", "Localização/Bloco": "Entrada Logistica 2 — DVR-LOGISTICA-01", "Parecer": "OK"}, {"Câmera": "14", "Localização/Bloco": "Externo Fundos — DVR-LOGISTICA-01", "Parecer": "OK"}];
 // ──────────────────────────────────────────────────────────────
 // ═══════════════ STATE ═══════════════
-let DB={cameras:[],recorders:[],pareceres:[],recommended:[]};
+let DB={cameras:[],recorders:[],pareceres:[],recommended:[
+  {'LOCAL':'Corredor Acesso Principal - Externo','MODELO SUGERIDO':'VIP-5850-B','JUSTIFICATIVA':'Ponto cego no acesso principal identificado em auditoria SST','SETOR':'Externo'},
+  {'LOCAL':'Almoxarifado CQ','MODELO SUGERIDO':'VIP-3220-D','JUSTIFICATIVA':'Sem cobertura em área de materiais controlados','SETOR':'CQ'},
+  {'LOCAL':'Área de Descarte de Rejeitos','MODELO SUGERIDO':'VIP-3220-D','JUSTIFICATIVA':'Rastreabilidade de resíduos biológicos exigida por RDC','SETOR':'Produção'},
+  {'LOCAL':'Vestiário - Bloco C','MODELO SUGERIDO':'VIP-1230-D-G4','JUSTIFICATIVA':'Controle de acesso a área restrita','SETOR':'Bloco C'},
+  {'LOCAL':'Estacionamento Fundos','MODELO SUGERIDO':'VIP-5850-B','JUSTIFICATIVA':'Área sem cobertura CFTV identificada em vistoria','SETOR':'Externo'},
+]};
 let PRICES={"VIP-3220-D": 490, "VIP-1130-D": 380, "VIP-1130-D-G3": 420, "VIP-1130-D-G4": 450, "VIP-1230-B-G3": 380, "VIP-1230-B-G4": 400, "VIP-1230-D-G2": 360, "VIP-1230-D-G4": 410, "VIP-5850-B": 1350, "NVD 3116 P": 3200, "NVD 3316 P": 3600, "MHDX 1016": 2500, "iMHDX 3016": 2800};
 
 // Vida útil estimada por modelo (anos)
@@ -5738,9 +5749,10 @@ function exportExecutivo(selectedFloors){
   const zonasOK=allZones.filter(z=>checkZoneCoverage(z));
 
   // Capturar imagem de cada planta selecionada usando capturePlantImg global
+  const showRecExec = document.getElementById('chk-show-rec')?.checked || false;
   const mapsImgs=selectedFloors.map(fl=>({
     name:fl.name,
-    src:capturePlantImg(fl)
+    src:capturePlantImg(fl, showRecExec)
   })).filter(m=>m.src);
 
   // Status geral
@@ -6288,7 +6300,7 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
 
 <!-- PÁG 2+: Uma página por planta selecionada -->
 ${selectedFloors.map(fl=>{
-  const flSrc=capturePlantImg(fl);
+  const flSrc=capturePlantImg(fl, showRec);
   return flSrc?`<div class="plant-pg">
   <h2>Planta Baixa — ${fl.name}</h2>
   <div class="plant-box"><img src="${flSrc}" alt="Planta ${fl.name}"></div>
@@ -6670,13 +6682,6 @@ function mobClearSearch(){
   document.getElementById('mob-search').value='';
   mobSearch('');
 }
-function mobSetFilter(f){
-  _mf=f;
-  document.querySelectorAll('.mob-filter').forEach(b=>b.classList.remove('on'));
-  document.getElementById('mf-'+f).classList.add('on');
-  mobBuildList();
-}
-
 function mobOpenSheet(nome){
   const info = lookup(nome);
   const fn   = isFn(nome);
@@ -6806,6 +6811,22 @@ function doRefresh(){
 
 // ── Changelog / versão
 const CHANGELOG = [
+  { v:'v6.3', d:'Mai 2026', items:[
+    'PDF.js v5.6.205 embutido — funciona 100% offline, sem CDN externo',
+    'Câmeras Recomendadas: plotagem com ícone laranja tracejado (?) e banco de exemplos pré-carregado',
+    'Excel de exportação: 7 abas formatadas com identidade IBMP (verde, bordas, alternância)',
+    'Abas: Capa, Inventário Completo, Por Planta, Câmeras Inativas, Análise por Planta, Análise por Modelo, Gravadores',
+    'Animações spring-physics: fadeSlideUp, scaleIn, pulseDot em toda a interface',
+    'Modais abrem com scaleIn animado (cubic-bezier spring)',
+    'KPIs do Dashboard entram em cascata com stagger de 50ms',
+    'Botão de tema rotaciona 15° no hover',
+    'mobSetFilter duplicado removido (bug de KPI highlight mobile)',
+    'view-nav-pills com overflow scrollável no mobile',
+    'showRec propagado para todos os exports e impressões',
+    'Troca para xlsx-js-style para suporte a estilos no Excel',
+    'Filtro "Ocorrências" sem emoji (ícone SVG)',
+    'Botão Imprimir Lista como linha própria (não cortado)',
+  ]},
   { v:'v6.2', d:'Mai 2026', items:[
     'Banco de dados embutido com 72 câmeras e 7 gravadores do IBMP',
     'Lookup de câmeras corrigido: parecer agora cruza canal + gravador (sem falsos positivos)',
