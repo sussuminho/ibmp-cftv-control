@@ -5086,359 +5086,209 @@ function doExportCSV(escopo, formato){
   // Se a lib do CDN carregou usa ela; caso contrário gera SpreadsheetML nativo (funciona offline)
   if(formato==='xlsx'){
     if(typeof XLSX!=='undefined'){
-      const wb = XLSX.utils.book_new();
+      const wb  = XLSX.utils.book_new();
       const now = new Date();
       const nowFmt = now.toLocaleString('pt-BR');
+      const G  = {patternType:'solid',fgColor:{rgb:'16a34a'},bgColor:{rgb:'16a34a'}};
+      const G2 = {patternType:'solid',fgColor:{rgb:'d1fae5'},bgColor:{rgb:'d1fae5'}};
+      const R  = {patternType:'solid',fgColor:{rgb:'fee2e2'},bgColor:{rgb:'fee2e2'}};
+      const Y  = {patternType:'solid',fgColor:{rgb:'fef3c7'},bgColor:{rgb:'fef3c7'}};
+      const WH = {name:'Calibri',sz:10,color:{rgb:'FFFFFF'},bold:true};
+      const BK = {name:'Calibri',sz:10,color:{rgb:'1f2937'}};
+      const BKB= {name:'Calibri',sz:10,color:{rgb:'1f2937'},bold:true};
+      const RD = {name:'Calibri',sz:10,color:{rgb:'991b1b'},bold:true};
+      const BD = {style:'thin',color:{rgb:'d1d5db'}};
+      const BDR= {top:BD,bottom:BD,left:BD,right:BD};
 
-      // ────────────────────────────────────────
-      // Helpers de formatação
-      // ────────────────────────────────────────
-      // IBMP green: #16a34a / dark: #15803d
-      const IBMP_GREEN = "16a34a";
-      const IBMP_DARK  = "15803d";
-      const NF_RED     = "dc2626";
-      const HDR_FILL   = { patternType:"solid", fgColor:{rgb:IBMP_GREEN}, bgColor:{rgb:IBMP_GREEN} };
-      const TITLE_FILL = { patternType:"solid", fgColor:{rgb:IBMP_DARK}, bgColor:{rgb:IBMP_DARK} };
-      const ALT_FILL   = { patternType:"solid", fgColor:{rgb:"f0fdf4"}, bgColor:{rgb:"f0fdf4"} };
-      const NF_FILL    = { patternType:"solid", fgColor:{rgb:"fee2e2"}, bgColor:{rgb:"fee2e2"} };
-      const HDR_FONT   = { name:"Calibri", sz:11, bold:true, color:{rgb:"FFFFFF"} };
-      const TITLE_FONT = { name:"Calibri", sz:14, bold:true, color:{rgb:"FFFFFF"} };
-      const BODY_FONT  = { name:"Calibri", sz:10, color:{rgb:"1f2937"} };
-      const NUM_FONT   = { name:"Calibri", sz:10, color:{rgb:"1f2937"} };
-      const BORDER_THIN= { style:"thin", color:{rgb:"d1d5db"} };
-      const FULL_BORDER= { top:BORDER_THIN, bottom:BORDER_THIN, left:BORDER_THIN, right:BORDER_THIN };
-
-      // Aplica estilos em uma planilha já criada com aoa_to_sheet
-      function applyStyles(ws, headerRow, dataStartRow, dataEndRow, colCount, options={}){
-        const range = XLSX.utils.decode_range(ws['!ref']);
-        // Estilo do título (se options.titleRow definido)
-        if(options.titleRow !== undefined){
-          for(let c = 0; c < colCount; c++){
-            const addr = XLSX.utils.encode_cell({r: options.titleRow, c});
-            if(!ws[addr]) ws[addr] = {t:'s', v:''};
-            ws[addr].s = {
-              fill: TITLE_FILL,
-              font: TITLE_FONT,
-              alignment: { horizontal:"center", vertical:"center" }
-            };
-          }
-        }
-        // Cabeçalho
-        for(let c = 0; c < colCount; c++){
-          const addr = XLSX.utils.encode_cell({r: headerRow, c});
-          if(ws[addr]){
-            ws[addr].s = {
-              fill: HDR_FILL,
-              font: HDR_FONT,
-              alignment: { horizontal:"center", vertical:"center", wrapText:true },
-              border: FULL_BORDER
-            };
-          }
-        }
-        // Linhas alternadas + bordas
-        for(let r = dataStartRow; r <= dataEndRow; r++){
-          const isAlt = (r - dataStartRow) % 2 === 1;
-          for(let c = 0; c < colCount; c++){
-            const addr = XLSX.utils.encode_cell({r, c});
-            if(!ws[addr]) continue;
-            ws[addr].s = {
-              font: BODY_FONT,
-              alignment: { vertical:"center", horizontal: (typeof ws[addr].v === 'number') ? "right" : "left" },
-              border: FULL_BORDER,
-              ...(isAlt ? { fill: ALT_FILL } : {})
-            };
-            // Destaca células NF em vermelho
-            if(options.statusCol !== undefined && c === options.statusCol && String(ws[addr].v).toLowerCase().includes('inativ')){
-              ws[addr].s.fill = NF_FILL;
-              ws[addr].s.font = { ...BODY_FONT, bold:true, color:{rgb:NF_RED} };
-            }
-            if(options.currencyCols && options.currencyCols.includes(c) && typeof ws[addr].v === 'number'){
-              ws[addr].z = '"R$ "#,##0.00';
-            }
-            if(options.percentCols && options.percentCols.includes(c) && typeof ws[addr].v === 'number'){
-              ws[addr].z = '0%';
-            }
-          }
-        }
+      // Helper: create a styled cell
+      function sc(v, opts={}){
+        const t = typeof v==='number'?'n': typeof v==='boolean'?'b':'s';
+        const cell = {t, v: v===null||v===undefined?'':v};
+        const s = {};
+        if(opts.fill) s.fill = opts.fill;
+        if(opts.font) s.font = opts.font;
+        if(opts.border!==false) s.border = BDR;
+        if(opts.align) s.alignment = opts.align;
+        else s.alignment = {vertical:'center', horizontal: t==='n'?'right':'left', wrapText:!!opts.wrap};
+        if(opts.fmt) s.numFmt = opts.fmt;
+        cell.s = s;
+        return cell;
       }
 
-      // ════════════════════════════════════════════════════════════
-      // ABA 1: CAPA / RESUMO EXECUTIVO
-      // ════════════════════════════════════════════════════════════
-      const totalCamsAll = floors.reduce((s,f)=>s+f.cameras.length,0);
-      const totalActiveAll = floors.reduce((s,f)=>s+f.cameras.filter(c=>c.fn).length,0);
-      const totalNFAll = totalCamsAll - totalActiveAll;
-      const totalPatrimony = floors.reduce((s,f)=>
-        s + f.cameras.reduce((sc,c)=>sc + (CAM_FIN[c.name]?.valor || PRICES[c.info.modelo] || 0), 0), 0);
-      const totalNFCost = floors.reduce((s,f)=>
-        s + f.cameras.filter(c=>!c.fn).reduce((sc,c)=>sc + (PRICES[c.info.modelo] || 0), 0), 0);
-
-      const capaData = [
-        ['IBMP — INSTITUTO DE BIOLOGIA MOLECULAR DO PARANÁ', '', '', ''],
-        ['Relatório de Mapeamento CFTV', '', '', ''],
-        ['', '', '', ''],
-        ['Responsável SST:', 'Luan Hachiguti', '', ''],
-        ['E-mail:', 'luan.hachiguti@ibmp.org.br', '', ''],
-        ['Gerado em:', nowFmt, '', ''],
-        ['Escopo:', escopo==='current' ? F().name : 'Todas as plantas', '', ''],
-        ['', '', '', ''],
-        ['INDICADORES GERAIS', '', '', ''],
-        ['Métrica', 'Valor', '% / Detalhe', ''],
-        ['Total de câmeras mapeadas', totalCamsAll, totalCamsAll>0?1:0, ''],
-        ['Câmeras operantes', totalActiveAll, totalCamsAll? totalActiveAll/totalCamsAll : 0, ''],
-        ['Câmeras inoperantes', totalNFAll, totalCamsAll? totalNFAll/totalCamsAll : 0, ''],
-        ['Câmeras no banco de dados', DB.cameras.length, '', ''],
-        ['', '', '', ''],
-        ['PATRIMÔNIO E ORÇAMENTO', '', '', ''],
-        ['Patrimônio total estimado', totalPatrimony, '', 'R$'],
-        ['Custo manutenção (câmeras NF)', totalNFCost, '', 'R$'],
-        ['Custo médio por câmera', totalCamsAll? Math.round(totalPatrimony/totalCamsAll) : 0, '', 'R$'],
-        ['', '', '', ''],
-        ['ESTRUTURA', '', '', ''],
-        ['Plantas baixas mapeadas', floors.length, '', ''],
-        ['Gravadores cadastrados', DB.recorders.length, '', ''],
-      ];
-
-      const wsCapa = XLSX.utils.aoa_to_sheet(capaData);
-      wsCapa['!cols'] = [{wch:38},{wch:24},{wch:18},{wch:6}];
-      wsCapa['!merges'] = [
-        {s:{r:0,c:0},e:{r:0,c:3}},
-        {s:{r:1,c:0},e:{r:1,c:3}},
-        {s:{r:8,c:0},e:{r:8,c:3}},
-        {s:{r:15,c:0},e:{r:15,c:3}},
-        {s:{r:20,c:0},e:{r:20,c:3}},
-      ];
-      wsCapa['!rows'] = [{hpt:32},{hpt:22}];
-
-      // Aplica estilos manualmente na capa
-      // Linha 0: empresa
-      ['A1','A2'].forEach((addr,i)=>{
-        if(!wsCapa[addr]) wsCapa[addr]={t:'s',v:capaData[i][0]};
-        wsCapa[addr].s = {
-          fill: i===0 ? TITLE_FILL : HDR_FILL,
-          font: { name:"Calibri", sz: i===0?16:13, bold:true, color:{rgb:"FFFFFF"} },
-          alignment: { horizontal:"center", vertical:"center" }
-        };
-      });
-      // Section headers
-      ['A9','A16','A21'].forEach(addr=>{
-        if(!wsCapa[addr]) return;
-        wsCapa[addr].s = {
-          fill: HDR_FILL, font: HDR_FONT,
-          alignment:{horizontal:"left", vertical:"center"}
-        };
-      });
-      // Header da tabela de indicadores
-      ['A10','B10','C10'].forEach(addr=>{
-        if(!wsCapa[addr]) return;
-        wsCapa[addr].s = {
-          fill:{patternType:"solid", fgColor:{rgb:"d1fae5"}, bgColor:{rgb:"d1fae5"}},
-          font:{name:"Calibri", sz:10, bold:true, color:{rgb:"065f46"}},
-          alignment:{horizontal:"center", vertical:"center"},
-          border: FULL_BORDER
-        };
-      });
-      // Formatação percentual em col C linhas 12,13 (índice 11,12)
-      ['C12','C13'].forEach(addr=>{
-        if(wsCapa[addr]){ wsCapa[addr].z='0.0%'; }
-      });
-      // Formatação R$ em col B linhas 17,18,19
-      ['B17','B18','B19'].forEach(addr=>{
-        if(wsCapa[addr]){ wsCapa[addr].z='"R$ "#,##0.00'; }
-      });
-      // Bordas e estilo nas linhas de dados (linhas 10-13, 16-18, 21-23 = índices 10-12, 16-18, 21-23)
-      [10,11,12,13,16,17,18,21,22,23].forEach(r=>{
-        for(let c=0; c<4; c++){
-          const addr = XLSX.utils.encode_cell({r,c});
-          if(!wsCapa[addr]) continue;
-          wsCapa[addr].s = {
-            ...(wsCapa[addr].s || {}),
-            font: BODY_FONT,
-            border: FULL_BORDER,
-            alignment: { vertical:"center", horizontal: c===0?"left":"right" }
-          };
-          if(c===0){ wsCapa[addr].s.font = {...BODY_FONT, bold:true}; }
-        }
-      });
-      XLSX.utils.book_append_sheet(wb, 'Capa', wsCapa);
-
-      // ════════════════════════════════════════════════════════════
-      // ABA 2: INVENTÁRIO COMPLETO (com cabeçalho colorido)
-      // ════════════════════════════════════════════════════════════
-      const headersInv = ['Planta','Câmera','Status','Modelo','Fabricante','Gravador','IP de Acesso',
-        'Canal','Localização/Setor','Rotação (°)','FOV (°)','Valor Aquisição (R$)','Mês/Ano Instalação',
-        'Vida Útil (anos)','Garantia até','Vida Consumida (%)','Valor Atual Est. (R$)','Troca Recomendada','Saúde'];
-      const invRows = allRows.map(r => headersInv.map(h => r[h] ?? ''));
-      const invData = [['INVENTÁRIO DE CÂMERAS — IBMP CFTV', ...Array(headersInv.length-1).fill('')],
-                       headersInv, ...invRows];
-      const wsInv = XLSX.utils.aoa_to_sheet(invData);
-      wsInv['!cols'] = headersInv.map(h => ({wch: Math.max(h.length+2, 16)}));
-      wsInv['!merges'] = [{s:{r:0,c:0},e:{r:0,c:headersInv.length-1}}];
-      wsInv['!rows'] = [{hpt:24},{hpt:32}];
-      applyStyles(wsInv, 1, 2, 1+invRows.length, headersInv.length,
-        {titleRow:0, statusCol:2, currencyCols:[11,16]});
-      // freeze top header
-      wsInv['!freeze'] = {xSplit:0, ySplit:2};
-      XLSX.utils.book_append_sheet(wb, 'Inventário Completo', wsInv);
-
-      // ════════════════════════════════════════════════════════════
-      // ABA 3: POR PLANTA (uma aba para cada planta, se múltiplas)
-      // ════════════════════════════════════════════════════════════
-      if(escopo === 'all' && targetFloors.length > 1){
-        targetFloors.forEach(fl=>{
-          const rows = getCamRows(fl);
-          if(!rows.length) return;
-          const rowData = rows.map(r=>headersInv.map(h=>r[h]??''));
-          const data = [[`PLANTA: ${fl.name}`, ...Array(headersInv.length-1).fill('')],
-                        headersInv, ...rowData];
-          const ws = XLSX.utils.aoa_to_sheet(data);
-          ws['!cols'] = headersInv.map(h=>({wch:Math.max(h.length+2, 16)}));
-          ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:headersInv.length-1}}];
-          ws['!rows'] = [{hpt:24},{hpt:32}];
-          applyStyles(ws, 1, 2, 1+rowData.length, headersInv.length,
-            {titleRow:0, statusCol:2, currencyCols:[11,16]});
-          ws['!freeze'] = {xSplit:0, ySplit:2};
-          const safeName = fl.name.slice(0,28).replace(/[:\\/?*\[\]]/g,'_');
-          XLSX.utils.book_append_sheet(wb, safeName, ws);
+      // Helper: add a sheet from array of row arrays (each cell is already a cell object or a plain value)
+      function addSheet(name, rows, colWidths){
+        const ws = {};
+        let maxR = 0, maxC = 0;
+        rows.forEach((row, r)=>{
+          row.forEach((cell, c)=>{
+            const addr = XLSX.utils.encode_cell({r,c});
+            if(cell && typeof cell === 'object' && 't' in cell){
+              ws[addr] = cell;
+            } else {
+              const v = cell===null||cell===undefined?'':cell;
+              ws[addr] = {t: typeof v==='number'?'n':'s', v, s:{
+                font: BK, border: BDR,
+                alignment:{vertical:'center', horizontal: typeof v==='number'?'right':'left'}
+              }};
+            }
+            if(r>maxR) maxR=r;
+            if(c>maxC) maxC=c;
+          });
         });
+        ws['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0},e:{r:maxR,c:maxC}});
+        if(colWidths) ws['!cols'] = colWidths.map(w=>({wch:w}));
+        XLSX.utils.book_append_sheet(wb, name, ws);
       }
 
-      // ════════════════════════════════════════════════════════════
-      // ABA 4: CÂMERAS INATIVAS / ORÇAMENTO DE MANUTENÇÃO
-      // ════════════════════════════════════════════════════════════
+      // ── ABA 1: RESUMO EXECUTIVO ─────────────────────────────────────
+      const totalAll = floors.reduce((s,f)=>s+f.cameras.length,0);
+      const okAll    = floors.reduce((s,f)=>s+f.cameras.filter(c=>c.fn).length,0);
+      const nfAll    = totalAll - okAll;
+      const pat      = floors.reduce((s,f)=>s+f.cameras.reduce((sc2,c)=>sc2+(CAM_FIN[c.name]?.valor||PRICES[c.info.modelo]||0),0),0);
+      const custoNF  = floors.reduce((s,f)=>s+f.cameras.filter(c=>!c.fn).reduce((sc2,c)=>sc2+(PRICES[c.info.modelo]||0),0),0);
+      const H = (v)=>sc(v,{fill:G,font:WH,align:{horizontal:'left',vertical:'center'}});
+      const D = (v,bold)=>sc(v,{font:bold?BKB:BK});
+      const N = (v,fmt)=>sc(v,{font:BKB,align:{horizontal:'right',vertical:'center'},fmt});
+      addSheet('Resumo', [
+        [H('IBMP — CFTV Control · Relatório de Mapeamento')],
+        [D('Responsável SST:',true), D('Luan Hachiguti'), D('E-mail:',true), D('luan.hachiguti@ibmp.org.br')],
+        [D('Gerado em:',true), D(nowFmt)],
+        [],
+        [sc('INDICADORES OPERACIONAIS',{fill:G,font:WH})],
+        [sc('Métrica',{fill:G2,font:{...BK,bold:true},align:{horizontal:'center',vertical:'center'}}), sc('Valor',{fill:G2,font:{...BK,bold:true},align:{horizontal:'right',vertical:'center'}}), sc('%',{fill:G2,font:{...BK,bold:true},align:{horizontal:'right',vertical:'center'}})],
+        [D('Total de câmeras mapeadas',true), N(totalAll), sc('100%',{font:BK})],
+        [D('Câmeras operantes',true), N(okAll), sc(totalAll?Math.round(okAll/totalAll*100)+'%':'—',{font:{...BK,color:{rgb:'15803d'}}})],
+        [D('Câmeras inoperantes',true), N(nfAll), sc(totalAll?Math.round(nfAll/totalAll*100)+'%':'—',{font:{...BK,color:{rgb:'991b1b'}}})],
+        [D('Câmeras no banco de dados',true), N(DB.cameras.length)],
+        [],
+        [sc('PATRIMÔNIO E ORÇAMENTO',{fill:G,font:WH})],
+        [D('Patrimônio total estimado (R$)',true), N(pat,'#,##0.00')],
+        [D('Custo reposição câmeras NF (R$)',true), N(custoNF,'#,##0.00')],
+        [D('Custo médio por câmera (R$)',true), N(totalAll?Math.round(pat/totalAll):0,'#,##0.00')],
+        [],
+        [sc('ESTRUTURA',{fill:G,font:WH})],
+        [D('Plantas mapeadas',true), N(floors.length)],
+        [D('Gravadores cadastrados',true), N(DB.recorders.length)],
+      ], [38,20,10,32]);
+
+      // ── ABA 2: INVENTÁRIO COMPLETO ──────────────────────────────────
+      const invH = ['Planta','Câmera','Status','Modelo','Gravador','IP','Canal','Valor (R$)','Instalação','Vida Útil','Troca Recom.','Saúde'];
+      const invHRow = invH.map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
+      const invRows = allRows.map((r,i)=>{
+        const isNF = r['Status']==='Inativo';
+        const alt = i%2===1 ? {patternType:'solid',fgColor:{rgb:'f0fdf4'},bgColor:{rgb:'f0fdf4'}} : null;
+        const base = (v,bold)=>sc(v,{fill:alt||undefined,font:isNF&&bold?RD:bold?BKB:BK});
+        const num  = (v,fmt)=>sc(v,{fill:alt||undefined,font:isNF?RD:BK,fmt,align:{horizontal:'right',vertical:'center'}});
+        return [
+          base(r['Planta']), base(r['Câmera'],true),
+          sc(r['Status'],{fill:isNF?R:alt||undefined,font:isNF?RD:BK,align:{horizontal:'center',vertical:'center'}}),
+          base(r['Modelo']), base(r['Gravador']), base(r['IP de Acesso']),
+          sc(r['Canal'],{fill:alt||undefined,font:BK,align:{horizontal:'center',vertical:'center'}}),
+          num(r['Valor Aquisição (R$)'],'#,##0.00'),
+          base(r['Mês/Ano Instalação']),
+          sc(r['Vida Útil (anos)'],{fill:alt||undefined,font:BK,align:{horizontal:'center',vertical:'center'}}),
+          base(r['Troca Recomendada']),
+          base(r['Saúde']),
+        ];
+      });
+      addSheet('Inventário', [invHRow, ...invRows],
+        [18,30,12,18,16,16,8,14,14,10,14,10]);
+
+      // ── ABA 3: CÂMERAS INATIVAS ──────────────────────────────────────
       const nfRows = floors.flatMap(f=>getCamRows(f)).filter(r=>r['Status']==='Inativo');
       if(nfRows.length){
-        const totalNFInList = nfRows.reduce((s,r)=>s + (PRICES[r['Modelo']] || 0), 0);
-        const nfHeaders = ['Planta','Câmera','Modelo','Gravador','Localização','Custo Reposição (R$)'];
-        const nfData = nfRows.map(r=>[
-          r['Planta'], r['Câmera'], r['Modelo'], r['Gravador'], r['Localização/Setor'],
-          PRICES[r['Modelo']] || 0
-        ]);
-        const data = [
-          ['CÂMERAS INATIVAS — ORÇAMENTO DE MANUTENÇÃO', '','','','',''],
-          ['Total estimado para reposição:', '', '', '', '', totalNFInList],
-          ['',''],
-          nfHeaders,
-          ...nfData
-        ];
-        const wsNF = XLSX.utils.aoa_to_sheet(data);
-        wsNF['!cols'] = [{wch:18},{wch:32},{wch:18},{wch:18},{wch:30},{wch:22}];
-        wsNF['!merges'] = [
-          {s:{r:0,c:0},e:{r:0,c:5}},
-          {s:{r:1,c:0},e:{r:1,c:4}},
-        ];
-        wsNF['!rows'] = [{hpt:24},{hpt:22}];
-        // Cabeçalho título
-        const titAddr = 'A1';
-        if(wsNF[titAddr]) wsNF[titAddr].s = {fill:TITLE_FILL, font:TITLE_FONT, alignment:{horizontal:"center",vertical:"center"}};
-        // Total
-        ['A2','F2'].forEach(addr=>{
-          if(!wsNF[addr]) return;
-          wsNF[addr].s = {
-            fill:{patternType:"solid", fgColor:{rgb:"fef3c7"}, bgColor:{rgb:"fef3c7"}},
-            font:{name:"Calibri", sz:12, bold:true, color:{rgb:"92400e"}},
-            alignment:{horizontal: addr==='A2'?"right":"right", vertical:"center"},
-            border: FULL_BORDER
-          };
+        const nfHRow = ['Planta','Câmera','Modelo','Gravador','IP','Custo Reposição (R$)']
+          .map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
+        const nfData = nfRows.map((r,i)=>{
+          const alt = i%2===1?{patternType:'solid',fgColor:{rgb:'fff7f7'},bgColor:{rgb:'fff7f7'}}:null;
+          return [
+            sc(r['Planta'],{fill:alt||undefined,font:BK}),
+            sc(r['Câmera'],{fill:alt||undefined,font:BKB}),
+            sc(r['Modelo'],{fill:alt||undefined,font:{...BK,color:{rgb:'b45309'}}}),
+            sc(r['Gravador'],{fill:alt||undefined,font:BK}),
+            sc(r['IP de Acesso'],{fill:alt||undefined,font:BK}),
+            sc(PRICES[r['Modelo']]||0,{fill:alt||undefined,font:RD,fmt:'#,##0.00',align:{horizontal:'right',vertical:'center'}}),
+          ];
         });
-        if(wsNF['F2']) wsNF['F2'].z = '"R$ "#,##0.00';
-        applyStyles(wsNF, 3, 4, 3+nfData.length, 6, {currencyCols:[5]});
-        XLSX.utils.book_append_sheet(wb, 'Câmeras Inativas', wsNF);
+        const totalNF = nfRows.reduce((s,r)=>s+(PRICES[r['Modelo']]||0),0);
+        addSheet('Câmeras Inativas', [
+          nfHRow, ...nfData,
+          [],
+          [sc('TOTAL ESTIMADO REPOSIÇÃO',{fill:Y,font:BKB}), sc('',{fill:Y,font:BK}),
+           sc('',{fill:Y,font:BK}), sc('',{fill:Y,font:BK}), sc('',{fill:Y,font:BK}),
+           sc(totalNF,{fill:Y,font:{...BKB,color:{rgb:'92400e'}},fmt:'#,##0.00',align:{horizontal:'right',vertical:'center'}})],
+        ], [18,30,18,18,16,22]);
       }
 
-      // ════════════════════════════════════════════════════════════
-      // ABA 5: ANÁLISE POR PLANTA (dados pré-prontos para gráficos)
-      // ════════════════════════════════════════════════════════════
-      const analiseHeaders = ['Planta','Total','Ativas','Inativas','% Ativas','Patrimônio (R$)','Custo NF (R$)'];
-      const analiseData = floors.map(f=>{
-        const ok = f.cameras.filter(c=>c.fn).length;
-        const nf = f.cameras.length - ok;
-        const patrimonio = f.cameras.reduce((s,c)=>s + (CAM_FIN[c.name]?.valor||PRICES[c.info.modelo]||0), 0);
-        const custoNF = f.cameras.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0), 0);
-        return [f.name, f.cameras.length, ok, nf,
-                f.cameras.length ? ok/f.cameras.length : 0,
-                patrimonio, custoNF];
+      // ── ABA 4: ANÁLISE POR PLANTA ────────────────────────────────────
+      const aH = ['Planta','Total','Ativas','Inativas','% Operantes','Patrimônio (R$)','Custo NF (R$)'];
+      const aHRow = aH.map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
+      const aData = floors.map((f,i)=>{
+        const ok2=f.cameras.filter(c=>c.fn).length;
+        const nf2=f.cameras.length-ok2;
+        const pat2=f.cameras.reduce((s,c)=>s+(CAM_FIN[c.name]?.valor||PRICES[c.info.modelo]||0),0);
+        const nfc2=f.cameras.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+        const alt=i%2===1?{patternType:'solid',fgColor:{rgb:'f0fdf4'},bgColor:{rgb:'f0fdf4'}}:null;
+        const n=(v,fmt)=>sc(v,{fill:alt||undefined,font:BK,fmt,align:{horizontal:'right',vertical:'center'}});
+        return [
+          sc(f.name,{fill:alt||undefined,font:BKB}), n(f.cameras.length), n(ok2), n(nf2),
+          sc(f.cameras.length?Math.round(ok2/f.cameras.length*100)+'%':'—',{fill:alt||undefined,font:{...BK,color:{rgb:'15803d'}},align:{horizontal:'center',vertical:'center'}}),
+          n(pat2,'#,##0.00'), n(nfc2,'#,##0.00'),
+        ];
       });
-      const data5 = [
-        ['ANÁLISE POR PLANTA', '','','','','',''],
-        analiseHeaders, ...analiseData
-      ];
-      const wsAnalise = XLSX.utils.aoa_to_sheet(data5);
-      wsAnalise['!cols'] = [{wch:24},{wch:10},{wch:10},{wch:10},{wch:12},{wch:18},{wch:18}];
-      wsAnalise['!merges'] = [{s:{r:0,c:0},e:{r:0,c:6}}];
-      wsAnalise['!rows'] = [{hpt:24},{hpt:30}];
-      applyStyles(wsAnalise, 1, 2, 1+analiseData.length, 7,
-        {titleRow:0, currencyCols:[5,6], percentCols:[4]});
-      XLSX.utils.book_append_sheet(wb, 'Análise por Planta', wsAnalise);
+      addSheet('Análise por Planta', [aHRow, ...aData], [28,10,10,10,14,20,20]);
 
-      // ════════════════════════════════════════════════════════════
-      // ABA 6: ANÁLISE POR MODELO
-      // ════════════════════════════════════════════════════════════
-      const modeloMap = {};
+      // ── ABA 5: ANÁLISE POR MODELO ────────────────────────────────────
+      const mMap={};
       floors.flatMap(f=>f.cameras).forEach(c=>{
-        const mod = c.info.modelo || 'Não identificado';
-        if(!modeloMap[mod]) modeloMap[mod] = {total:0, ok:0, nf:0, valor:0};
-        modeloMap[mod].total++;
-        if(c.fn) modeloMap[mod].ok++; else modeloMap[mod].nf++;
-        modeloMap[mod].valor += PRICES[mod] || 0;
+        const m=c.info.modelo||'Não identificado';
+        if(!mMap[m])mMap[m]={tot:0,ok:0,nf:0};
+        mMap[m].tot++; if(c.fn)mMap[m].ok++; else mMap[m].nf++;
       });
-      const modeloRows = Object.entries(modeloMap)
-        .sort((a,b)=>b[1].total - a[1].total)
-        .map(([mod, d])=>[mod, d.total, d.ok, d.nf, d.valor, PRICES[mod]||0]);
-      const data6 = [
-        ['ANÁLISE POR MODELO DE CÂMERA','','','','',''],
-        ['Modelo','Quantidade','Operantes','Inoperantes','Investimento Total (R$)','Valor Unitário (R$)'],
-        ...modeloRows
-      ];
-      const wsModelo = XLSX.utils.aoa_to_sheet(data6);
-      wsModelo['!cols'] = [{wch:24},{wch:12},{wch:12},{wch:14},{wch:22},{wch:20}];
-      wsModelo['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}}];
-      wsModelo['!rows'] = [{hpt:24},{hpt:30}];
-      applyStyles(wsModelo, 1, 2, 1+modeloRows.length, 6,
-        {titleRow:0, currencyCols:[4,5]});
-      XLSX.utils.book_append_sheet(wb, 'Análise por Modelo', wsModelo);
+      const mH=['Modelo','Qtd','Operantes','Inoperantes','Valor Unit. (R$)','Investimento Total (R$)'];
+      const mHRow=mH.map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
+      const mData=Object.entries(mMap).sort((a,b)=>b[1].tot-a[1].tot).map(([m,d],i)=>{
+        const alt=i%2===1?{patternType:'solid',fgColor:{rgb:'f0fdf4'},bgColor:{rgb:'f0fdf4'}}:null;
+        const n=(v,fmt)=>sc(v,{fill:alt||undefined,font:BK,fmt,align:{horizontal:'right',vertical:'center'}});
+        return [sc(m,{fill:alt||undefined,font:BKB}),n(d.tot),n(d.ok),n(d.nf),
+                n(PRICES[m]||0,'#,##0.00'),n((PRICES[m]||0)*d.tot,'#,##0.00')];
+      });
+      addSheet('Análise por Modelo', [mHRow,...mData],[28,8,12,12,18,22]);
 
-      // ════════════════════════════════════════════════════════════
-      // ABA 7: GRAVADORES
-      // ════════════════════════════════════════════════════════════
+      // ── ABA 6: GRAVADORES ───────────────────────────────────────────
       if(DB.recorders.length){
-        const gravHeaders = ['Gravador','IP de Acesso','Modelo','Localização','Armazenamento','Câmeras Conectadas'];
-        const gravData = DB.recorders.map(g=>{
-          const camsCount = floors.flatMap(f=>f.cameras).filter(c=>c.info.gravador === g['NOME DO GRAVADOR']).length;
-          return [g['NOME DO GRAVADOR'], g['IP DE ACESSO']||'', g['MODELO']||'',
-                  g['LOCALIZAÇÃO']||'', g['Armazenamento']||'', camsCount];
+        const gH=['Gravador','IP de Acesso','Modelo','Localização','Armazenamento','Câmeras'];
+        const gHRow=gH.map(h=>sc(h,{fill:G,font:WH,align:{horizontal:'center',vertical:'center'}}));
+        const gData=DB.recorders.map((g,i)=>{
+          const cnt=floors.flatMap(f=>f.cameras).filter(c=>c.info.gravador===g['NOME DO GRAVADOR']).length;
+          const alt=i%2===1?{patternType:'solid',fgColor:{rgb:'f0fdf4'},bgColor:{rgb:'f0fdf4'}}:null;
+          const d=(v)=>sc(v,{fill:alt||undefined,font:BK});
+          return [d(g['NOME DO GRAVADOR']),
+                  sc(g['IP DE ACESSO']||'',{fill:alt||undefined,font:{...BK,color:{rgb:'1d4ed8'}}}),
+                  d(g['MODELO']||''), d(g['LOCALIZAÇÃO']||''), d(g['Armazenamento']||''),
+                  sc(cnt,{fill:alt||undefined,font:BKB,align:{horizontal:'center',vertical:'center'}})];
         });
-        const data7 = [
-          ['GRAVADORES (DVR/NVR)','','','','',''],
-          gravHeaders, ...gravData
-        ];
-        const wsGrav = XLSX.utils.aoa_to_sheet(data7);
-        wsGrav['!cols'] = [{wch:22},{wch:16},{wch:18},{wch:24},{wch:16},{wch:18}];
-        wsGrav['!merges'] = [{s:{r:0,c:0},e:{r:0,c:5}}];
-        wsGrav['!rows'] = [{hpt:24},{hpt:30}];
-        applyStyles(wsGrav, 1, 2, 1+gravData.length, 6, {titleRow:0});
-        XLSX.utils.book_append_sheet(wb, 'Gravadores', wsGrav);
+        addSheet('Gravadores',[gHRow,...gData],[24,18,18,26,16,12]);
       }
 
-      // ════════════════════════════════════════════════════════════
-      // Salva — usa Blob download para compatibilidade com xlsx-js-style
-      // ════════════════════════════════════════════════════════════
-      try {
-        const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array', cellStyles:true });
-        const blob  = new Blob([wbout], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const url   = URL.createObjectURL(blob);
-        const a     = document.createElement('a');
-        a.href      = url;
-        a.download  = `IBMP_CFTV_${escopo==='current'?F().name.replace(/\s+/g,'_'):'Completo'}_${dateFmt}.xlsx`;
+      // ── SALVA ────────────────────────────────────────────────────────
+      try{
+        const out = XLSX.write(wb,{bookType:'xlsx',type:'array',cellStyles:true});
+        const blob= new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href=url;
+        a.download=`IBMP_CFTV_${escopo==='current'?F().name.replace(/\s+/g,'_'):'Completo'}_${dateFmt}.xlsx`;
         document.body.appendChild(a); a.click();
-        setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+        setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},500);
         toast(`✓ Planilha exportada — ${allRows.length} câmeras · ${wb.SheetNames.length} abas`);
-      } catch(xlsxErr) {
-        console.error('[Excel export error]', xlsxErr);
-        toast('Erro ao exportar Excel: ' + xlsxErr.message);
+      }catch(err){
+        console.error('[XLSX error]',err);
+        toast('Erro ao exportar: '+err.message);
       }
       return;
     }
+
     // ── Fallback nativo: SpreadsheetML (XML) — sem dependência de CDN ──────
     // O Excel e LibreOffice abrem .xls com XML interno nativamente
     const xmlEsc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
