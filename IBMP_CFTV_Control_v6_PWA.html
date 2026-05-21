@@ -1552,7 +1552,7 @@ canvas.chart { width: 100%; display: block; }
 #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 10px; opacity: 0; transition: all .22s; pointer-events: none; z-index: 9999; box-shadow: var(--shadow2); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<!-- xlsx CDN removido: export usa SpreadsheetML nativo (sem dependência) -->
 </head>
 <body>
 <!-- ═══════════════════ PDF.js v5.6.205 EMBEDDED (offline) ═══════════════════ -->
@@ -5085,162 +5085,142 @@ function doExportCSV(escopo, formato){
   // ── XLSX ──────────────────────────────────────────
   // Se a lib do CDN carregou usa ela; caso contrário gera SpreadsheetML nativo (funciona offline)
   if(formato==='xlsx'){
-    if(typeof XLSX!=='undefined'){
-      // ── Geração limpa sem estilos (compatível com XLSX Community) ──
-      const wb  = XLSX.utils.book_new();
-      const now = new Date().toLocaleString('pt-BR');
-      const G  = '#16a34a';
+    // SpreadsheetML nativo — funciona 100% offline sem dependência de CDN
+    const IBMP_G  = '#16a34a';
+    const xmlEsc  = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const numFmt  = v => typeof v==='number' ? `<Cell ss:StyleID="num"><Data ss:Type="Number">${v}</Data></Cell>`
+                                              : `<Cell ss:StyleID="txt"><Data ss:Type="String">${xmlEsc(v)}</Data></Cell>`;
 
-      // ── ABA RESUMO ──────────────────────────────────────────────────
-      const totalAll = allRows.length;
-      const okAll    = allRows.filter(r=>r['Status']==='Ativo').length;
-      const nfAll    = totalAll - okAll;
-      const pat      = allRows.reduce((s,r)=>s+(PRICES[r['Modelo']]||0),0);
-      const custoNF  = allRows.filter(r=>r['Status']==='Inativo').reduce((s,r)=>s+(PRICES[r['Modelo']]||0),0);
-      const wsRes = XLSX.utils.json_to_sheet([
-        {'IBMP — CFTV Control v6.3': 'Relatório de Mapeamento', '': ''},
-        {'IBMP — CFTV Control v6.3': 'Responsável SST', '': 'Luan Hachiguti'},
-        {'IBMP — CFTV Control v6.3': 'E-mail', '': 'luan.hachiguti@ibmp.org.br'},
-        {'IBMP — CFTV Control v6.3': 'Gerado em', '': now},
-        {'IBMP — CFTV Control v6.3': '---', '': '---'},
-        {'IBMP — CFTV Control v6.3': 'Total câmeras no banco', '': DB.cameras.length},
-        {'IBMP — CFTV Control v6.3': 'Câmeras plotadas no mapa', '': totalAll},
-        {'IBMP — CFTV Control v6.3': 'Câmeras operantes', '': okAll},
-        {'IBMP — CFTV Control v6.3': 'Câmeras inoperantes', '': nfAll},
-        {'IBMP — CFTV Control v6.3': 'Gravadores cadastrados', '': DB.recorders.length},
-        {'IBMP — CFTV Control v6.3': '---', '': '---'},
-        {'IBMP — CFTV Control v6.3': 'Patrimônio total est. (R$)', '': pat},
-        {'IBMP — CFTV Control v6.3': 'Custo reposição NF (R$)', '': custoNF},
-        {'IBMP — CFTV Control v6.3': 'Custo médio por câmera (R$)', '': totalAll?Math.round(pat/totalAll):0},
-      ]);
-      wsRes['!cols'] = [{wch:34},{wch:28}];
-      XLSX.utils.book_append_sheet(wb, 'Resumo', wsRes);
-
-      // ── ABA INVENTÁRIO ──────────────────────────────────────────────
-      const wsInv = XLSX.utils.json_to_sheet(allRows);
-      wsInv['!cols'] = Object.keys(allRows[0]||{}).map(k=>({wch:Math.max(k.length+2,16)}));
-      XLSX.utils.book_append_sheet(wb, 'Inventário Completo', wsInv);
-
-      // ── ABA POR PLANTA ──────────────────────────────────────────────
-      if(escopo==='all' && targetFloors.length>1){
-        targetFloors.forEach(fl=>{
-          const rows=getCamRows(fl); if(!rows.length)return;
-          const ws=XLSX.utils.json_to_sheet(rows);
-          ws['!cols']=Object.keys(rows[0]).map(k=>({wch:Math.max(k.length+2,14)}));
-          XLSX.utils.book_append_sheet(wb,fl.name.slice(0,28).replace(/[:\/?*[\]]/g,'_'),ws);
-        });
-      }
-
-      // ── ABA INATIVAS ────────────────────────────────────────────────
-      const nfRows=allRows.filter(r=>r['Status']==='Inativo');
-      if(nfRows.length){
-        const wsNF=XLSX.utils.json_to_sheet(nfRows.map(r=>({
-          'Câmera':r['Câmera'],'Modelo':r['Modelo'],'Gravador':r['Gravador'],
-          'IP de Acesso':r['IP de Acesso'],
-          'Custo Reposição (R$)':PRICES[r['Modelo']]||0,
-          'Planta':r['Planta'],
-        })));
-        wsNF['!cols']=[{wch:30},{wch:18},{wch:18},{wch:16},{wch:20},{wch:20}];
-        XLSX.utils.book_append_sheet(wb,'Câmeras Inativas',wsNF);
-      }
-
-      // ── ABA ANÁLISE MODELO ──────────────────────────────────────────
-      const mMap={};
-      allRows.forEach(r=>{
-        const m=r['Modelo']||'-';
-        if(!mMap[m])mMap[m]={Modelo:m,Quantidade:0,Operantes:0,Inoperantes:0,'Valor Unit (R$)':0,'Total (R$)':0};
-        mMap[m].Quantidade++;
-        if(r['Status']==='Ativo')mMap[m].Operantes++; else mMap[m].Inoperantes++;
-        mMap[m]['Valor Unit (R$)']=PRICES[m]||0;
-        mMap[m]['Total (R$)']=(PRICES[m]||0)*mMap[m].Quantidade;
-      });
-      const wsMod=XLSX.utils.json_to_sheet(Object.values(mMap).sort((a,b)=>b.Quantidade-a.Quantidade));
-      wsMod['!cols']=[{wch:22},{wch:12},{wch:12},{wch:14},{wch:18},{wch:16}];
-      XLSX.utils.book_append_sheet(wb,'Análise por Modelo',wsMod);
-
-      // ── ABA GRAVADORES ──────────────────────────────────────────────
-      if(DB.recorders.length){
-        const camCount={};
-        allRows.forEach(r=>{camCount[r['Gravador']]=(camCount[r['Gravador']]||0)+1;});
-        const wsGrav=XLSX.utils.json_to_sheet(DB.recorders.map(g=>({
-          'Gravador':g['NOME DO GRAVADOR'],'Modelo':g['MODELO']||'',
-          'IP de Acesso':g['IP DE ACESSO']||'','Localização':g['LOCALIZAÇÃO']||'',
-          'Imagens':g['IMAGENS']||'','Armazenamento':g['Armazenamento']||'',
-          'Câmeras Conectadas':camCount[g['NOME DO GRAVADOR']]||0,
-        })));
-        wsGrav['!cols']=[{wch:22},{wch:16},{wch:16},{wch:26},{wch:22},{wch:16},{wch:16}];
-        XLSX.utils.book_append_sheet(wb,'Gravadores',wsGrav);
-      }
-
-      // ── DOWNLOAD ────────────────────────────────────────────────────
-      try{
-        const fname=`IBMP_CFTV_${escopo==='current'?F().name.replace(/\s+/g,'_'):'Completo'}_${dateFmt}.xlsx`;
-        XLSX.writeFile(wb, fname);
-        toast(`✓ Planilha exportada — ${allRows.length} câmeras · ${wb.SheetNames.length} abas`);
-      }catch(e){
-        // Fallback: manual blob download
-        const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-        const url=URL.createObjectURL(new Blob([out],{type:'application/octet-stream'}));
-        const a=document.createElement('a');a.href=url;
-        a.download=`IBMP_CFTV_${dateFmt}.xlsx`;
-        document.body.appendChild(a);a.click();
-        setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},500);
-        toast(`✓ Planilha exportada — ${allRows.length} câmeras`);
-      }
-      return;
+    // Monta uma aba a partir de array de objetos
+    function makeSheet(rows, title=''){
+      if(!rows.length) return '';
+      const headers = Object.keys(rows[0]);
+      const hdrRow  = '<Row ss:Height="22">' + headers.map(h=>`<Cell ss:StyleID="hdr"><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`).join('') + '</Row>';
+      const body    = rows.map((r,i)=>{
+        const sid   = i%2===1 ? 'alt' : 'txt';
+        const sidN  = i%2===1 ? 'altN' : 'num';
+        const isNF  = (r['Status']||r['Parecer']||'').includes('Inativ') || (r['Status']||'').includes('Não');
+        return '<Row ss:Height="18">' + headers.map(h=>{
+          const v  = r[h]??'';
+          const sn = isNF ? 'nf' : (typeof v==='number' ? sidN : sid);
+          const t  = typeof v==='number' ? 'Number' : 'String';
+          return `<Cell ss:StyleID="${sn}"><Data ss:Type="${t}">${xmlEsc(v)}</Data></Cell>`;
+        }).join('') + '</Row>';
+      }).join('');
+      return hdrRow + body;
     }
 
-    // ── Fallback nativo: SpreadsheetML (XML) — sem dependência de CDN ──────
-    // O Excel e LibreOffice abrem .xls com XML interno nativamente
-    const xmlEsc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    function rowsToSheet(rows){
-      if(!rows.length)return'';
-      const headers=Object.keys(rows[0]);
-      const hdr=headers.map(h=>`<Cell><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`).join('');
-      const body=rows.map(r=>
-        '<Row>'+headers.map(h=>{
-          const v=r[h]??'';
-          const t=typeof v==='number'?'Number':'String';
-          return`<Cell><Data ss:Type="${t}">${xmlEsc(v)}</Data></Cell>`;
-        }).join('')+'</Row>'
-      ).join('');
-      return`<Row>${hdr}</Row>${body}`;
-    }
-    // Montar abas
-    const sheets=[];
-    // Resumo
-    const resumoRows=targetFloors.map(f=>{
-      const cams=f.cameras;const ok=cams.filter(c=>c.fn).length;const nf=cams.filter(c=>!c.fn).length;
-      const patrimonio=cams.reduce((s,c)=>s+(CAM_FIN[c.name]?.valor||PRICES[c.info.modelo]||0),0);
-      const custoNF=cams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
-      return{'Planta':f.name,'Total':cams.length,'Ativas':ok,'Inativas':nf,
-             'Patrimônio (R$)':patrimonio,'Custo NF (R$)':custoNF,'Gerado':now.toLocaleDateString('pt-BR')};
+    // Resumo executivo
+    const totalA = allRows.length;
+    const okA    = allRows.filter(r=>r['Status']==='Ativo').length;
+    const nfA    = totalA-okA;
+    const patA   = allRows.reduce((s,r)=>s+(PRICES[r['Modelo']]||0),0);
+    const nfCost = allRows.filter(r=>r['Status']==='Inativo').reduce((s,r)=>s+(PRICES[r['Modelo']]||0),0);
+    const resumo = [
+      {'Métrica':'IBMP — CFTV Control v6.3',                'Valor':'Relatório de Mapeamento'},
+      {'Métrica':'Responsável SST',                         'Valor':'Luan Hachiguti'},
+      {'Métrica':'E-mail',                                  'Valor':'luan.hachiguti@ibmp.org.br'},
+      {'Métrica':'Gerado em',                               'Valor':now.toLocaleString('pt-BR')},
+      {'Métrica':'────────────────',                        'Valor':'────────────────'},
+      {'Métrica':'Total câmeras no banco',                  'Valor':DB.cameras.length},
+      {'Métrica':'Câmeras plotadas',                        'Valor':totalA},
+      {'Métrica':'Câmeras operantes',                       'Valor':okA},
+      {'Métrica':'Câmeras inoperantes',                     'Valor':nfA},
+      {'Métrica':'% Operantes',                             'Valor':totalA?Math.round(okA/totalA*100)+'%':'—'},
+      {'Métrica':'Gravadores cadastrados',                  'Valor':DB.recorders.length},
+      {'Métrica':'────────────────',                        'Valor':'────────────────'},
+      {'Métrica':'Patrimônio total est. (R$)',               'Valor':patA},
+      {'Métrica':'Custo reposição câmeras NF (R$)',          'Valor':nfCost},
+      {'Métrica':'Custo médio por câmera (R$)',              'Valor':totalA?Math.round(patA/totalA):0},
+    ];
+
+    // Análise por modelo
+    const mMap={};
+    allRows.forEach(r=>{
+      const m=r['Modelo']||'-';
+      if(!mMap[m]) mMap[m]={'Modelo':m,'Quantidade':0,'Operantes':0,'Inoperantes':0,'Valor Unit (R$)':PRICES[m]||0,'Total (R$)':0};
+      mMap[m]['Quantidade']++;
+      if(r['Status']==='Ativo') mMap[m]['Operantes']++; else mMap[m]['Inoperantes']++;
+      mMap[m]['Total (R$)']=(PRICES[m]||0)*mMap[m]['Quantidade'];
     });
-    sheets.push({name:'Resumo',content:rowsToSheet(resumoRows)});
-    // Câmeras
-    if(escopo==='all'){
-      targetFloors.forEach(f=>{const rows=getCamRows(f);if(rows.length)
-        sheets.push({name:f.name.slice(0,31),content:rowsToSheet(rows)});});
-    }else{
-      sheets.push({name:F().name.slice(0,25),content:rowsToSheet(allRows)});
-    }
-    // Inativas
-    const nfR2=floors.flatMap(f=>getCamRows(f)).filter(r=>r['Status']==='Inativo');
-    if(nfR2.length)sheets.push({name:'Inativas',content:rowsToSheet(nfR2)});
 
-    const xml=`<?xml version="1.0" encoding="UTF-8"?>
+    // Câmeras inativas
+    const nfRows2 = allRows.filter(r=>r['Status']==='Inativo').map(r=>({
+      'Câmera':r['Câmera'],'Modelo':r['Modelo'],'Gravador':r['Gravador'],
+      'IP':r['IP de Acesso'],'Nº Série':r['Nº Série']||'',
+      'Custo Reposição (R$)':PRICES[r['Modelo']]||0,'Planta':r['Planta'],
+    }));
+
+    // Gravadores
+    const camCount={};
+    allRows.forEach(r=>{camCount[r['Gravador']]=(camCount[r['Gravador']]||0)+1;});
+    const gravRows = DB.recorders.map(g=>({
+      'Gravador':g['NOME DO GRAVADOR'],'Modelo':g['MODELO']||'',
+      'IP de Acesso':g['IP DE ACESSO']||'','Localização':g['LOCALIZAÇÃO']||'',
+      'Armazenamento':g['Armazenamento']||'',
+      'Câmeras':camCount[g['NOME DO GRAVADOR']]||0,
+    }));
+
+    // Monta abas
+    const abas = [
+      {name:'Resumo',       rows: resumo},
+      {name:'Inventário',   rows: allRows},
+      ...(escopo==='all' && targetFloors.length>1
+          ? targetFloors.map(f=>({name:f.name.slice(0,28), rows:getCamRows(f)})).filter(a=>a.rows.length)
+          : []),
+      ...(nfRows2.length ? [{name:'Câmeras Inativas', rows:nfRows2}] : []),
+      {name:'Por Modelo',   rows: Object.values(mMap).sort((a,b)=>b['Quantidade']-a['Quantidade'])},
+      ...(gravRows.length  ? [{name:'Gravadores',     rows:gravRows}] : []),
+    ].filter(a=>a.rows.length);
+
+    const sheetsXML = abas.map(a=>
+      `<Worksheet ss:Name="${xmlEsc(a.name.slice(0,31))}">
+        <Table DefaultRowHeight="18">${makeSheet(a.rows)}</Table>
+        <WorksheetOptions><FreezePanes/><SplitHorizontal>1</SplitHorizontal><TopRowBottomPane>1</TopRowBottomPane></WorksheetOptions>
+      </Worksheet>`
+    ).join('');
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-${sheets.map(s=>`<Worksheet ss:Name="${xmlEsc(s.name)}"><Table>${s.content}</Table></Worksheet>`).join('')}
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:x="urn:schemas-microsoft-com:office:excel">
+<Styles>
+  <Style ss:ID="Default"><Alignment ss:Vertical="Center"/><Font ss:FontName="Calibri" ss:Size="10"/></Style>
+  <Style ss:ID="hdr"><Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>
+    <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/>
+    <Interior ss:Color="#16a34a" ss:Pattern="Solid"/>
+    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#d1d5db"/></Borders></Style>
+  <Style ss:ID="txt"><Alignment ss:Vertical="Center"/><Font ss:FontName="Calibri" ss:Size="10" ss:Color="#1f2937"/>
+    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#e5e7eb"/></Borders></Style>
+  <Style ss:ID="num"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+    <Font ss:FontName="Calibri" ss:Size="10" ss:Color="#1f2937"/>
+    <NumberFormat ss:Format="#,##0.00"/>
+    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#e5e7eb"/></Borders></Style>
+  <Style ss:ID="alt"><Alignment ss:Vertical="Center"/><Font ss:FontName="Calibri" ss:Size="10" ss:Color="#1f2937"/>
+    <Interior ss:Color="#f0fdf4" ss:Pattern="Solid"/>
+    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#d1fae5"/></Borders></Style>
+  <Style ss:ID="altN"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+    <Font ss:FontName="Calibri" ss:Size="10" ss:Color="#1f2937"/>
+    <Interior ss:Color="#f0fdf4" ss:Pattern="Solid"/>
+    <NumberFormat ss:Format="#,##0.00"/>
+    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#d1fae5"/></Borders></Style>
+  <Style ss:ID="nf"><Alignment ss:Vertical="Center"/>
+    <Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#991b1b"/>
+    <Interior ss:Color="#fee2e2" ss:Pattern="Solid"/>
+    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#fca5a5"/></Borders></Style>
+</Styles>
+${sheetsXML}
 </Workbook>`;
-    const blob=new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=`IBMP_CFTV_${escopo==='current'?F().name.replace(/\s+/g,'_'):'Completo'}_${dateFmt}.xls`;
-    document.body.appendChild(a);a.click();document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(a.href),5000);
-    toast(`✓ Planilha exportada — ${allRows.length} câmeras (formato XLS nativo)`);
+
+    const fname = `IBMP_CFTV_${escopo==='current'?F().name.replace(/\s+/g,'_'):'Completo'}_${dateFmt}.xls`;
+    const blob  = new Blob(['\uFEFF'+xml], {type:'application/vnd.ms-excel;charset=UTF-8'});
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    a.href=url; a.download=fname;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+    toast(`✓ Planilha exportada — ${allRows.length} câmeras · ${abas.length} abas`);
     return;
   }
 
