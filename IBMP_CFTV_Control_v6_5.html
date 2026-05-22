@@ -1114,7 +1114,7 @@ canvas.chart { width: 100%; display: block; }
 .bgt-total-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--warn); font-weight: 600; }
 .bgt-total-val { font-size: 28px; font-weight: 800; color: var(--warn); line-height: 1.1; }
 .bgt-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); }
-.bgt-row { display: grid; grid-template-columns: 1fr 120px 120px 110px; padding: 11px 16px; border-bottom: 1px solid var(--border2); font-size: 13px; align-items: center; }
+.bgt-row { display: grid; grid-template-columns: 1fr 110px 120px 110px 110px 110px; padding: 11px 16px; border-bottom: 1px solid var(--border2); font-size: 13px; align-items: center; }
 .bgt-row:last-child { border-bottom: none; }
 .bgt-row.hdr { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); background: var(--surface2); padding: 9px 16px; }
 .bgt-row:not(.hdr):hover { background: var(--surface2); }
@@ -1490,6 +1490,7 @@ canvas.chart { width: 100%; display: block; }
 .csv-ta:focus { border-color: var(--g); }
 .csv-hint { font-size: 10px; color: var(--text3); margin-top: 3px; }
 .price-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; padding-bottom: 9px; border-bottom: 1px solid var(--border2); }
+.price-row .price-in { width: 120px; flex-shrink: 0; }
 .price-row:last-child { border-bottom: none; }
 .price-lbl { flex: 1; font-size: 13px; color: var(--text); font-weight: 500; }
 .price-in { width: 120px; background: var(--surface2); border: 1px solid var(--border); color: var(--warn); font-size: 13px; font-weight: 600; padding: 6px 10px; border-radius: 7px; outline: none; text-align: right; }
@@ -2095,7 +2096,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <div class="bgt-total-card"><div class="bgt-total-lbl">Total estimado (câmeras Inativas)</div><div class="bgt-total-val" id="bgt-total">R$ 0,00</div></div>
       </div>
       <div class="bgt-table-wrap">
-        <div class="bgt-row hdr"><span>Câmera</span><span>Modelo</span><span>Localização</span><span style="text-align:right">Custo</span></div>
+        <div class="bgt-row hdr" id="bgt-header"><span>Câmera</span><span>Modelo</span><span>Localização</span><span>Equipamento</span><span style="color:#6366f1">Mão de Obra</span><span style="text-align:right">Total</span></div>
         <div id="bgt-rows"></div>
       </div>
     </div>
@@ -2628,6 +2629,7 @@ let DB={cameras:[],recorders:[],pareceres:[],recommended:[
   {'LOCAL':'Estacionamento Fundos','MODELO SUGERIDO':'VIP-5850-B','JUSTIFICATIVA':'Área sem cobertura CFTV identificada em vistoria','SETOR':'Externo'},
 ]};
 let PRICES={"VIP-3220-D": 490, "VIP-1130-D": 380, "VIP-1130-D-G3": 420, "VIP-1130-D-G4": 450, "VIP-1230-B-G3": 380, "VIP-1230-B-G4": 400, "VIP-1230-D-G2": 360, "VIP-1230-D-G4": 410, "VIP-5850-B": 1350, "NVD 3116 P": 3200, "NVD 3316 P": 3600, "MHDX 1016": 2500, "iMHDX 3016": 2800};
+let LABOR={"VIP-3220-D": 150, "VIP-1130-D": 150, "VIP-1130-D-G3": 150, "VIP-1130-D-G4": 150, "VIP-1230-B-G3": 150, "VIP-1230-B-G4": 150, "VIP-1230-D-G2": 150, "VIP-1230-D-G4": 150, "VIP-5850-B": 200, "NVD 3116 P": 300, "NVD 3316 P": 300, "MHDX 1016": 300, "iMHDX 3016": 300};
 
 // Vida útil estimada por modelo (anos)
 let LIFESPAN={"VIP-3220-D": 6, "VIP-1130-D": 6, "VIP-1130-D-G3": 6, "VIP-1130-D-G4": 6, "VIP-1230-B-G3": 6, "VIP-1230-B-G4": 6, "VIP-1230-D-G2": 6, "VIP-1230-D-G4": 6, "VIP-5850-B": 8, "NVD 3116 P": 8, "NVD 3316 P": 8, "MHDX 1016": 7, "iMHDX 3016": 7};
@@ -4371,38 +4373,60 @@ function renderBudget(){
   // Câmeras NF desta planta (excluir recomendadas)
   const nf=F().cameras.filter(c=>!c.rec&&!c.fn);
 
-  let total=0;
+  let totalProd=0, totalLabor=0;
   const rows=document.getElementById('bgt-rows');rows.innerHTML='';
   nf.forEach(cam=>{
-    const price=PRICES[cam.info.modelo]||0;total+=price;
+    const price=PRICES[cam.info.modelo]||0;
+    const labor=LABOR[cam.info.modelo]||0;
+    totalProd+=price; totalLabor+=labor;
     const d=document.createElement('div');d.className='bgt-row';
     d.innerHTML=`<span style="font-weight:500">${cam.name}</span>
       <span class="bgt-model">${cam.info.modelo||'—'}</span>
       <span class="bgt-loc">${cam.info.setor||cam.info.locGrav||'—'}</span>
-      <span class="bgt-cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>`;
+      <span class="bgt-cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+      <span class="bgt-cost" style="color:#6366f1">R$ ${labor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+      <span class="bgt-cost" style="font-weight:700">R$ ${(price+labor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>`;
     rows.appendChild(d);
   });
   if(!nf.length)rows.innerHTML='<div style="padding:20px;color:var(--text2);font-size:14px;text-align:center">Nenhuma câmera NF nesta planta</div>';
-  document.getElementById('bgt-total').textContent='R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2});
+
+  // Atualizar cabeçalho da tabela com colunas de mão de obra
+  const hdrEl=document.getElementById('bgt-header');
+  if(hdrEl) hdrEl.innerHTML=`
+    <span>CÂMERA</span><span>MODELO</span><span>LOCALIZAÇÃO</span>
+    <span>EQUIPAMENTO</span><span style="color:#6366f1">MÃO DE OBRA</span><span>TOTAL</span>`;
+
+  // Totais — exibir breakdown
+  const totalEl=document.getElementById('bgt-total');
+  if(totalEl){
+    totalEl.innerHTML=`
+      <span style="font-size:11px;color:var(--text3)">Equip.: R$ ${totalProd.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+      <span style="font-size:11px;color:#6366f1">M.O.: R$ ${totalLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+      <span style="font-weight:800;font-size:14px">Total: R$ ${(totalProd+totalLabor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>`;
+    totalEl.style.cssText='display:flex;align-items:center;gap:16px;justify-content:flex-end';
+  }
 
   // ── Seção de câmeras recomendadas — apenas as PLOTADAS nesta planta ──
   const existing=document.getElementById('bgt-rec-wrap');
   if(existing)existing.remove();
 
-  // Só as CamRec plotadas na planta atual
   const recPlotted=F().cameras.filter(c=>c.rec);
   if(recPlotted.length){
-    let recTotal=0;
+    let recTotalProd=0,recTotalLabor=0;
     const recRows=recPlotted.map(cam=>{
       const recData=DB.recommended.find(r=>r['LOCAL']===cam.name)||{};
       const modelo=recData['MODELO SUGERIDO']||cam._modelo||'VIP-3220-D';
-      const price=PRICES[modelo]||0;recTotal+=price;
-      const loc=recData['SETOR']||recData['JUSTIFICATIVA']||'Área sem câmeras.';
+      const price=PRICES[modelo]||0;
+      const labor=LABOR[modelo]||0;
+      recTotalProd+=price; recTotalLabor+=labor;
+      const loc=recData['SETOR']||recData['JUSTIFICATIVA']||'—';
       return `<div class="bgt-row" style="border-left:3px solid #ea580c">
         <span style="font-weight:600;color:#ea580c">${cam.name}</span>
         <span class="bgt-model">${modelo}</span>
         <span class="bgt-loc">${loc}</span>
         <span class="bgt-cost" style="color:#ea580c">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+        <span class="bgt-cost" style="color:#6366f1">R$ ${labor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+        <span class="bgt-cost" style="font-weight:700;color:#ea580c">R$ ${(price+labor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
       </div>`;
     }).join('');
 
@@ -4412,7 +4436,11 @@ function renderBudget(){
     wrap.innerHTML=`
       <div style="padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#ea580c;display:flex;align-items:center;justify-content:space-between;border-top:2px dashed rgba(234,88,12,.3);margin-top:4px">
         <span>CAMERAS RECOMENDADAS — ${F().name} (${recPlotted.length})</span>
-        <span>TOTAL ESTIMADO: R$ ${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+        <span style="display:flex;gap:12px">
+          <span style="font-weight:400;color:var(--text3)">Equip.: R$ ${recTotalProd.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+          <span style="font-weight:400;color:#6366f1">M.O.: R$ ${recTotalLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+          <span>Total: R$ ${(recTotalProd+recTotalLabor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+        </span>
       </div>
       ${recRows}`;
     rows.parentElement.appendChild(wrap);
@@ -4643,12 +4671,17 @@ function aTab(t){
 }
 function buildPriceRows(){
   const cont=document.getElementById('price-rows');cont.innerHTML='';
+  // Cabeçalho
+  const hdr=document.createElement('div');hdr.className='price-row';
+  hdr.style.cssText='font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding-bottom:4px;border-bottom:1px solid var(--border);margin-bottom:4px';
+  hdr.innerHTML=`<span class="price-lbl">MODELO</span><span style="text-align:right;width:120px">EQUIPAMENTO (R$)</span><span style="text-align:right;width:120px;color:#6366f1">MÃO DE OBRA (R$)</span>`;
+  cont.appendChild(hdr);
   const models=new Set([...DB.cameras.map(c=>c['MODELO CÂMERA']).filter(Boolean),...Object.keys(PRICES)]);
   models.forEach(m=>{
     const row=document.createElement('div');row.className='price-row';
     row.innerHTML=`<span class="price-lbl">${m}</span>
-      <input type="number" class="price-in" value="${PRICES[m]||0}" min="0" step="50" onchange="PRICES['${m}']=+this.value">
-      <span style="font-size:13px;color:var(--text3)">R$</span>`;
+      <input type="number" class="price-in" value="${PRICES[m]||0}" min="0" step="50" onchange="PRICES['${m}']=+this.value" title="Valor do equipamento">
+      <input type="number" class="price-in" value="${LABOR[m]||0}" min="0" step="50" onchange="LABOR['${m}']=+this.value" title="Custo de mão de obra" style="color:#6366f1;border-color:rgba(99,102,241,.3)">`;
     cont.appendChild(row);
   });
 }
@@ -6267,6 +6300,8 @@ function importInventory(e){
           const vida=parseInt(r['VIDA ÚTIL (anos)']||r['VIDA UTIL']||r['Vida Útil']||'');
           if(modelo&&!isNaN(valor)&&valor>0){ PRICES[modelo]=valor; atualizados++; }
           if(modelo&&!isNaN(vida)&&vida>0)   LIFESPAN[modelo]=vida;
+          const labor=parseFloat(String(r['MÃO DE OBRA (R$)']||r['MAO DE OBRA']||r['Mão de Obra']||r['LABOR']||'').replace(/[^\d.,]/g,'').replace(',','.'));
+          if(modelo&&!isNaN(labor)&&labor>0) LABOR[modelo]=labor;
         });
         if(atualizados>0) console.log(`[Import] ${atualizados} preços atualizados do Excel`);
       }
@@ -6832,18 +6867,21 @@ function mobSetView(v){
 
   if(v === 'dash'){
     const all  = allCams();
-    const ok   = all.filter(c=>c.fn).length;
-    const nfC  = all.filter(c=>!c.fn).length;
-    const tot  = all.length;
-    const cost = all.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+    const regular = all.filter(c=>!c.rec);
+    const recCams = all.filter(c=>c.rec);
+    const ok   = regular.filter(c=>c.fn).length;
+    const nfC  = regular.filter(c=>!c.fn).length;
+    const tot  = regular.length;
+    const cost = regular.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
     const pct  = DB.cameras.length ? Math.round(tot/DB.cameras.length*100) : 0;
     const byRec={};
-    all.filter(c=>!c.fn).forEach(c=>{const k=(c.info.gravador||'N/D').replace('DVR-BLOC','B').replace('DVR-','');byRec[k]=(byRec[k]||0)+1;});
+    regular.filter(c=>!c.fn).forEach(c=>{const k=(c.info.gravador||'N/D').replace('DVR-BLOC','B').replace('DVR-','');byRec[k]=(byRec[k]||0)+1;});
     const recEntries=Object.entries(byRec).sort((a,b)=>b[1]-a[1]).slice(0,8);
     const maxV=recEntries.length?recEntries[0][1]:1;
     const card=(bg,border,val,lbl)=>`<div style="background:${bg};border:1px solid ${border};border-radius:12px;padding:14px;text-align:center"><div style="font-size:22px;font-weight:800;line-height:1;color:${border}">${val}</div><div style="font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.04em">${lbl}</div></div>`;
     const bars=recEntries.length?recEntries.map(([k,val])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><div style="font-size:11px;color:var(--text2);width:60px;min-width:60px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${k}</div><div style="flex:1;height:18px;background:var(--surface3);border-radius:5px;overflow:hidden"><div style="width:${val/maxV*100}%;height:100%;background:var(--nf);border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:5px"><span style="font-size:11px;font-weight:700;color:#fff">${val}</span></div></div></div>`).join(''):`<div style="color:var(--text3);font-size:13px;padding:12px 0;text-align:center">Nenhuma câmera inativa</div>`;
-    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${card('var(--ok-bg)','var(--ok)',ok,'Ativas')}${card('var(--nf-bg)','var(--nf)',nfC,'Inativas')}${card('var(--surface2)','var(--border)',tot,'Mapeadas')}${card('rgba(217,119,6,.08)','var(--warn)','R$ '+cost.toLocaleString('pt-BR',{minimumFractionDigits:2}),'Custo NF')}</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text)">Status das Câmeras</div><div style="display:flex;align-items:center;gap:16px"><canvas id="mob-donut-c" width="110" height="110" style="flex-shrink:0"></canvas><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--ok);flex-shrink:0"></div><b>${ok}</b><span style="color:var(--text2)"> Ativas</span></div><div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--nf);flex-shrink:0"></div><b>${nfC}</b><span style="color:var(--text2)"> Inativas</span></div><div style="font-size:11px;color:var(--text3);margin-top:2px">${pct}% do banco mapeado</div></div></div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px"><div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text)">NF por Gravador</div>${bars}</div></div>`;
+    const recCard = recCams.length ? card('rgba(234,88,12,.08)','#ea580c',recCams.length,'Recomendadas') : '';
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">${card('var(--ok-bg)','var(--ok)',ok,'Ativas')}${card('var(--nf-bg)','var(--nf)',nfC,'Inativas')}${card('var(--surface2)','var(--border)',tot,'Mapeadas')}${card('rgba(217,119,6,.08)','var(--warn)','R$\u00a0'+cost.toLocaleString('pt-BR',{minimumFractionDigits:2}),'Custo NF')}${recCard}</div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text)">Status das Câmeras</div><div style="display:flex;align-items:center;gap:16px"><canvas id="mob-donut-c" width="110" height="110" style="flex-shrink:0"></canvas><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--ok);flex-shrink:0"></div><b>${ok}</b><span style="color:var(--text2)"> Ativas</span></div><div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:var(--nf);flex-shrink:0"></div><b>${nfC}</b><span style="color:var(--text2)"> Inativas</span></div>${recCams.length?`<div style="display:flex;align-items:center;gap:8px;font-size:13px"><div style="width:10px;height:10px;border-radius:3px;background:#ea580c;flex-shrink:0"></div><b>${recCams.length}</b><span style="color:var(--text2)"> Recomendadas</span></div>`:''}<div style="font-size:11px;color:var(--text3);margin-top:2px">${pct}% do banco mapeado</div></div></div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px"><div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text)">NF por Gravador</div>${bars}</div></div>`;
     requestAnimationFrame(()=>{
       const cv=document.getElementById('mob-donut-c');if(!cv)return;
       const dpr=window.devicePixelRatio||1;
@@ -6851,7 +6889,8 @@ function mobSetView(v){
       cv.style.width=size+'px';cv.style.height=size+'px';
       const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
       const cx=55,cy=55,R=46,r=26;
-      const segs=[{v:ok,c:'#16a34a'},{v:nfC,c:'#dc2626'},{v:Math.max(0,DB.cameras.length-tot),c:'#dde1e8'}];
+      const borderColor=getComputedStyle(document.documentElement).getPropertyValue('--border').trim()||'#dde1e8';
+      const segs=[{v:ok,c:'#16a34a'},{v:nfC,c:'#dc2626'},{v:Math.max(0,DB.cameras.length-tot-recCams.length),c:borderColor},...(recCams.length?[{v:recCams.length,c:'#ea580c'}]:[])];
       const sum=segs.reduce((s,x)=>s+x.v,0)||1;let angle=-Math.PI/2;
       segs.forEach(s=>{if(!s.v)return;const sw=s.v/sum*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,angle,angle+sw);ctx.closePath();ctx.fillStyle=s.c;ctx.fill();angle+=sw;});
       ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=document.documentElement.getAttribute('data-theme')==='dark'?'#0d1520':'#fff';ctx.fill();
@@ -6863,12 +6902,32 @@ function mobSetView(v){
 
   if(v === 'budget'){
     const all = allCams();
-    const nfCams = all.filter(c=>!c.fn);
+    const nfCams = all.filter(c=>!c.rec&&!c.fn);
+    const recCams = all.filter(c=>c.rec);
     const total = nfCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+    const recTotal = recCams.reduce((s,c)=>{
+      const recData=DB.recommended.find(r=>r['LOCAL']===c.name)||{};
+      const modelo=recData['MODELO SUGERIDO']||'VIP-3220-D';
+      return s+(PRICES[modelo]||0);
+    },0);
     const rows = nfCams.length
       ? nfCams.map(c=>`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:12px;font-weight:600;color:var(--text)">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.info.modelo||'—'}</div></div><div style="text-align:right"><div style="font-size:12px;font-weight:700;color:var(--warn)">R$ ${(PRICES[c.info.modelo]||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div style="font-size:11px;color:var(--text3)">${c.info.setor||c.info.gravador||'—'}</div></div></div>`).join('')
       : `<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">Nenhuma câmera inativa</div>`;
-    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="background:rgba(217,119,6,.08);border:1px solid var(--warn);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center"><div style="font-size:11px;font-weight:600;color:var(--warn);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Total Estimado (Câmeras Inativas)</div><div style="font-size:28px;font-weight:800;color:var(--warn)">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px">${rows}</div></div>`;
+    const recRows = recCams.length
+      ? recCams.map(c=>{
+          const recData=DB.recommended.find(r=>r['LOCAL']===c.name)||{};
+          const modelo=recData['MODELO SUGERIDO']||'VIP-3220-D';
+          const price=PRICES[modelo]||0;
+          return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);border-left:3px solid #ea580c;padding-left:8px"><div><div style="font-size:12px;font-weight:600;color:#ea580c">${c.name}</div><div style="font-size:11px;color:var(--text3)">${modelo}</div></div><div style="text-align:right"><div style="font-size:12px;font-weight:700;color:#ea580c">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div style="font-size:11px;color:var(--text3)">${recData['SETOR']||'—'}</div></div></div>`;
+        }).join('')
+      : '';
+    const recSection = recCams.length ? `
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#ea580c;margin:14px 0 8px;display:flex;justify-content:space-between">
+        <span>Câmeras Recomendadas (${recCams.length})</span>
+        <span>R$ ${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(234,88,12,.3);border-radius:14px;padding:14px">${recRows}</div>` : '';
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="background:rgba(217,119,6,.08);border:1px solid var(--warn);border-radius:14px;padding:14px;margin-bottom:14px;text-align:center"><div style="font-size:11px;font-weight:600;color:var(--warn);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Total Estimado (Câmeras Inativas)</div><div style="font-size:28px;font-weight:800;color:var(--warn)">R$ ${total.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px">${rows}</div>${recSection}</div>`;
     return;
   }
 
@@ -6878,15 +6937,25 @@ function mobSetView(v){
   }
 
   if(v === 'timeline'){
-    // Show both: upcoming renovations + recent occurrences
     const currentYear = new Date().getFullYear();
-    const allFloorCams = floors.flatMap(f=>f.cameras);
+    const allFloorCams = floors.flatMap(f=>f.cameras).filter(c=>!c.rec);
+
+    // KPIs via calcFinancial
+    const camData = allFloorCams.map(cam=>{
+      const c = calcFinancial(cam.name);
+      return {...c, name:cam.name, modelo:cam.info.modelo||'—',
+              floor:floors.find(f=>f.cameras.includes(cam))?.name||'—'};
+    });
+    const criticas = camData.filter(c=>c.pct>=90).length;
+    const atencao  = camData.filter(c=>c.pct>=70&&c.pct<90).length;
+    const kpiCard=(bg,col,val,lbl)=>`<div style="background:${bg};border:1px solid ${col};border-radius:12px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${col}">${val}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.04em">${lbl}</div></div>`;
 
     // Renovation schedule (next 5 years)
     const renovRows = [];
     for(let y=currentYear; y<=currentYear+4; y++){
       const camsY = allFloorCams.filter(c=>{
-        const yr = INSTALL_YEAR[c.name];
+        const fin=CAM_FIN[c.name]||{};
+        const yr = fin.dataInstalacao ? parseInt(fin.dataInstalacao.split('-')[0]) : INSTALL_YEAR[c.name];
         return yr && (yr + (LIFESPAN[c.info.modelo]||6)) === y;
       });
       if(!camsY.length) continue;
@@ -6897,12 +6966,29 @@ function mobSetView(v){
           <span style="font-size:13px;font-weight:800;color:${isNow?'var(--nf)':'var(--text)'}">${y}${isNow?' ⚠':''}</span>
           <span style="font-size:12px;font-weight:700;color:var(--warn)">R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
         </div>
-        <div style="font-size:11px;color:var(--text3)">${camsY.length} câmera(s): ${camsY.slice(0,3).map(c=>c.name).join(', ')}${camsY.length>3?' +'+( camsY.length-3)+' mais':''}</div>
+        <div style="font-size:11px;color:var(--text3)">${camsY.length} câmera(s): ${camsY.slice(0,3).map(c=>c.name).join(', ')}${camsY.length>3?' +'+(camsY.length-3)+' mais':''}</div>
       </div>`);
     }
     const renovSection = renovRows.length
       ? renovRows.join('')
       : '<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Nenhuma renovação prevista nos próximos 5 anos</div>';
+
+    // Camera priority list — sorted by pct desc, only those with data
+    const priorityList = [...camData].filter(c=>c.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,15);
+    const saudeColor={red:'#dc2626',yellow:'#d97706',green:'#16a34a'};
+    const prioRows = priorityList.length
+      ? priorityList.map(c=>`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+            <div style="font-size:12px;font-weight:600;color:var(--text);flex:1;margin-right:8px">${c.name}</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:${saudeColor[c.saude]}22;color:${saudeColor[c.saude]};white-space:nowrap">${c.pct}%${c.pct>=90?' Urgente':c.pct>=70?' Atenção':''}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${c.pct}%;height:100%;background:${saudeColor[c.saude]};border-radius:3px"></div></div>
+            <span style="font-size:10px;color:var(--text3);white-space:nowrap">${c.trocaStr}</span>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${c.modelo} · ${c.floor.replace('Bloco C1 IBMP - ','').replace('Bloco C1 - IBMP - ','')}</div>
+        </div>`).join('')
+      : '<div style="text-align:center;padding:12px;color:var(--text3);font-size:12px">Sem dados de instalação registrados</div>';
 
     // Recent occurrences
     const allLogs = Object.entries(typeof CAM_LOG!=='undefined'?CAM_LOG:{});
@@ -6914,8 +7000,14 @@ function mobSetView(v){
       : '<div style="text-align:center;padding:12px;color:var(--text3);font-size:12px">Sem ocorrências registradas</div>';
 
     ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        ${kpiCard('rgba(220,38,38,.08)','#dc2626',criticas,'Críticas ≥90%')}
+        ${kpiCard('rgba(217,119,6,.08)','#d97706',atencao,'Atenção 70–90%')}
+      </div>
       <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Renovação Prevista</div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px">${renovSection}</div>
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Câmeras por Prioridade</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px">${prioRows}</div>
       <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Ocorrências Recentes</div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px">${logItems}</div>
     </div>`;
