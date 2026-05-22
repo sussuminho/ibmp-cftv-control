@@ -1192,7 +1192,12 @@ canvas.chart { width: 100%; display: block; }
 /* tabela de câmeras críticas */
 .tl-table-wrap {
   background:var(--surface); border:1px solid var(--border);
-  border-radius:14px; overflow:hidden; box-shadow:var(--shadow);
+  border-radius:14px; overflow:visible; box-shadow:var(--shadow);
+  display:flex; flex-direction:column;
+}
+.tl-table-body {
+  overflow-y:auto; max-height:520px;
+  border-radius:0 0 14px 14px;
 }
 .tl-table-hdr {
   padding:14px 18px; border-bottom:1px solid var(--border);
