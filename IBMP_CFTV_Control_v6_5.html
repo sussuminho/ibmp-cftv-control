@@ -3899,10 +3899,6 @@ function printList(){
   const ativas=DB.cameras.filter(c=>isFn(c['NOME CANAL']||'')).length;
   const inativas=total-ativas;
   const mapeadas=plottedAll.size;
-  const totalRec=DB.recommended?DB.recommended.length:0;
-  const recImplantEquip=DB.recommended?DB.recommended.reduce((s,r)=>s+(PRICES[r['MODELO SUGERIDO']||'']||0),0):0;
-  const recImplantLabor=DB.recommended?DB.recommended.reduce((s,r)=>s+(LABOR[r['MODELO SUGERIDO']||'']||0),0):0;
-  const recImplantTotal=recImplantEquip+recImplantLabor;
 
   const reportHtml=`<!DOCTYPE html><html lang="pt-BR"><head>
 <meta charset="UTF-8">
@@ -3952,7 +3948,6 @@ function printList(){
   <div class="kpi nf"><div class="kpi-val">${inativas}</div><div class="kpi-lbl">Inativas</div></div>
   <div class="kpi bl"><div class="kpi-val">${mapeadas}</div><div class="kpi-lbl">Mapeadas na planta</div></div>
   <div class="kpi"><div class="kpi-val">${Math.round(ativas/Math.max(total,1)*100)}%</div><div class="kpi-lbl">Taxa operacional</div></div>
-  ${totalRec?`<div class="kpi" style="border-color:#ea580c;background:#fff7ed"><div class="kpi-val" style="color:#ea580c">${totalRec}</div><div class="kpi-lbl" style="color:#ea580c">Recomendadas</div></div>`:''}
 </div>
 <table>
   <thead><tr>
@@ -3966,43 +3961,6 @@ function printList(){
   </tr></thead>
   <tbody>${rows}</tbody>
 </table>
-${totalRec?`
-<div style="margin-top:16px;padding-top:10px;border-top:2px dashed #ea580c">
-  <div style="font-size:9pt;font-weight:800;color:#ea580c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">
-    Câmeras Recomendadas — Pontos de Implantação (${totalRec})
-  </div>
-  <table>
-    <thead><tr style="background:#ea580c">
-      <th style="width:22%">Local / Ponto</th>
-      <th style="width:14%">Modelo Sugerido</th>
-      <th style="width:20%">Setor / Justificativa</th>
-      <th style="width:12%;text-align:right">Equipamento</th>
-      <th style="width:12%;text-align:right">Mão de Obra</th>
-      <th style="width:12%;text-align:right">Total</th>
-    </tr></thead>
-    <tbody>${(DB.recommended||[]).map(r=>{
-      const modelo=r['MODELO SUGERIDO']||'—';
-      const just=r['JUSTIFICATIVA']||r['SETOR']||'—';
-      const eq=PRICES[modelo]||0;
-      const lb=LABOR[modelo]||0;
-      return `<tr style="background:#fff7ed;border-left:3px solid #ea580c">
-        <td style="font-weight:600;color:#ea580c">${r['LOCAL']||'—'}</td>
-        <td style="color:#d97706;font-weight:600">${modelo}</td>
-        <td style="color:#64748b;font-size:8pt">${just}</td>
-        <td style="text-align:right;font-weight:700;color:#ea580c">R$ ${eq.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-        <td style="text-align:right;font-weight:700;color:#6366f1">R$ ${lb.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-        <td style="text-align:right;font-weight:800;color:#ea580c">R$ ${(eq+lb).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      </tr>`;
-    }).join('')}
-    <tr style="background:#fff7ed;font-weight:700">
-      <td colspan="3" style="font-weight:800">Total de implantação</td>
-      <td style="text-align:right;color:#ea580c">R$ ${recImplantEquip.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      <td style="text-align:right;color:#6366f1">R$ ${recImplantLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      <td style="text-align:right;color:#ea580c;font-size:10pt">R$ ${recImplantTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-    </tr>
-    </tbody>
-  </table>
-</div>`:''}
 <div class="footer">
   <span>IBMP — Instituto de Biologia Molecular do Paraná · ibmp.org.br</span>
   <span>Lista CFTV_${dateFmt} · ${total} câmeras</span>
@@ -5050,6 +5008,7 @@ function scheduleAutoSave(){
         camFin:CAM_FIN,
         camObs:CAM_OBS,
         camLog:CAM_LOG,
+        recommended: DB.recommended||[],
         floors:floors.map(f=>({
           name:f.name,
           scale:f.scale,
@@ -5058,10 +5017,7 @@ function scheduleAutoSave(){
           panY:f.panY,
           imgRef:f.name,
           riskZones:f.riskZones||[],
-          cameras:f.cameras.map(c=>({
-            id:c.id,name:c.name,x:c.x,y:c.y,
-            rot:c.rot,fov:c.fov,ir:c.ir,fn:c.fn
-          }))
+          cameras:f.cameras.map(c=>c.toJSON())
         }))
       };
       const json=JSON.stringify(payload);
@@ -5080,6 +5036,8 @@ function loadAutoSave(){
     if(!raw)return false;
     const data=JSON.parse(raw);
     if(!data.floors||!data.floors.length)return false;
+    // Restaurar recomendadas ANTES de instanciar câmeras, senão CamRec fica sem _recData
+    if(data.recommended?.length) DB.recommended=data.recommended;
     // Só restaura posições de câmeras — imagem precisa ser recarregada
     data.floors.forEach((saved,i)=>{
       if(!floors[i])floors.push({name:saved.name,cameras:[],riskZones:[],zoom:1,panX:0,panY:0,image:null,imgB64:'',scale:0});
@@ -6007,39 +5965,29 @@ function exportPDF(selectedFloors) {
   const now = new Date().toLocaleDateString('pt-BR',{
     day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
   });
-  const allCams    = selectedFloors.flatMap(fl=>fl.cameras);
-  const regCams    = allCams.filter(c=>!c.rec);
-  const recCams    = allCams.filter(c=>c.rec);
-  const ok         = regCams.filter(c=>c.fn).length;
-  const inativas   = regCams.filter(c=>!c.fn).length;
-  const nfEquip    = regCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
-  const nfLabor    = regCams.filter(c=>!c.fn).reduce((s,c)=>s+(LABOR[c.info.modelo]||0),0);
-  const totalCost  = nfEquip + nfLabor;
-  const recEquip   = recCams.reduce((s,c)=>s+(PRICES[c._modelo||c.info.modelo||'']||0),0);
-  const recLabor   = recCams.reduce((s,c)=>s+(LABOR[c._modelo||c.info.modelo||'']||0),0);
-  const recTotal   = recEquip + recLabor;
+  const allCams   = selectedFloors.flatMap(fl=>fl.cameras);
+  const ok        = allCams.filter(c=>c.fn).length;
+  const inativas  = allCams.filter(c=>!c.fn).length;
+  const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
 
   // Planta em resolução original
   const showRec = document.getElementById('chk-show-rec')?.checked || false;
   const plantImgSrc = capturePlantImg(f, showRec); // para compatibilidade com table-pg
 
-  const nfRows = regCams.filter(c=>!c.fn).map(cam=>{
-    const eq=PRICES[cam.info.modelo]||0;
-    const lb=LABOR[cam.info.modelo]||0;
+  const nfRows = allCams.filter(c=>!c.fn).map(cam=>{
+    const price=PRICES[cam.info.modelo]||0;
     return `<tr>
       <td>${cam.name}</td>
       <td class="model">${cam.info.modelo||'—'}</td>
       <td class="loc">${cam.info.setor||cam.info.gravador||'—'}</td>
-      <td class="cost">R$ ${eq.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      <td class="cost" style="color:#6366f1">R$ ${lb.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      <td class="cost" style="font-size:9pt">R$ ${(eq+lb).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td class="cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
     </tr>`;
   }).join('');
 
   // KPIs patrimoniais (Etapa B integrada)
   const currentYear = new Date().getFullYear();
-  const totalAssets = regCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
-  const depreciated = regCams.reduce((s,c)=>{
+  const totalAssets = allCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+  const depreciated = allCams.reduce((s,c)=>{
     const price=PRICES[c.info.modelo]||0;
     const life=LIFESPAN[c.info.modelo]||6;
     const install=INSTALL_YEAR[c.name]||2022;
@@ -6146,16 +6094,10 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
 
   <h2>Resumo Operacional</h2>
   <div class="kpis">
-    <div class="kpi"><div class="kv">${regCams.length}</div><div class="kl">Câmeras mapeadas</div></div>
+    <div class="kpi"><div class="kv">${allCams.length}</div><div class="kl">Câmeras mapeadas</div></div>
     <div class="kpi ok"><div class="kv">${ok}</div><div class="kl">Ativas</div></div>
     <div class="kpi nf"><div class="kv">${inativas}</div><div class="kl">Inativas</div></div>
-    ${recCams.length?`<div class="kpi" style="border-color:#ea580c;background:#fff7ed"><div class="kv" style="color:#ea580c">${recCams.length}</div><div class="kl" style="color:#ea580c">Recomendadas</div></div>`:''}
-  </div>
-  <div class="kpis" style="margin-top:-10px">
-    <div class="kpi wn"><div class="kv" style="font-size:10pt">R$&nbsp;${nfEquip.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Equipamentos NF</div></div>
-    <div class="kpi" style="border-color:#6366f1"><div class="kv" style="font-size:10pt;color:#6366f1">R$&nbsp;${nfLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl" style="color:#6366f1">Mão de obra NF</div></div>
-    <div class="kpi" style="border-color:#16a34a;background:#f0fdf4"><div class="kv" style="font-size:10pt;color:#16a34a">R$&nbsp;${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl" style="color:#16a34a">Total manutenção NF</div></div>
-    ${recCams.length?`<div class="kpi" style="border-color:#ea580c;background:#fff7ed"><div class="kv" style="font-size:10pt;color:#ea580c">R$&nbsp;${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl" style="color:#ea580c">Total implantação rec.</div></div>`:''}
+    <div class="kpi wn"><div class="kv">R$&nbsp;${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Custo est. (NF)</div></div>
   </div>
 
   <h2 style="margin-top:4px">Resumo Patrimonial</h2>
@@ -6243,59 +6185,13 @@ ${inativas > 0 ? `
   <table>
     <thead><tr>
       <th>Câmera</th><th>Modelo</th><th>Localização</th>
-      <th style="text-align:right">Equipamento</th>
-      <th style="text-align:right;color:#6366f1">Mão de Obra</th>
-      <th style="text-align:right">Total</th>
+      <th style="text-align:right">Custo Est.</th>
     </tr></thead>
     <tbody>${nfRows}</tbody>
     <tfoot><tr>
       <td colspan="3"><strong>Total estimado</strong></td>
-      <td class="cost" style="font-size:8pt">R$ ${nfEquip.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      <td class="cost" style="color:#6366f1;font-size:8pt">R$ ${nfLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
       <td class="cost">R$ ${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
     </tr></tfoot>
-  </table>
-</div>
-` : ''}
-
-<!-- PÁG CÂMERAS RECOMENDADAS: só renderiza se houver recomendadas plotadas -->
-${recCams.length > 0 ? `
-<div class="table-pg after-plant">
-  <h2>Câmeras Recomendadas — Pontos de Implantação</h2>
-  <table>
-    <thead><tr>
-      <th>Local / Ponto</th><th>Modelo Sugerido</th><th>Setor / Justificativa</th>
-      <th style="text-align:right">Equipamento</th>
-      <th style="text-align:right;color:#6366f1">Mão de Obra</th>
-      <th style="text-align:right">Total</th>
-    </tr></thead>
-    <tbody>${recCams.map(cam=>{
-      const rd=DB.recommended.find(r=>r['LOCAL']===cam.name)||{};
-      const modelo=rd['MODELO SUGERIDO']||cam._modelo||'VIP-3220-D';
-      const just=rd['JUSTIFICATIVA']||rd['SETOR']||'—';
-      const eq=PRICES[modelo]||0;
-      const lb=LABOR[modelo]||0;
-      return `<tr style="border-left:3px solid #ea580c">
-        <td style="font-weight:600;color:#ea580c">${cam.name}</td>
-        <td class="model">${modelo}</td>
-        <td class="loc">${just}</td>
-        <td class="cost" style="color:#ea580c">R$ ${eq.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-        <td class="cost" style="color:#6366f1">R$ ${lb.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-        <td class="cost" style="color:#ea580c">R$ ${(eq+lb).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      </tr>`;
-    }).join('')}</tbody>
-    <tfoot>
-      <tr>
-        <td colspan="3"><strong>Total implantação recomendada</strong></td>
-        <td class="cost" style="color:#ea580c;font-size:8pt">R$ ${recEquip.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-        <td class="cost" style="color:#6366f1;font-size:8pt">R$ ${recLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-        <td class="cost" style="color:#ea580c">R$ ${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      </tr>
-      ${(inativas>0&&recCams.length>0)?`<tr style="background:#f0fdf4">
-        <td colspan="5" style="font-weight:700;color:#0f1923">Investimento total (Manutenção NF + Implantação)</td>
-        <td class="cost" style="font-size:11pt;color:#16a34a">R$ ${(totalCost+recTotal).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-      </tr>`:''}
-    </tfoot>
   </table>
 </div>
 ` : ''}
@@ -6411,7 +6307,7 @@ function importInventory(e){
       }
 
       // ── ABA CÂMERAS RECOMENDADAS (opcional) ──────────────────────────────
-      const wsRec=findSheet('Recomendad','Recommend','recom');
+      const wsRec=findSheet('Recomendad','Recommend','recom','Rec.','REC','Suger','suger','Novos','novos','Implant','implant');
       if(wsRec){
         const rowsRec=XLSX.utils.sheet_to_json(wsRec,{defval:''});
         DB.recommended=rowsRec
@@ -7264,13 +7160,14 @@ function buildProjectJSON(){
   return {
     version: 2,
     exported: new Date().toISOString(),
-    db: { cameras: DB.cameras, recorders: DB.recorders, pareceres: DB.pareceres },
+    db: { cameras: DB.cameras, recorders: DB.recorders, pareceres: DB.pareceres,
+          recommended: DB.recommended || [] },
     floors: floors.map(f => ({
       id: f.id, name: f.name,
       panX: f.panX, panY: f.panY, zoom: f.zoom,
       scale: f.scale, riskZones: f.riskZones || [],
       image: (f.imgB64) || (f.image && f.image.src ? f.image.src : null),
-      cameras: f.cameras.map(c => ({id:c.id,name:c.name,x:c.x,y:c.y,rot:c.rot,fov:c.fov,ir:c.ir}))
+      cameras: f.cameras.map(c => c.toJSON())
     })),
     inventory: typeof CAM_INV !== 'undefined' ? CAM_INV : {},
     camLog:    typeof CAM_LOG !== 'undefined' ? CAM_LOG  : {}
@@ -7341,6 +7238,8 @@ function loadProjectJSON(data){
     if(data.db.cameras  && data.db.cameras.length)   DB.cameras   = data.db.cameras;
     if(data.db.recorders&& data.db.recorders.length) DB.recorders = data.db.recorders;
     if(data.db.pareceres&& data.db.pareceres.length) DB.pareceres = data.db.pareceres;
+    // Restaurar recomendadas ANTES de instanciar câmeras, senão CamRec fica sem _recData
+    if(data.db.recommended&& data.db.recommended.length) DB.recommended = data.db.recommended;
   }
   if(data.floors && data.floors.length){
     floors = data.floors.map(fd => {
