@@ -4241,11 +4241,11 @@ function renderDash(){
     grid.appendChild(d);
   });
 
-  // Donut — só câmeras normais
+  // Donut — só câmeras normais + fatia laranja para recomendadas
   const dc=document.getElementById('donut-card');
   dc.innerHTML=`<h3>Status das Câmeras</h3><p class="sub">Todas as plantas combinadas</p>
   <div class="donut-wrap">
-    <canvas id="donut-c" width="160" height="160"></canvas>
+    <canvas id="donut-c" width="220" height="220" style="width:110px;height:110px"></canvas>
     <div class="donut-legend">
       <div class="dl-item"><div class="dl-dot" style="background:var(--ok)"></div><span class="dl-val">${ok}</span><span class="dl-lbl">&nbsp;Ativas</span></div>
       <div class="dl-item"><div class="dl-dot" style="background:var(--nf)"></div><span class="dl-val">${nf}</span><span class="dl-lbl">&nbsp;Inativas</span></div>
@@ -4253,11 +4253,17 @@ function renderDash(){
       ${recCams.length?`<div class="dl-item"><div class="dl-dot" style="background:#ea580c"></div><span class="dl-val">${recCams.length}</span><span class="dl-lbl">&nbsp;Recomendadas</span></div>`:''}
     </div>
   </div>`;
-  // draw donut
+  // draw donut — 2× resolution para nitidez
   setTimeout(()=>{
     const cv=document.getElementById('donut-c');if(!cv)return;
-    const ctx=cv.getContext('2d'),cx=80,cy=80,R=65,r=38;
-    const segs=[{v:ok,c:'#16a34a'},{v:nf,c:'#dc2626'},{v:Math.max(0,DB.cameras.length-total),c:getComputedStyle(document.documentElement).getPropertyValue('--border').trim()||'#dde1e8'}];
+    const ctx=cv.getContext('2d'),cx=110,cy=110,R=90,r=52;
+    const borderColor=getComputedStyle(document.documentElement).getPropertyValue('--border').trim()||'#dde1e8';
+    const segs=[
+      {v:ok,c:'#16a34a'},
+      {v:nf,c:'#dc2626'},
+      {v:Math.max(0,DB.cameras.length-total),c:borderColor},
+      ...(recCams.length?[{v:recCams.length,c:'#ea580c'}]:[])
+    ];
     const sum=segs.reduce((s,x)=>s+x.v,0)||1;
     let angle=-Math.PI/2;
     segs.forEach(s=>{
@@ -4267,11 +4273,16 @@ function renderDash(){
       ctx.fillStyle=s.c;ctx.fill();
       angle+=sw;
     });
+    // anel interior
     ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
     const theme=document.documentElement.getAttribute('data-theme');
     ctx.fillStyle=theme==='light'?'#ffffff':'#0d1520';ctx.fill();
-    ctx.font='700 22px Inter,sans-serif';ctx.fillStyle=getComputedStyle(document.body).color;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(total,cx,cy-8);ctx.font='400 11px Inter,sans-serif';ctx.fillStyle='#8a95a3';ctx.fillText('mapeadas',cx,cy+10);
+    // texto central
+    ctx.font='800 28px Inter,sans-serif';ctx.fillStyle=getComputedStyle(document.body).color;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(total,cx,cy-10);
+    ctx.font='400 13px Inter,sans-serif';ctx.fillStyle='#8a95a3';
+    ctx.fillText('mapeadas',cx,cy+13);
   },50);
 
   // Bar chart — NF por gravador/bloco (excluir recomendadas)
@@ -4365,19 +4376,21 @@ function renderBudget(){
   if(!nf.length)rows.innerHTML='<div style="padding:20px;color:var(--text2);font-size:14px;text-align:center">Nenhuma câmera NF nesta planta</div>';
   document.getElementById('bgt-total').textContent='R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2});
 
-  // ── Seção de câmeras recomendadas — lista global de DB.recommended ──
+  // ── Seção de câmeras recomendadas — apenas as PLOTADAS nesta planta ──
   const existing=document.getElementById('bgt-rec-wrap');
   if(existing)existing.remove();
 
-  const allRec=DB.recommended; // lista global, independente de planta
-  if(allRec.length){
+  // Só as CamRec plotadas na planta atual
+  const recPlotted=F().cameras.filter(c=>c.rec);
+  if(recPlotted.length){
     let recTotal=0;
-    const recRows=allRec.map(r=>{
-      const modelo=r['MODELO SUGERIDO']||'VIP-3220-D';
+    const recRows=recPlotted.map(cam=>{
+      const recData=DB.recommended.find(r=>r['LOCAL']===cam.name)||{};
+      const modelo=recData['MODELO SUGERIDO']||cam._modelo||'VIP-3220-D';
       const price=PRICES[modelo]||0;recTotal+=price;
-      const loc=r['SETOR']||r['JUSTIFICATIVA']||'—';
+      const loc=recData['SETOR']||recData['JUSTIFICATIVA']||'Área sem câmeras.';
       return `<div class="bgt-row" style="border-left:3px solid #ea580c">
-        <span style="font-weight:600;color:#ea580c">${r['LOCAL']}</span>
+        <span style="font-weight:600;color:#ea580c">${cam.name}</span>
         <span class="bgt-model">${modelo}</span>
         <span class="bgt-loc">${loc}</span>
         <span class="bgt-cost" style="color:#ea580c">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
@@ -4389,7 +4402,7 @@ function renderBudget(){
     wrap.style.cssText='margin-top:16px';
     wrap.innerHTML=`
       <div style="padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#ea580c;display:flex;align-items:center;justify-content:space-between;border-top:2px dashed rgba(234,88,12,.3);margin-top:4px">
-        <span>CAMERAS RECOMENDADAS (${allRec.length})</span>
+        <span>CAMERAS RECOMENDADAS — ${F().name} (${recPlotted.length})</span>
         <span>TOTAL ESTIMADO: R$ ${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
       </div>
       ${recRows}`;
