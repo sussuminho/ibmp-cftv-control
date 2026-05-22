@@ -3707,7 +3707,11 @@ function calcFinancial(name){
   const modelo=(DB.cameras.find(c=>c['NOME CANAL']===name)||{})['MODELO CÂMERA']||'';
   const valor=fin.valor||PRICES[modelo]||0;
   const vida=fin.vidaUtil||LIFESPAN[modelo]||6;
-  const dataStr=fin.dataInstalacao||null;
+  // Usar dataInstalacao do CAM_FIN; se não tiver, usar INSTALL_YEAR como fallback
+  let dataStr=fin.dataInstalacao||null;
+  if(!dataStr&&INSTALL_YEAR[name]){
+    dataStr=INSTALL_YEAR[name]+'-01'; // Janeiro do ano de instalação
+  }
   const now=new Date();
   let pct=0,valorAtual=valor,mesesRestantes=null,trocaStr='—',depStr='0%';
   if(dataStr){
@@ -4807,8 +4811,8 @@ function renderTimeline(){
   const currentYear=new Date().getFullYear();
   const now=new Date();
 
-  // Coletar todas as câmeras de todos os floors
-  const allCams=floors.flatMap(f=>f.cameras);
+  // Coletar todas as câmeras de todos os floors — excluir recomendadas
+  const allCams=floors.flatMap(f=>f.cameras).filter(c=>!c.rec);
   const totalCams=allCams.length;
 
   // Calcular dados financeiros por câmera
