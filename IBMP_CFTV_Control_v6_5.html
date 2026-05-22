@@ -2113,7 +2113,95 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
           </button>
         </div>
       </div>
-      <div class="cov-canvas-wrap"><canvas id="cov-c"></canvas></div>
+      <div style="display:flex;flex:1;overflow:hidden;gap:0">
+        <div class="cov-canvas-wrap" style="flex:1"><canvas id="cov-c"></canvas></div>
+        <div id="cov-stats-panel" style="width:220px;flex-shrink:0;overflow-y:auto;border-left:1px solid var(--border);background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)">Indicadores — <span id="csp-floor-name" style="color:var(--g);text-transform:none;font-weight:600">—</span></div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 8px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--text)" id="csp-total">0</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:2px">Mapeadas</div>
+            </div>
+            <div style="background:var(--ok-bg);border:1px solid var(--ok-border);border-radius:9px;padding:10px 8px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--ok)" id="csp-ok">0</div>
+              <div style="font-size:9px;color:var(--ok);margin-top:2px">Ativas</div>
+            </div>
+            <div style="background:var(--nf-bg);border:1px solid var(--nf-border);border-radius:9px;padding:10px 8px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:var(--nf)" id="csp-nf">0</div>
+              <div style="font-size:9px;color:var(--nf);margin-top:2px">Inativas</div>
+            </div>
+            <div style="background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.25);border-radius:9px;padding:10px 8px;text-align:center">
+              <div style="font-size:20px;font-weight:800;color:#ea580c" id="csp-rec">0</div>
+              <div style="font-size:9px;color:#ea580c;margin-top:2px">Recomendadas</div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px;display:flex;justify-content:space-between">
+              <span>Taxa operacional</span><span id="csp-op-pct" style="color:var(--ok)">0%</span>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;height:7px;overflow:hidden">
+              <div id="csp-op-bar" style="height:100%;background:var(--ok);border-radius:6px;transition:width .4s;width:0%"></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px;display:flex;justify-content:space-between">
+              <span>Cobertura do banco</span><span id="csp-cov-pct" style="color:var(--b)">0%</span>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;height:7px;overflow:hidden">
+              <div id="csp-cov-bar" style="height:100%;background:var(--b);border-radius:6px;transition:width .4s;width:0%"></div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border);padding-top:8px">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:7px">Custo estimado (NF)</div>
+            <div style="background:var(--warn-bg);border:1px solid rgba(217,119,6,.25);border-radius:9px;padding:9px 10px">
+              <div style="font-size:9px;color:var(--warn);margin-bottom:3px">Equipamentos</div>
+              <div style="font-size:12px;font-weight:700;color:var(--warn)" id="csp-equip">—</div>
+            </div>
+            <div style="background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.22);border-radius:9px;padding:9px 10px;margin-top:5px">
+              <div style="font-size:9px;color:#6366f1;margin-bottom:3px">Mão de obra</div>
+              <div style="font-size:12px;font-weight:700;color:#6366f1" id="csp-labor">—</div>
+            </div>
+            <div style="background:var(--g-light);border:1px solid var(--g-mid);border-radius:9px;padding:9px 10px;margin-top:5px">
+              <div style="font-size:9px;color:var(--g3);margin-bottom:3px;font-weight:700">Total NF</div>
+              <div style="font-size:13px;font-weight:800;color:var(--g3)" id="csp-total-nf">—</div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border);padding-top:8px" id="csp-rec-section" style="display:none">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#ea580c;margin-bottom:7px">Implantação recomendada</div>
+            <div style="background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.25);border-radius:9px;padding:9px 10px">
+              <div style="font-size:9px;color:#ea580c;margin-bottom:3px">Total estimado</div>
+              <div style="font-size:12px;font-weight:800;color:#ea580c" id="csp-rec-total">—</div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border);padding-top:8px" id="csp-grand-section">
+            <div style="background:linear-gradient(135deg,var(--g-light),rgba(99,102,241,.07));border:1px solid var(--g-mid);border-radius:9px;padding:10px 11px">
+              <div style="font-size:9px;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Investimento Total</div>
+              <div style="font-size:14px;font-weight:900;color:var(--g3)" id="csp-grand-total">—</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:3px">Manutenção NF + Implantação</div>
+            </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border);padding-top:8px">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Zonas de risco</div>
+            <div style="display:flex;gap:6px">
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center">
+                <div style="font-size:18px;font-weight:800;color:var(--text)" id="csp-zones">0</div>
+                <div style="font-size:9px;color:var(--text3);margin-top:2px">Zonas</div>
+              </div>
+              <div style="flex:1;background:var(--nf-bg);border:1px solid var(--nf-border);border-radius:8px;padding:8px;text-align:center">
+                <div style="font-size:18px;font-weight:800;color:var(--nf)" id="csp-blind-zones">0</div>
+                <div style="font-size:9px;color:var(--nf);margin-top:2px">Pt. cegos</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Timeline view -->
@@ -4447,6 +4535,50 @@ function renderBudget(){
   }
 }
 
+// ═══════════════ COVERAGE STATS PANEL ═══════════════
+function updateCovStatsPanel(){
+  const f=F();
+  const allC=f.cameras;
+  const regular=allC.filter(c=>!c.rec);
+  const recC=allC.filter(c=>c.rec);
+  const ok=regular.filter(c=>c.fn).length;
+  const nf=regular.filter(c=>!c.fn).length;
+  const total=regular.length;
+  const opPct=total?Math.round(ok/total*100):0;
+  const covPct=DB.cameras.length?Math.round(total/DB.cameras.length*100):0;
+  const equip=regular.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+  const labor=regular.filter(c=>!c.fn).reduce((s,c)=>s+(LABOR[c.info.modelo]||0),0);
+  const totalNF=equip+labor;
+  const recEquipC=recC.reduce((s,c)=>{const m=c._modelo||c.info.modelo||'';return s+(PRICES[m]||0);},0);
+  const recLaborC=recC.reduce((s,c)=>{const m=c._modelo||c.info.modelo||'';return s+(LABOR[m]||0);},0);
+  const recTotalC=recEquipC+recLaborC;
+  const grand=totalNF+recTotalC;
+
+  const fmt=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2});
+  const el=id=>document.getElementById(id);
+
+  if(el('csp-floor-name'))el('csp-floor-name').textContent=f.name;
+  if(el('csp-total'))el('csp-total').textContent=total;
+  if(el('csp-ok'))el('csp-ok').textContent=ok;
+  if(el('csp-nf'))el('csp-nf').textContent=nf;
+  if(el('csp-rec'))el('csp-rec').textContent=recC.length;
+  if(el('csp-op-pct'))el('csp-op-pct').textContent=opPct+'%';
+  if(el('csp-op-bar')){el('csp-op-bar').style.width=opPct+'%';el('csp-op-bar').style.background=opPct>=80?'var(--ok)':opPct>=50?'var(--warn)':'var(--nf)';}
+  if(el('csp-cov-pct'))el('csp-cov-pct').textContent=covPct+'%';
+  if(el('csp-cov-bar'))el('csp-cov-bar').style.width=covPct+'%';
+  if(el('csp-equip'))el('csp-equip').textContent=nf?fmt(equip):'—';
+  if(el('csp-labor'))el('csp-labor').textContent=nf?fmt(labor):'—';
+  if(el('csp-total-nf'))el('csp-total-nf').textContent=nf?fmt(totalNF):'—';
+  if(el('csp-rec-section'))el('csp-rec-section').style.display=recC.length?'block':'none';
+  if(el('csp-rec-total'))el('csp-rec-total').textContent=recC.length?fmt(recTotalC):'—';
+  if(el('csp-grand-total'))el('csp-grand-total').textContent=grand>0?fmt(grand):'—';
+  // Zonas de risco
+  const zones=RZ().length;
+  const blindZones=RZ().filter(z=>!checkZoneCoverage(z)).length;
+  if(el('csp-zones'))el('csp-zones').textContent=zones;
+  if(el('csp-blind-zones'))el('csp-blind-zones').textContent=blindZones;
+}
+
 // ═══════════════ COVERAGE AUDIT ═══════════════
 let _auditMode=false;
 function toggleAudit(){
@@ -4460,6 +4592,7 @@ function toggleAudit(){
 
 // ═══════════════ COVERAGE ═══════════════
 function renderCoverage(){
+  updateCovStatsPanel();
   const cv=document.getElementById('cov-c');
   const parent=cv.parentElement;
   // Measure after layout paint so clientWidth is not 0
@@ -5966,28 +6099,38 @@ function exportPDF(selectedFloors) {
     day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
   });
   const allCams   = selectedFloors.flatMap(fl=>fl.cameras);
-  const ok        = allCams.filter(c=>c.fn).length;
-  const inativas  = allCams.filter(c=>!c.fn).length;
-  const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+  const regularCams = allCams.filter(c=>!c.rec);
+  const recCamsPlot = allCams.filter(c=>c.rec);
+  const ok        = regularCams.filter(c=>c.fn).length;
+  const inativas  = regularCams.filter(c=>!c.fn).length;
+  const totalEquip  = regularCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+  const totalLabor  = regularCams.filter(c=>!c.fn).reduce((s,c)=>s+(LABOR[c.info.modelo]||0),0);
+  const totalCost   = totalEquip + totalLabor;
+  const recEquip    = recCamsPlot.reduce((s,c)=>{const m=c._modelo||c.info.modelo||'';return s+(PRICES[m]||0);},0);
+  const recLabor    = recCamsPlot.reduce((s,c)=>{const m=c._modelo||c.info.modelo||'';return s+(LABOR[m]||0);},0);
+  const recTotal    = recEquip + recLabor;
 
   // Planta em resolução original
   const showRec = document.getElementById('chk-show-rec')?.checked || false;
   const plantImgSrc = capturePlantImg(f, showRec); // para compatibilidade com table-pg
 
-  const nfRows = allCams.filter(c=>!c.fn).map(cam=>{
+  const nfRows = regularCams.filter(c=>!c.fn).map(cam=>{
     const price=PRICES[cam.info.modelo]||0;
+    const labor=LABOR[cam.info.modelo]||0;
     return `<tr>
       <td>${cam.name}</td>
       <td class="model">${cam.info.modelo||'—'}</td>
       <td class="loc">${cam.info.setor||cam.info.gravador||'—'}</td>
       <td class="cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td class="cost" style="color:#6366f1">R$ ${labor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td class="cost" style="font-weight:800">R$ ${(price+labor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
     </tr>`;
   }).join('');
 
   // KPIs patrimoniais (Etapa B integrada)
   const currentYear = new Date().getFullYear();
-  const totalAssets = allCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
-  const depreciated = allCams.reduce((s,c)=>{
+  const totalAssets = regularCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+  const depreciated = regularCams.reduce((s,c)=>{
     const price=PRICES[c.info.modelo]||0;
     const life=LIFESPAN[c.info.modelo]||6;
     const install=INSTALL_YEAR[c.name]||2022;
@@ -6094,10 +6237,16 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
 
   <h2>Resumo Operacional</h2>
   <div class="kpis">
-    <div class="kpi"><div class="kv">${allCams.length}</div><div class="kl">Câmeras mapeadas</div></div>
+    <div class="kpi"><div class="kv">${regularCams.length}</div><div class="kl">Câmeras mapeadas</div></div>
     <div class="kpi ok"><div class="kv">${ok}</div><div class="kl">Ativas</div></div>
     <div class="kpi nf"><div class="kv">${inativas}</div><div class="kl">Inativas</div></div>
-    <div class="kpi wn"><div class="kv">R$&nbsp;${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Custo est. (NF)</div></div>
+    ${recCamsPlot.length?`<div class="kpi" style="border:1.5px solid #ea580c;background:rgba(234,88,12,.05)"><div class="kv" style="color:#ea580c">${recCamsPlot.length}</div><div class="kl" style="color:#ea580c">Pontos recomendados</div></div>`:''}
+  </div>
+  <div class="kpis" style="margin-top:4px">
+    <div class="kpi wn"><div class="kv" style="font-size:10pt">R$&nbsp;${totalEquip.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Equipamentos (NF)</div></div>
+    <div class="kpi" style="border-color:#6366f1"><div class="kv" style="font-size:10pt;color:#6366f1">R$&nbsp;${totalLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl" style="color:#6366f1">Mão de obra (NF)</div></div>
+    <div class="kpi" style="background:#f0fdf4;border-color:#16a34a"><div class="kv" style="font-size:10pt;color:#16a34a">R$&nbsp;${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl" style="color:#16a34a">Total manutenção NF</div></div>
+    ${recCamsPlot.length?`<div class="kpi" style="border:1.5px solid #ea580c;background:rgba(234,88,12,.05)"><div class="kv" style="font-size:10pt;color:#ea580c">R$&nbsp;${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl" style="color:#ea580c">Total implantação rec.</div></div>`:''}
   </div>
 
   <h2 style="margin-top:4px">Resumo Patrimonial</h2>
@@ -6185,18 +6334,63 @@ ${inativas > 0 ? `
   <table>
     <thead><tr>
       <th>Câmera</th><th>Modelo</th><th>Localização</th>
-      <th style="text-align:right">Custo Est.</th>
+      <th style="text-align:right">Equipamento</th>
+      <th style="text-align:right;color:#6366f1">Mão de Obra</th>
+      <th style="text-align:right">Total</th>
     </tr></thead>
     <tbody>${nfRows}</tbody>
     <tfoot><tr>
       <td colspan="3"><strong>Total estimado</strong></td>
-      <td class="cost">R$ ${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td class="cost" style="font-size:8pt">R$ ${totalEquip.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td class="cost" style="color:#6366f1;font-size:8pt">R$ ${totalLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td class="cost" style="font-size:11pt">R$ ${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
     </tr></tfoot>
   </table>
 </div>
 ` : ''}
 
-</body></html>`;
+${recCamsPlot.length > 0 ? `
+<div class="table-pg" style="break-before:page;page-break-before:always;height:297mm;position:relative;z-index:1;padding:40mm 16mm 30mm 24mm">
+  <h2>Câmeras Recomendadas — Pontos de Implantação</h2>
+  <p style="font-size:8.5pt;color:#64748b;margin-bottom:10px;line-height:1.5">
+    Locais identificados para instalação de novas câmeras. Orçamento estimado com base nos modelos sugeridos.
+  </p>
+  <table>
+    <thead><tr>
+      <th>Local / Ponto</th><th>Modelo Sugerido</th><th>Setor / Justificativa</th>
+      <th style="text-align:right">Equipamento</th>
+      <th style="text-align:right;color:#6366f1">Mão de Obra</th>
+      <th style="text-align:right">Total</th>
+    </tr></thead>
+    <tbody>${recCamsPlot.map(cam=>{
+      const recData=DB.recommended.find(r=>r['LOCAL']===cam.name)||{};
+      const modelo=recData['MODELO SUGERIDO']||cam._modelo||'VIP-3220-D';
+      const just=recData['JUSTIFICATIVA']||recData['SETOR']||'—';
+      const price=PRICES[modelo]||0;
+      const labor=LABOR[modelo]||0;
+      return `<tr style="border-left:3px solid #ea580c">
+        <td style="font-weight:600;color:#ea580c">${cam.name}</td>
+        <td class="model">${modelo}</td>
+        <td class="loc">${just}</td>
+        <td class="cost" style="color:#ea580c">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        <td class="cost" style="color:#6366f1">R$ ${labor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        <td class="cost" style="font-weight:800;color:#ea580c">R$ ${(price+labor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      </tr>`;
+    }).join('')}</tbody>
+    <tfoot><tr>
+      <td colspan="3"><strong>Total implantação recomendada</strong></td>
+      <td class="cost" style="font-size:8pt;color:#ea580c">R$ ${recEquip.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td class="cost" style="color:#6366f1;font-size:8pt">R$ ${recLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      <td class="cost" style="font-size:11pt;color:#ea580c">R$ ${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    </tr>
+    ${(totalCost+recTotal)>0?`<tr style="background:#fff7ed">
+      <td colspan="5" style="font-weight:700;font-size:9pt;color:#ea580c">INVESTIMENTO TOTAL (Manutenção NF + Implantação Recomendada)</td>
+      <td class="cost" style="font-size:12pt;color:#ea580c;font-weight:900">R$ ${(totalCost+recTotal).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    </tr>`:''}
+    </tfoot>
+  </table>
+</div>
+` : ''}
 
     const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
