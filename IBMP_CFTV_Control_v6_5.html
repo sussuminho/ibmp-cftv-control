@@ -2833,10 +2833,21 @@ class CamRec{
     this.id=id;this.name=name;this.x=x;this.y=y;
     this.rot=0;this.fov=90;this.ir=60;this.sel=false;this.rec=true;
     const recData=DB.recommended.find(r=>r['LOCAL']===name)||{};
-    this.info=recData;
-    // alias modelo para PRICES lookup funcionar
+    this._recData=recData; // dados originais protegidos
     this._modelo=recData['MODELO SUGERIDO']||'VIP-3220-D';
+    // info é somente-leitura via getter — nunca pode ser sobrescrito por lookup()
   }
+  // info como getter: sempre retorna os dados de recomendação, nunca do banco
+  get info(){
+    return{
+      modelo:this._modelo,
+      gravador:'—',ip:'—',setor:this._recData['SETOR']||'',
+      locGrav:'',canal:'',serial:'',ativo:'',statusAtivo:'',
+      parecer:'OK',nome:this.name
+    };
+  }
+  // setter no-op para absorver qualquer tentativa de c.info = lookup(...)
+  set info(_){}
   // Câmeras recomendadas NUNCA são inativas — são planejadas
   get fn(){return true;}
   draw(ctx,glow=0){
@@ -4337,10 +4348,8 @@ function renderMonitor(){
 
 // ═══════════════ BUDGET ═══════════════
 function renderBudget(){
-  // Câmeras NF (excluir recomendadas)
+  // Câmeras NF desta planta (excluir recomendadas)
   const nf=F().cameras.filter(c=>!c.rec&&!c.fn);
-  // Câmeras recomendadas nesta planta
-  const recPlotted=F().cameras.filter(c=>c.rec);
 
   let total=0;
   const rows=document.getElementById('bgt-rows');rows.innerHTML='';
@@ -4356,37 +4365,21 @@ function renderBudget(){
   if(!nf.length)rows.innerHTML='<div style="padding:20px;color:var(--text2);font-size:14px;text-align:center">Nenhuma câmera NF nesta planta</div>';
   document.getElementById('bgt-total').textContent='R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2});
 
-  // ── Seção de câmeras recomendadas (plotadas na planta) ──
-  // Remove seção anterior se existir
+  // ── Seção de câmeras recomendadas — lista global de DB.recommended ──
   const existing=document.getElementById('bgt-rec-wrap');
   if(existing)existing.remove();
 
-  // Também incluir recomendadas do DB.recommended não plotadas (sem posição)
-  const plottedRecNames=new Set(recPlotted.map(c=>c.name));
-  const unplottedRec=DB.recommended.filter(r=>!plottedRecNames.has(r['LOCAL']));
-
-  const allRec=[
-    ...recPlotted.map(c=>{
-      const recData=DB.recommended.find(r=>r['LOCAL']===c.name)||{};
-      const modelo=recData['MODELO SUGERIDO']||c._modelo||'VIP-3220-D';
-      return{name:c.name,modelo,setor:recData['SETOR']||'',just:recData['JUSTIFICATIVA']||''};
-    }),
-    ...unplottedRec.map(r=>({
-      name:r['LOCAL'],
-      modelo:r['MODELO SUGERIDO']||'VIP-3220-D',
-      setor:r['SETOR']||'',
-      just:r['JUSTIFICATIVA']||''
-    }))
-  ];
-
+  const allRec=DB.recommended; // lista global, independente de planta
   if(allRec.length){
     let recTotal=0;
     const recRows=allRec.map(r=>{
-      const price=PRICES[r.modelo]||0;recTotal+=price;
+      const modelo=r['MODELO SUGERIDO']||'VIP-3220-D';
+      const price=PRICES[modelo]||0;recTotal+=price;
+      const loc=r['SETOR']||r['JUSTIFICATIVA']||'—';
       return `<div class="bgt-row" style="border-left:3px solid #ea580c">
-        <span style="font-weight:600;color:#ea580c">📍 ${r.name}</span>
-        <span class="bgt-model">${r.modelo}</span>
-        <span class="bgt-loc">${r.setor||r.just||'—'}</span>
+        <span style="font-weight:600;color:#ea580c">${r['LOCAL']}</span>
+        <span class="bgt-model">${modelo}</span>
+        <span class="bgt-loc">${loc}</span>
         <span class="bgt-cost" style="color:#ea580c">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
       </div>`;
     }).join('');
@@ -4396,8 +4389,8 @@ function renderBudget(){
     wrap.style.cssText='margin-top:16px';
     wrap.innerHTML=`
       <div style="padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#ea580c;display:flex;align-items:center;justify-content:space-between;border-top:2px dashed rgba(234,88,12,.3);margin-top:4px">
-        <span>📍 Câmeras Recomendadas (${allRec.length})</span>
-        <span>Total estimado: R$ ${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+        <span>CAMERAS RECOMENDADAS (${allRec.length})</span>
+        <span>TOTAL ESTIMADO: R$ ${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
       </div>
       ${recRows}`;
     rows.parentElement.appendChild(wrap);
@@ -4641,7 +4634,7 @@ function saveAdmin(){
   DB.cameras=parseCSV(document.getElementById('csv-a').value);
   DB.recorders=parseCSV(document.getElementById('csv-b').value);
   DB.pareceres=parseCSV(document.getElementById('csv-c').value);
-  floors.forEach(f=>f.cameras.forEach(c=>{c.info=lookup(c.name);}));
+  floors.forEach(f=>f.cameras.forEach(c=>{if(!c.rec)c.info=lookup(c.name);}));
   const p1=document.getElementById('np1').value,p2=document.getElementById('np2').value;
   if(p1||p2){
     if(p1!==p2){toast('As senhas não coincidem');return;}
@@ -5572,7 +5565,7 @@ function exportExecutivo(selectedFloors){
 <style>
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm;min-height:297mm}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm}
 .page{width:210mm;height:297mm;padding:10mm 13mm 10mm;position:relative;display:flex;flex-direction:column;gap:7px;overflow:hidden}
 
 /* Header */
@@ -5665,18 +5658,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
         </div>
       </div>`;
     }
-    // Múltiplas plantas: grid 2 colunas com altura fixa
-    return `<div>
-      <div class="section-label" style="margin-bottom:6px">Plantas Mapeadas</div>
-      <div style="display:grid;grid-template-columns:repeat(${Math.min(mapsImgs.length,2)},1fr);gap:8px">
-        ${mapsImgs.map(m=>`
-        <div>
-          <div style="font-size:7pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">${m.name}</div>
-          <div style="border:1.5px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#fff;height:160px;display:flex;align-items:center;justify-content:center">
-            <img src="${m.src}" alt="${m.name}" style="max-width:100%;max-height:160px;object-fit:contain">
-          </div>
-        </div>`).join('')}
-      </div>
+    // Múltiplas plantas: lista compacta na página 1 + páginas individuais depois
+    const names=mapsImgs.map(m=>`<span style="display:inline-block;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;font-size:7.5pt;font-weight:600;color:#334155">${m.name}</span>`).join(' ');
+    return `<div style="flex-shrink:0">
+      <div class="section-label" style="margin-bottom:5px">Plantas Mapeadas</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">${names}</div>
+      <div style="font-size:7pt;color:#94a3b8;margin-top:4px">▶ Plantas detalhadas nas páginas seguintes</div>
     </div>`;
   })()}
 
@@ -5711,13 +5698,32 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
     </div>
   </div>
 
-  <!-- FOOTER -->
+<!-- FOOTER -->
   <div class="exec-footer">
     <span>IBMP — Segurança do Trabalho · Relatório Executivo CFTV · Uso interno</span>
     <span>Gerado por IBMP CFTV Control · ${dateFmt}</span>
   </div>
 
 </div>
+
+${mapsImgs.length>1?mapsImgs.map(m=>`
+<div class="page" style="page-break-before:always;break-before:page;display:flex;flex-direction:column;gap:0">
+  <div class="exec-header" style="margin-bottom:8px">
+    <div class="exec-title">
+      <h1 style="font-size:12pt">Planta Baixa — ${m.name}</h1>
+      <p>Relatório Executivo CFTV · IBMP · ${dateFmt}</p>
+    </div>
+    <div class="exec-meta"><strong>Gerado em:</strong> ${nowFmt}</div>
+  </div>
+  <div style="flex:1;border:1.5px solid #e2e8f0;border-radius:8px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center">
+    <img src="${m.src}" alt="${m.name}" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block">
+  </div>
+  <div class="exec-footer" style="margin-top:6px">
+    <span>IBMP — Segurança do Trabalho · Relatório Executivo CFTV · Uso interno</span>
+    <span>Gerado por IBMP CFTV Control · ${dateFmt}</span>
+  </div>
+</div>`).join(''):''}
+
 <script>window.onload=()=>window.print();<\/script>
 </body></html>`;
 
@@ -6258,6 +6264,7 @@ function importInventory(e){
         if(DB.recommended.length) console.log(`[Import] ${DB.recommended.length} câmeras recomendadas`);
       }
       floors.forEach(f=>f.cameras.forEach(c=>{
+        if(c.rec) return; // não sobrescrever info de câmeras recomendadas
         c.info=lookup(c.name);
         // Sync status: se a coluna STATUS DE OPERAÇÃO disser "Inativo" ou similar
         const dbCam=DB.cameras.find(x=>x['NOME CANAL']===c.name);
