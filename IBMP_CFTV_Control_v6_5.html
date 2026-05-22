@@ -2832,9 +2832,12 @@ class CamRec{
   constructor(id,name,x,y){
     this.id=id;this.name=name;this.x=x;this.y=y;
     this.rot=0;this.fov=90;this.ir=60;this.sel=false;this.rec=true;
-    this.info=DB.recommended.find(r=>r['LOCAL']===name)||{};
+    const recData=DB.recommended.find(r=>r['LOCAL']===name)||{};
+    this.info=recData;
+    // alias modelo para PRICES lookup funcionar
+    this._modelo=recData['MODELO SUGERIDO']||'VIP-3220-D';
   }
-  // Câmeras recomendadas NÃO são inativas — são planejadas
+  // Câmeras recomendadas NUNCA são inativas — são planejadas
   get fn(){return true;}
   draw(ctx,glow=0){
     const{x,y,rot,fov,ir,sel}=this;
@@ -4199,8 +4202,8 @@ function updateRpIdle(){
 // ═══════════════ DASHBOARD ═══════════════
 function allCams(){return floors.flatMap(f=>f.cameras);}
 function renderDash(){
-  // Separar câmeras normais das recomendadas
   const all=allCams();
+  // Separar câmeras normais das recomendadas (rec=true)
   const regular=all.filter(c=>!c.rec);
   const recCams=all.filter(c=>c.rec);
   const ok=regular.filter(c=>c.fn).length,nf=regular.filter(c=>!c.fn).length,total=regular.length;
@@ -4216,16 +4219,18 @@ function renderDash(){
     {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--warn)" stroke-width="1.8"><path d="M11 2v12M7 6l4-4 4 4M4 18h14a1 1 0 000-2H4a1 1 0 000 2z"/></svg>`,cls:'warn',val:'R$ '+totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2}),lbl:'Custo estimado NF'},
     {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--b)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M11 7v4l3 3"/></svg>`,cls:'blue',val:`${pct}%`,lbl:'% do banco mapeado'},
     {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--text2)" stroke-width="1.8"><rect x="2" y="2" width="8" height="8" rx="1.5"/><rect x="12" y="2" width="8" height="8" rx="1.5"/><rect x="2" y="12" width="8" height="8" rx="1.5"/><rect x="12" y="12" width="8" height="8" rx="1.5"/></svg>`,cls:'blue',val:floors.length,lbl:'Plantas carregadas'},
-    ...(recCams.length?[{icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#ea580c" stroke-width="1.8"><polygon points="11,2 13.9,8.5 21,9.5 16,14.3 17.2,21 11,17.8 4.8,21 6,14.3 1,9.5 8.1,8.5"/></svg>`,cls:'warn',val:recCams.length,lbl:'Câmeras Recomendadas',extra:true}]:[]),
   ];
+  if(recCams.length){
+    kpis.push({icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#ea580c" stroke-width="1.8"><polygon points="11,2 13.5,8 20,8.5 15.2,13 16.9,19.5 11,16.3 5.1,19.5 6.8,13 2,8.5 8.5,8"/></svg>`,cls:'warn',val:recCams.length,lbl:'Câmeras Recomendadas',rec:true});
+  }
   kpis.forEach(k=>{
     const d=document.createElement('div');d.className='kpi-card';
-    if(k.extra) d.style.cssText='border-color:#ea580c;background:rgba(234,88,12,.06)';
-    d.innerHTML=`<div class="kpi-icon ${k.cls}">${k.icon}</div><div><div class="kpi-val" style="${k.extra?'color:#ea580c':''}">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`;
+    if(k.rec)d.style.cssText='border:1.5px solid #ea580c;background:rgba(234,88,12,.06)';
+    d.innerHTML=`<div class="kpi-icon ${k.cls}">${k.icon}</div><div><div class="kpi-val"${k.rec?' style="color:#ea580c"':''}>${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`;
     grid.appendChild(d);
   });
 
-  // Donut
+  // Donut — só câmeras normais
   const dc=document.getElementById('donut-card');
   dc.innerHTML=`<h3>Status das Câmeras</h3><p class="sub">Todas as plantas combinadas</p>
   <div class="donut-wrap">
@@ -4233,7 +4238,7 @@ function renderDash(){
     <div class="donut-legend">
       <div class="dl-item"><div class="dl-dot" style="background:var(--ok)"></div><span class="dl-val">${ok}</span><span class="dl-lbl">&nbsp;Ativas</span></div>
       <div class="dl-item"><div class="dl-dot" style="background:var(--nf)"></div><span class="dl-val">${nf}</span><span class="dl-lbl">&nbsp;Inativas</span></div>
-      <div class="dl-item"><div class="dl-dot" style="background:var(--border)"></div><span class="dl-val">${DB.cameras.length-total}</span><span class="dl-lbl">&nbsp;Não mapeadas</span></div>
+      <div class="dl-item"><div class="dl-dot" style="background:var(--border)"></div><span class="dl-val">${Math.max(0,DB.cameras.length-total)}</span><span class="dl-lbl">&nbsp;Não mapeadas</span></div>
       ${recCams.length?`<div class="dl-item"><div class="dl-dot" style="background:#ea580c"></div><span class="dl-val">${recCams.length}</span><span class="dl-lbl">&nbsp;Recomendadas</span></div>`:''}
     </div>
   </div>`;
@@ -4258,7 +4263,7 @@ function renderDash(){
     ctx.fillText(total,cx,cy-8);ctx.font='400 11px Inter,sans-serif';ctx.fillStyle='#8a95a3';ctx.fillText('mapeadas',cx,cy+10);
   },50);
 
-  // Bar chart — NF por gravador/bloco
+  // Bar chart — NF por gravador/bloco (excluir recomendadas)
   const bc=document.getElementById('bar-card');
   const byRec={};
   F().cameras.filter(c=>!c.rec&&!c.fn).forEach(c=>{const k=c.info.gravador||'N/D';byRec[k]=(byRec[k]||0)+1;});
@@ -4271,14 +4276,14 @@ function renderDash(){
       <div class="bar-track"><div class="bar-fill" style="width:${v/maxV*100}%;background:var(--nf)"><span class="bar-fill-val">${v}</span></div></div>
     </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:20px 0">Nenhuma câmera inativa mapeada 🎉</div>'}</div>`;
 
-  // Coverage table
+  // Coverage table (excluir recomendadas das contagens)
   const ct=document.getElementById('cov-table-card');
   ct.innerHTML=`<h3>Cobertura por Planta</h3><p class="sub">Câmeras plotadas vs banco de dados</p>
   <table class="cov-table">
-    <thead><tr><th>Planta</th><th>Mapeadas</th><th>Ativas</th><th>Inativas</th><th>Recomendadas</th><th>Cobertura</th></tr></thead>
+    <thead><tr><th>Planta</th><th>Mapeadas</th><th>Ativas</th><th>Inativas</th><th>Recom.</th><th>Cobertura</th></tr></thead>
     <tbody>${floors.map(f=>{
-      const regCams=f.cameras.filter(c=>!c.rec);
-      const tot=regCams.length,fok=regCams.filter(c=>c.fn).length,fnf=regCams.filter(c=>!c.fn).length;
+      const reg=f.cameras.filter(c=>!c.rec);
+      const tot=reg.length,fok=reg.filter(c=>c.fn).length,fnf=reg.filter(c=>!c.fn).length;
       const frec=f.cameras.filter(c=>c.rec).length;
       const pct2=DB.cameras.length?Math.round(tot/DB.cameras.length*100):0;
       const color=pct2>=80?'var(--ok)':pct2>=50?'var(--warn)':'var(--nf)';
@@ -4332,8 +4337,11 @@ function renderMonitor(){
 
 // ═══════════════ BUDGET ═══════════════
 function renderBudget(){
+  // Câmeras NF (excluir recomendadas)
   const nf=F().cameras.filter(c=>!c.rec&&!c.fn);
-  const rec=F().cameras.filter(c=>c.rec);
+  // Câmeras recomendadas nesta planta
+  const recPlotted=F().cameras.filter(c=>c.rec);
+
   let total=0;
   const rows=document.getElementById('bgt-rows');rows.innerHTML='';
   nf.forEach(cam=>{
@@ -4348,33 +4356,51 @@ function renderBudget(){
   if(!nf.length)rows.innerHTML='<div style="padding:20px;color:var(--text2);font-size:14px;text-align:center">Nenhuma câmera NF nesta planta</div>';
   document.getElementById('bgt-total').textContent='R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2});
 
-  // Seção de câmeras recomendadas no orçamento
-  let recSection=document.getElementById('bgt-rec-section');
-  if(!recSection){
-    recSection=document.createElement('div');recSection.id='bgt-rec-section';
-    rows.parentElement.appendChild(recSection);
-  }
-  if(rec.length){
+  // ── Seção de câmeras recomendadas (plotadas na planta) ──
+  // Remove seção anterior se existir
+  const existing=document.getElementById('bgt-rec-wrap');
+  if(existing)existing.remove();
+
+  // Também incluir recomendadas do DB.recommended não plotadas (sem posição)
+  const plottedRecNames=new Set(recPlotted.map(c=>c.name));
+  const unplottedRec=DB.recommended.filter(r=>!plottedRecNames.has(r['LOCAL']));
+
+  const allRec=[
+    ...recPlotted.map(c=>{
+      const recData=DB.recommended.find(r=>r['LOCAL']===c.name)||{};
+      const modelo=recData['MODELO SUGERIDO']||c._modelo||'VIP-3220-D';
+      return{name:c.name,modelo,setor:recData['SETOR']||'',just:recData['JUSTIFICATIVA']||''};
+    }),
+    ...unplottedRec.map(r=>({
+      name:r['LOCAL'],
+      modelo:r['MODELO SUGERIDO']||'VIP-3220-D',
+      setor:r['SETOR']||'',
+      just:r['JUSTIFICATIVA']||''
+    }))
+  ];
+
+  if(allRec.length){
     let recTotal=0;
-    const recItems=rec.map(cam=>{
-      const recData=DB.recommended.find(r=>r['LOCAL']===cam.name)||{};
-      const modelo=recData['MODELO SUGERIDO']||cam.info?.['MODELO SUGERIDO']||'VIP-3220-D';
-      const price=PRICES[modelo]||0;recTotal+=price;
-      return `<div class="bgt-row" style="border-left:2px solid #ea580c;opacity:0.9">
-        <span style="font-weight:500;color:#ea580c">📍 ${cam.name}</span>
-        <span class="bgt-model">${modelo}</span>
-        <span class="bgt-loc">${recData['SETOR']||recData['JUSTIFICATIVA']||'—'}</span>
-        <span class="bgt-cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+    const recRows=allRec.map(r=>{
+      const price=PRICES[r.modelo]||0;recTotal+=price;
+      return `<div class="bgt-row" style="border-left:3px solid #ea580c">
+        <span style="font-weight:600;color:#ea580c">📍 ${r.name}</span>
+        <span class="bgt-model">${r.modelo}</span>
+        <span class="bgt-loc">${r.setor||r.just||'—'}</span>
+        <span class="bgt-cost" style="color:#ea580c">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
       </div>`;
     }).join('');
-    recSection.innerHTML=`
-      <div style="margin-top:16px;padding:10px 14px 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#ea580c;display:flex;align-items:center;justify-content:space-between">
-        <span>📍 Câmeras Recomendadas (${rec.length})</span>
-        <span style="font-size:12px">R$ ${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+
+    const wrap=document.createElement('div');
+    wrap.id='bgt-rec-wrap';
+    wrap.style.cssText='margin-top:16px';
+    wrap.innerHTML=`
+      <div style="padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#ea580c;display:flex;align-items:center;justify-content:space-between;border-top:2px dashed rgba(234,88,12,.3);margin-top:4px">
+        <span>📍 Câmeras Recomendadas (${allRec.length})</span>
+        <span>Total estimado: R$ ${recTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
       </div>
-      <div style="padding:0 4px">${recItems}</div>`;
-  } else {
-    recSection.innerHTML='';
+      ${recRows}`;
+    rows.parentElement.appendChild(wrap);
   }
 }
 
@@ -4976,9 +5002,7 @@ function loadAutoSave(){
       f.riskZones=saved.riskZones||[];
       if(f.riskZones.length)_riskUid=Math.max(_riskUid,...f.riskZones.map(z=>z.id+1),1);
       f.cameras=saved.cameras.map(c=>{
-        const cam=new Cam(c.id,c.name,c.x,c.y);
-        cam.rot=c.rot;cam.fov=c.fov;cam.ir=c.ir;cam.fn=c.fn;
-        cam.info=lookup(c.name);
+        const cam=Cam.from(c); // preserva rec:true → CamRec
         return cam;
       });
     });
@@ -5942,20 +5966,29 @@ h2{font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;
 .kpi.ok .kv{color:#16a34a}.kpi.nf .kv{color:#dc2626}
 .kpi.wn .kv{color:#d97706}.kpi.pat .kv{color:#2563eb}
 /* ── Planta ──
-   break-before:page → nova página limpa
-   height: 297 - 40 - 30 = 227mm disponível
-   reservar 14mm pro título → 213mm pra imagem      */
-.plant-pg{break-before:page;page-break-before:always;
-          position:relative;z-index:1;
-          padding:40mm 16mm 30mm 24mm;
-          min-height:297mm;height:297mm}
-.plant-pg h2{margin-bottom:6px}
-.plant-box{display:flex;align-items:center;justify-content:center;
-           width:100%;height:213mm;
-           border:1px solid #e2e8f0;border-radius:6px;
-           background:#f8f9fb;overflow:hidden}
-.plant-box img{max-width:100%;max-height:213mm;
-               width:auto;height:auto;display:block;object-fit:contain}
+   Cada planta = 1 página A4.
+   Usamos height:100vh no contexto de impressão (equivale a 297mm por página).
+   A caixa da imagem usa calc para preencher o espaço disponível após título e margens. */
+.plant-pg{
+  break-before:page;page-break-before:always;
+  position:relative;z-index:1;
+  box-sizing:border-box;
+  padding:40mm 16mm 30mm 24mm;
+  height:297mm;overflow:hidden
+}
+.plant-pg h2{margin-bottom:6px;flex-shrink:0}
+.plant-box{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;
+  height:calc(297mm - 40mm - 30mm - 14mm);
+  border:1px solid #e2e8f0;border-radius:6px;
+  background:#f8f9fb;overflow:hidden
+}
+.plant-box img{
+  max-width:100%;max-height:100%;
+  width:auto;height:auto;
+  display:block;object-fit:contain
+}
 /* ── Tabela ──
    Só renderiza se houver câmeras inativas.
    Sem break-before quando não há planta (evita pág em branco). */
@@ -6080,7 +6113,7 @@ ${selectedFloors.map(fl=>{
   const flSrc=capturePlantImg(fl, showRec);
   return flSrc?`<div class="plant-pg">
   <h2>Planta Baixa — ${fl.name}</h2>
-  <div class="plant-box" style="height:calc(297mm - 40mm - 30mm - 20mm)"><img src="${flSrc}" alt="Planta ${fl.name}" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block"></div>
+  <div class="plant-box"><img src="${flSrc}" alt="Planta ${fl.name}"></div>
 </div>`:'';
 }).join('')}
 
@@ -7094,8 +7127,7 @@ function loadProjectJSON(data){
       fl.scale      = fd.scale || null;
       fl.riskZones  = fd.riskZones || [];
       fl.cameras    = (fd.cameras || []).map(cd => {
-        const cam = new Cam(cd.id || _uid++, cd.name, cd.x, cd.y);
-        cam.rot = cd.rot || 0; cam.fov = cd.fov || 90; cam.ir = cd.ir || 60;
+        const cam = Cam.from(cd); // preserva rec:true → CamRec
         return cam;
       });
       const src = fd.image || fd.imgB64 || null;
