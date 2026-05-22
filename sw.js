@@ -1,25 +1,21 @@
 /**
- * IBMP CFTV Control — Service Worker v7
+ * IBMP CFTV Control — Service Worker v8
  * Cache atualizado — força limpeza do cache anterior
  */
-
-const CACHE_NAME = 'ibmp-cftv-v7';
-const CACHE_CDN  = 'ibmp-cftv-cdn-v7';
-
+const CACHE_NAME = 'ibmp-cftv-v8';
+const CACHE_CDN  = 'ibmp-cftv-cdn-v8';
 const LOCAL_ASSETS = [
-  './IBMP_CFTV_Control_v6_PWA.html',
+  './IBMP_CFTV_Control_v6_5.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
 ];
-
 const CDN_HOSTS = [
   'fonts.googleapis.com',
   'fonts.gstatic.com',
   'cdn.sheetjs.com',
   'cdnjs.cloudflare.com'
 ];
-
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -27,7 +23,6 @@ self.addEventListener('install', (event) => {
       .then(() => self.skipWaiting())
   );
 });
-
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -35,19 +30,15 @@ self.addEventListener('activate', (event) => {
     ).then(() => self.clients.claim())
   );
 });
-
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith('http')) return;
-
   const url = new URL(event.request.url);
-
   // Nunca cachear projeto.json — sempre busca o mais recente
   if (url.pathname.endsWith('projeto.json')) {
     event.respondWith(fetch(event.request).catch(() => new Response('{}', {status: 200})));
     return;
   }
-
   const isCDN = CDN_HOSTS.some(host => url.hostname.includes(host));
   if (isCDN) {
     event.respondWith(networkFirstCDN(event.request));
@@ -55,7 +46,6 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(cacheFirstLocal(event.request));
   }
 });
-
 async function cacheFirstLocal(request) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -67,10 +57,9 @@ async function cacheFirstLocal(request) {
     }
     return response;
   } catch {
-    return caches.match('./IBMP_CFTV_Control_v6_PWA.html');
+    return caches.match('./IBMP_CFTV_Control_v6_5.html');
   }
 }
-
 async function networkFirstCDN(request) {
   try {
     const response = await fetch(request);
@@ -84,7 +73,6 @@ async function networkFirstCDN(request) {
     return cached || new Response('', { status: 503 });
   }
 }
-
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
