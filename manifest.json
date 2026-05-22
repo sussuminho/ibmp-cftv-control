@@ -2,7 +2,7 @@
   "name": "IBMP CFTV Control",
   "short_name": "CFTV IBMP",
   "description": "Sistema de gestão visual de câmeras de segurança — IBMP Segurança do Trabalho",
-  "start_url": "/ibmp-cftv-control/IBMP_CFTV_Control_v6_PWA.html",
+  "start_url": "/ibmp-cftv-control/IBMP_CFTV_Control_v6_5.html",
   "scope": "/ibmp-cftv-control/",
   "display": "standalone",
   "orientation": "landscape",
@@ -28,7 +28,7 @@
     {
       "name": "Novo Projeto",
       "short_name": "Novo",
-      "url": "/ibmp-cftv-control/IBMP_CFTV_Control_v6_PWA.html",
+      "url": "/ibmp-cftv-control/IBMP_CFTV_Control_v6_5.html",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ]
