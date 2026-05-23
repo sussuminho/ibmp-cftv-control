@@ -1376,6 +1376,146 @@
         "Localização/Bloco": "Externo Fundos — DVR-LOGISTICA-01",
         "Parecer": "OK"
       }
+    ],
+    "recommended": [
+      {
+        "LOCAL": "Controle Positivo",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Controle Positivo Paramentação",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Controle Positivo Retém Final Produto",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Copa D",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Corredor GQ C",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Corredor Sala água Piso Técnico",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Entrada Sala de água  Piso Técnico",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Escada mezanino C",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Externo lateral C 1",
+        "MODELO SUGERIDO": "VIP-5850-B",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Externo lateral C 2",
+        "MODELO SUGERIDO": "VIP-5850-B",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Externo lateral C 3",
+        "MODELO SUGERIDO": "VIP-5850-B",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Externo lateral secretaria C 1",
+        "MODELO SUGERIDO": "VIP-5850-B",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Externo lateral secretaria C 2",
+        "MODELO SUGERIDO": "VIP-5850-B",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Externo lateral secretaria C 3",
+        "MODELO SUGERIDO": "VIP-5850-B",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Piso Técnico 1",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Piso Técnico 2",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Purificacao de Agua",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Quadro Geral Piso Técnico",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Recebimento materiais Produção C",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Sala de água Piso Técnico",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Sala de PCR CQ",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Sala manutenção C 1",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      },
+      {
+        "LOCAL": "Sala manutenção C 2",
+        "MODELO SUGERIDO": "VIP-3220-D",
+        "JUSTIFICATIVA": "Área sem câmeras.",
+        "SETOR": ""
+      }
     ]
   },
   "floors": [
@@ -1423,7 +1563,8 @@
           "y": 589.6444982380822,
           "rot": 59,
           "fov": 90,
-          "ir": 372
+          "ir": 372,
+          "rec": true
         },
         {
           "id": 13,
@@ -1432,7 +1573,8 @@
           "y": 1718.2565987511866,
           "rot": 256.961343416977,
           "fov": 29,
-          "ir": 772
+          "ir": 772,
+          "rec": true
         },
         {
           "id": 14,
@@ -1441,7 +1583,8 @@
           "y": 2291.9726119787974,
           "rot": 25,
           "fov": 90,
-          "ir": 291
+          "ir": 291,
+          "rec": true
         },
         {
           "id": 15,
@@ -1450,7 +1593,8 @@
           "y": 2264.811382104505,
           "rot": 341,
           "fov": 90,
-          "ir": 763
+          "ir": 763,
+          "rec": true
         },
         {
           "id": 16,
@@ -1459,7 +1603,8 @@
           "y": 2361.647071221548,
           "rot": 217,
           "fov": 90,
-          "ir": 770
+          "ir": 770,
+          "rec": true
         },
         {
           "id": 17,
@@ -1468,7 +1613,8 @@
           "y": 2061.6926195663173,
           "rot": 269,
           "fov": 90,
-          "ir": 778
+          "ir": 778,
+          "rec": true
         },
         {
           "id": 18,
@@ -1477,7 +1623,8 @@
           "y": 2230.9502598448994,
           "rot": 212,
           "fov": 90,
-          "ir": 800
+          "ir": 800,
+          "rec": true
         },
         {
           "id": 19,
@@ -1486,7 +1633,8 @@
           "y": 2422.052153129561,
           "rot": 210,
           "fov": 90,
-          "ir": 711
+          "ir": 711,
+          "rec": true
         }
       ]
     },
@@ -1525,7 +1673,8 @@
           "y": 2428.8282684449023,
           "rot": 8,
           "fov": 90,
-          "ir": 294
+          "ir": 294,
+          "rec": true
         },
         {
           "id": 23,
@@ -1534,7 +1683,8 @@
           "y": 2354.609099717013,
           "rot": 293,
           "fov": 90,
-          "ir": 800
+          "ir": 800,
+          "rec": true
         },
         {
           "id": 24,
@@ -1543,7 +1693,8 @@
           "y": 1049.5887162516258,
           "rot": 98,
           "fov": 90,
-          "ir": 538
+          "ir": 538,
+          "rec": true
         },
         {
           "id": 25,
@@ -1552,7 +1703,8 @@
           "y": 385.7394848521714,
           "rot": 341,
           "fov": 90,
-          "ir": 645
+          "ir": 645,
+          "rec": true
         },
         {
           "id": 26,
@@ -1561,7 +1713,8 @@
           "y": 396.0477027310449,
           "rot": 200,
           "fov": 90,
-          "ir": 734
+          "ir": 734,
+          "rec": true
         },
         {
           "id": 27,
@@ -1570,7 +1723,8 @@
           "y": 393.9860591552702,
           "rot": 299,
           "fov": 90,
-          "ir": 682
+          "ir": 682,
+          "rec": true
         },
         {
           "id": 28,
@@ -1579,7 +1733,8 @@
           "y": 468.2052278831595,
           "rot": 140,
           "fov": 90,
-          "ir": 250
+          "ir": 250,
+          "rec": true
         },
         {
           "id": 29,
@@ -1822,7 +1977,8 @@
           "y": 2593.759754506879,
           "rot": 141,
           "fov": 90,
-          "ir": 291
+          "ir": 291,
+          "rec": true
         }
       ]
     },

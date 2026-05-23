@@ -1557,7 +1557,8 @@ canvas.chart { width: 100%; display: block; }
 #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 10px; opacity: 0; transition: all .22s; pointer-events: none; z-index: 9999; box-shadow: var(--shadow2); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
-<!-- xlsx CDN removido: export usa SpreadsheetML nativo (sem dependência) -->
+<!-- SheetJS para leitura de Excel no import de inventário -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <!-- ═══════════════════ PDF.js v5.6.205 EMBEDDED (offline) ═══════════════════ -->
@@ -2824,7 +2825,7 @@ class Cam{
   hit(px,py){return Math.hypot(px-this.x,py-this.y)<16;}
   clone(){const c=new Cam(this.id,this.name,this.x,this.y);c.rot=this.rot;c.fov=this.fov;c.ir=this.ir;c.info={...this.info};return c;}
   toJSON(){return{id:this.id,name:this.name,x:this.x,y:this.y,rot:this.rot,fov:this.fov,ir:this.ir};}
-  static from(d){if(d.rec)return CamRec.from(d);const c=new Cam(d.id,d.name,d.x,d.y);c.rot=d.rot||0;c.fov=d.fov||90;c.ir=d.ir||60;c.info=lookup(d.name);return c;}
+  static from(d){if(d.rec)return CamRec.from(d);if(DB.recommended.some(r=>r['LOCAL']===d.name))return CamRec.from(d);const c=new Cam(d.id,d.name,d.x,d.y);c.rot=d.rot||0;c.fov=d.fov||90;c.ir=d.ir||60;c.info=lookup(d.name);return c;}
 }
 
 
@@ -4711,18 +4712,17 @@ function exportProject(){
   const now=new Date();
   const dateFmt=now.toISOString().slice(0,10);
   const data={
-    version:'5.0',
-    ts:now.toISOString(),
-    project:'IBMP CFTV',
-    exportedBy:'IBMP CFTV Control',
-    // Dados financeiros e observações
+    version: 2,
+    exported: now.toISOString(),
+    db:{ cameras:DB.cameras, recorders:DB.recorders, pareceres:DB.pareceres,
+         recommended:DB.recommended||[] },
     camFin:CAM_FIN,
     camObs:CAM_OBS,
     camLog:CAM_LOG,
     installYear:INSTALL_YEAR,
-    // Plantas e câmeras
     floors:floors.map(f=>({
       id:f.id,name:f.name,scale:f.scale,
+      panX:f.panX,panY:f.panY,zoom:f.zoom,
       image:f.imgB64||null,
       riskZones:f.riskZones||[],
       cameras:f.cameras.map(c=>c.toJSON())
@@ -5002,6 +5002,8 @@ function scheduleAutoSave(){
         camFin:CAM_FIN,
         camObs:CAM_OBS,
         camLog:CAM_LOG,
+        db:{ cameras:DB.cameras, recorders:DB.recorders, pareceres:DB.pareceres,
+             recommended:DB.recommended||[] },
         recommended: DB.recommended||[],
         floors:floors.map(f=>({
           name:f.name,
@@ -7228,12 +7230,18 @@ async function saveToCloud(){
 
 // ── loadProjectJSON: reutilizável pelo doRefresh e autoload
 function loadProjectJSON(data){
+  // ── 1. Carregar DB PRIMEIRO (antes de Cam.from que depende de DB.recommended)
   if(data.db){
-    if(data.db.cameras  && data.db.cameras.length)   DB.cameras   = data.db.cameras;
-    if(data.db.recorders&& data.db.recorders.length) DB.recorders = data.db.recorders;
-    if(data.db.pareceres&& data.db.pareceres.length) DB.pareceres = data.db.pareceres;
+    if(data.db.cameras   && data.db.cameras.length)   DB.cameras   = data.db.cameras;
+    if(data.db.recorders && data.db.recorders.length) DB.recorders = data.db.recorders;
+    if(data.db.pareceres && data.db.pareceres.length) DB.pareceres = data.db.pareceres;
     if(data.db.recommended && data.db.recommended.length) DB.recommended = data.db.recommended;
   }
+  // suporte à chave legada 'recommended' no topo (autosave antigo)
+  if((!DB.recommended||!DB.recommended.length) && data.recommended && data.recommended.length){
+    DB.recommended = data.recommended;
+  }
+
   if(data.floors && data.floors.length){
     floors = data.floors.map(fd => {
       const fl      = mkFloor(fd.name);
