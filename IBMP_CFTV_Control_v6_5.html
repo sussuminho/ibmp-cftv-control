@@ -5615,7 +5615,7 @@ function exportExecutivo(selectedFloors){
 <style>
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .page{width:210mm;height:297mm;padding:10mm 13mm 10mm;position:relative;display:flex;flex-direction:column;gap:7px;overflow:hidden}
 
 /* Header */
@@ -5663,7 +5663,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
 /* Footer */
 .exec-footer{border-top:1px solid #e2e8f0;padding-top:5px;display:flex;justify-content:space-between;font-size:6.5pt;color:#94a3b8;flex-shrink:0}
 </style>
-</head><body><div class="page">
+</head><body>
+<!-- PÁG 1: Sumário Executivo -->
+<div class="page">
 
   <!-- HEADER -->
   <div class="exec-header">
@@ -5683,12 +5685,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
   </div>
 
   <!-- KPIs -->
-  <div class="exec-kpis">
+  <div class="exec-kpis" style="grid-template-columns:repeat(6,1fr)">
     <div class="exec-kpi"><div class="exec-kpi-val">${total}</div><div class="exec-kpi-lbl">Câmeras Instaladas</div></div>
     <div class="exec-kpi ok"><div class="exec-kpi-val">${pctOp}%</div><div class="exec-kpi-lbl">Taxa Operacional</div></div>
     <div class="exec-kpi ${inativas>0?'nf':'ok'}"><div class="exec-kpi-val">${inativas}</div><div class="exec-kpi-lbl">Inoperantes</div></div>
     <div class="exec-kpi ${manut>0?'warn':'ok'}"><div class="exec-kpi-val">${manut}</div><div class="exec-kpi-lbl">Em Manutenção</div></div>
     <div class="exec-kpi blue"><div class="exec-kpi-val">R$${Math.round(totalAssets/1000)}K</div><div class="exec-kpi-lbl">Patrimônio Total</div></div>
+    <div class="exec-kpi" style="border-color:#fed7aa;background:#fff7ed"><div class="exec-kpi-val" style="color:#c2410c;font-size:16pt">${(DB.recommended||[]).length}</div><div class="exec-kpi-lbl">Expansões Previstas</div></div>
   </div>
 
   <!-- MAPAS -->
@@ -5745,6 +5748,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
       ${manut>0?`<div class="summary-item"><span>●</span><span>${manut} câmera${manut>1?'s':''} em manutenção preventiva necessária</span></div>`:''}
       ${zonasCriticas.map(z=>`<div class="summary-item"><span>⚠</span><span>Zona de risco "${z.name}" (Grau ${z.grau}/5) sem monitoramento — solicitar orçamento para cobertura</span></div>`).join('')}
       ${zonasCriticas.length===0&&inativas===0&&manut===0?`<div class="summary-item"><span>✅</span><span>Todas as câmeras operantes e zonas de risco monitoradas.</span></div>`:''}
+      ${(DB.recommended||[]).length>0?`<div class="summary-item"><span>📋</span><span>${(DB.recommended||[]).length} câmera${(DB.recommended||[]).length>1?'s':''} recomendada${(DB.recommended||[]).length>1?'s':''} para expansão do parque CFTV — detalhes na última página.</span></div>`:''}
     </div>
   </div>
 
@@ -5773,6 +5777,69 @@ ${mapsImgs.length>1?mapsImgs.map(m=>`
     <span>Gerado por IBMP CFTV Control · ${dateFmt}</span>
   </div>
 </div>`).join(''):''}
+
+${(()=>{
+  const recCams = DB.recommended||[];
+  if(recCams.length===0) return '';
+  const recCost = recCams.reduce((s,r)=>{
+    const m=r['MODELO SUGERIDO']||'';
+    return s+(PRICES[m]||0)+(LABOR[m]||150);
+  },0);
+  const recRows = recCams.map(r=>{
+    const modelo=r['MODELO SUGERIDO']||'—';
+    const preco=PRICES[modelo]||0;
+    const mao=LABOR[modelo]||150;
+    return \`<tr style="font-size:8pt">
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0">\${r['LOCAL']||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;color:#d97706;font-weight:600">\${modelo}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;color:#64748b">\${r['JUSTIFICATIVA']||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:700;color:#c2410c">R$ \${(preco+mao).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    </tr>\`;
+  }).join('');
+  return \`
+<div class="page" style="page-break-before:always;break-before:page;display:flex;flex-direction:column;gap:8px">
+  <div class="exec-header">
+    <div class="exec-title">
+      <h1 style="font-size:13pt">Câmeras Recomendadas — Proposta de Expansão</h1>
+      <p>IBMP · Segurança do Trabalho · Parque CFTV</p>
+      <div class="status-badge" style="color:#c2410c;border-color:#c2410c;background:#fff7ed">
+        ⚠ \${recCams.length} PONTOS DE EXPANSÃO IDENTIFICADOS
+      </div>
+    </div>
+    <div class="exec-meta"><strong>Gerado em:</strong> \${nowFmt}</div>
+  </div>
+
+  <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:8px;padding:8px 12px;font-size:8pt;color:#92400e">
+    <strong>Custo total estimado de implantação (equipamento + mão de obra):</strong>
+    <span style="font-size:12pt;font-weight:900;color:#c2410c;margin-left:8px">R$ \${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+  </div>
+
+  <div style="flex:1;overflow:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:8pt">
+      <thead>
+        <tr style="background:#f1f5f9">
+          <th style="padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700">Local</th>
+          <th style="padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700">Modelo Sugerido</th>
+          <th style="padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700">Justificativa</th>
+          <th style="padding:6px 8px;text-align:right;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700">Custo Est.</th>
+        </tr>
+      </thead>
+      <tbody>\${recRows}</tbody>
+      <tfoot>
+        <tr style="background:#fef2f2">
+          <td colspan="3" style="padding:7px 8px;font-weight:700"><strong>Total estimado</strong></td>
+          <td style="padding:7px 8px;text-align:right;font-weight:800;color:#c2410c">R$ \${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="exec-footer">
+    <span>IBMP — Segurança do Trabalho · Relatório Executivo CFTV · Uso interno</span>
+    <span>Gerado por IBMP CFTV Control · \${dateFmt}</span>
+  </div>
+</div>\`;
+})()}
 
 <script>window.onload=()=>window.print();<\/script>
 </body></html>`;
@@ -6190,6 +6257,54 @@ ${inativas > 0 ? `
   </table>
 </div>
 ` : ''}
+
+<!-- PÁG CÂMERAS RECOMENDADAS: só renderiza se houver recomendadas -->
+${(()=>{
+  const recCams = DB.recommended||[];
+  if(recCams.length===0) return '';
+  const recCost = recCams.reduce((s,r)=>{
+    const m=r['MODELO SUGERIDO']||'';
+    return s+(PRICES[m]||0)+(LABOR[m]||150);
+  },0);
+  const recRows = recCams.map(r=>{
+    const modelo=r['MODELO SUGERIDO']||'—';
+    const preco=PRICES[modelo]||0;
+    const mao=LABOR[modelo]||150;
+    return \`<tr>
+      <td>\${r['LOCAL']||'—'}</td>
+      <td class="model">\${modelo}</td>
+      <td class="loc">\${r['JUSTIFICATIVA']||'—'}</td>
+      <td class="cost">R$ \${(preco+mao).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    </tr>\`;
+  }).join('');
+  return \`
+<style>
+.rec-pg{position:relative;z-index:1;padding:40mm 16mm 30mm 24mm;break-before:page;page-break-before:always}
+.rec-badge{display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;
+           font-size:7pt;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:8px;text-transform:uppercase}
+</style>
+<div class="rec-pg">
+  <div class="bg"><img src="\${TIMBRADO_B64}" alt=""></div>
+  <div class="rec-badge">⚠ Expansão Recomendada</div>
+  <h2>Câmeras Recomendadas — Proposta de Expansão do Parque CFTV</h2>
+  <p style="font-size:8pt;color:#475569;margin:6px 0 12px 0">
+    Câmeras identificadas para ampliar a cobertura de segurança.
+    Custo total estimado (equipamento + mão de obra):
+    <strong style="color:#c2410c">R$ \${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong>
+  </p>
+  <table>
+    <thead><tr>
+      <th>Local</th><th>Modelo Sugerido</th><th>Justificativa</th>
+      <th style="text-align:right">Custo Est.</th>
+    </tr></thead>
+    <tbody>\${recRows}</tbody>
+    <tfoot><tr>
+      <td colspan="3"><strong>Total estimado</strong></td>
+      <td class="cost" style="color:#c2410c">R$ \${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    </tr></tfoot>
+  </table>
+</div>\`;
+})()}
 
 </body></html>`;
 
