@@ -5733,10 +5733,13 @@ ${(()=>{
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.target='_blank';a.rel='noopener';
+  const _execDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.href=url;
+  a.download=`IBMP_CFTV_Relatorio_Executivo_${_execDateStr}.html`;
+  a.target='_blank';a.rel='noopener';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),20000);
-  toast('Relatório Executivo aberto — Ctrl+P para imprimir');
+  toast('Relatório Executivo aberto — Ctrl+P para imprimir/salvar como PDF');
 }
 
 // ═══════════════ SELETOR DE PLANTAS PARA RELATÓRIO ═══════════════
@@ -5906,39 +5909,106 @@ function exportPDF(selectedFloors, _retry=0) {
     return;
   }
   const f = selectedFloors[0];
-  if (!f.image && f.cameras.length === 0) { toast('Adicione uma planta ou câmeras antes de exportar'); return; }
+  if (!f.image && f.cameras.length === 0 && !(DB.cameras&&DB.cameras.length)) { toast('Adicione câmeras ou importe o banco de dados antes de exportar'); return; }
   const _notLoaded=selectedFloors.some(fl=>fl.image&&!(fl.image.naturalWidth||fl.image.width));
   if(_notLoaded&&_retry<8){ setTimeout(()=>exportPDF(selectedFloors,_retry+1),150); if(_retry===0)toast('Carregando imagens...'); return; }
 
-  const now = new Date().toLocaleDateString('pt-BR',{
+  const _nowDate = new Date();
+  const now = _nowDate.toLocaleDateString('pt-BR',{
     day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
   });
+  const _dateStr = _nowDate.toISOString().slice(0,10).replace(/-/g,'');
   const allCams   = selectedFloors.flatMap(fl=>fl.cameras);
+
+  // ── Dados consolidados: mapa + banco DB.cameras ──────────────────────────
+  // Para KPIs e gráficos usamos as câmeras mapeadas (com status real do mapa)
+  // Para a tabela completa usamos DB.cameras (banco completo)
+  const mappedNames = new Set(allCams.map(c=>c.name));
+
+  // Câmeras do DB não mapeadas ainda (só DB)
+  const dbOnlyCams = (DB.cameras||[]).filter(r=>{
+    const n = r['NOME CANAL']||'';
+    return n && !mappedNames.has(n);
+  });
+
+  // Status: câmeras mapeadas
   const ok        = allCams.filter(c=>c.fn).length;
   const inativas  = allCams.filter(c=>!c.fn).length;
-  const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+
+  // Status total (mapa + DB não mapeado)
+  const dbOkExtra    = dbOnlyCams.filter(r=>!(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não')).length;
+  const dbNfExtra    = dbOnlyCams.filter(r=>(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não')).length;
+  const totalOk      = ok + dbOkExtra;
+  const totalNf      = inativas + dbNfExtra;
+  const totalAll     = allCams.length + dbOnlyCams.length;
+
+  const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0)
+    + dbOnlyCams.filter(r=>(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não'))
+        .reduce((s,r)=>s+(PRICES[r['MODELO CÂMERA']||'']||0),0);
 
   // Planta em resolução original
   const showRec = document.getElementById('chk-show-rec')?.checked || false;
-  const plantImgSrc = capturePlantImg(f, showRec); // para compatibilidade com table-pg
+  const plantImgSrc = capturePlantImg(f, showRec);
 
-  const nfRows = allCams.filter(c=>!c.fn).map(cam=>{
+  // Tabela de câmeras inativas — mapa + banco
+  const nfCamsMapa = allCams.filter(c=>!c.fn).map(cam=>{
     const price=PRICES[cam.info.modelo]||0;
     return `<tr>
-      <td>${cam.name}</td>
+      <td>${cam.name||'—'}</td>
       <td class="model">${cam.info.modelo||'—'}</td>
-      <td class="loc">${cam.info.setor||cam.info.gravador||'—'}</td>
+      <td class="loc">${cam.info.gravador||cam.info.setor||'—'}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;color:#64748b">${cam.info.serial||'—'}</td>
       <td class="cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    </tr>`;
+  });
+  const nfCamsDB = dbOnlyCams.filter(r=>(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não')).map(r=>{
+    const modelo=r['MODELO CÂMERA']||'—';
+    const price=PRICES[modelo]||0;
+    return `<tr>
+      <td>${r['NOME CANAL']||'—'}</td>
+      <td class="model">${modelo}</td>
+      <td class="loc">${r['GRAVADOR']||'—'}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;color:#64748b">${r['SERIAL']||'—'}</td>
+      <td class="cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+    </tr>`;
+  });
+  const nfRows = [...nfCamsMapa, ...nfCamsDB].join('');
+  const totalNfCount = nfCamsMapa.length + nfCamsDB.length;
+
+  // Tabela completa de câmeras (banco DB)
+  const allDBCams = DB.cameras||[];
+  const allCamRows = allDBCams.map(r=>{
+    const status = r['STATUS DE OPERAÇÃO']||'Ativo';
+    const isNF = status.toLowerCase().includes('não');
+    const modelo = r['MODELO CÂMERA']||'—';
+    const statusColor = isNF ? '#dc2626' : '#16a34a';
+    return `<tr>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt">${r['NOME CANAL']||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#d97706">${modelo}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#64748b">${r['GRAVADOR']||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#64748b">${r['CANAL']||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#475569">${r['SERIAL']||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#475569">${r['ATIVO']||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:7.5pt;font-weight:700;color:${statusColor}">${status}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:7.5pt;color:#64748b">${r['Observação']||''}</td>
     </tr>`;
   }).join('');
 
-  // KPIs patrimoniais (Etapa B integrada)
+  // KPIs patrimoniais
   const currentYear = new Date().getFullYear();
-  const totalAssets = allCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+  const totalAssets = allCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0)
+    + dbOnlyCams.reduce((s,r)=>s+(PRICES[r['MODELO CÂMERA']||'']||0),0);
   const depreciated = allCams.reduce((s,c)=>{
     const price=PRICES[c.info.modelo]||0;
     const life=LIFESPAN[c.info.modelo]||6;
     const install=INSTALL_YEAR[c.name]||2022;
+    const age=Math.min(currentYear-install, life);
+    return s+price*(1-age/life);
+  },0) + dbOnlyCams.reduce((s,r)=>{
+    const modelo=r['MODELO CÂMERA']||'';
+    const price=PRICES[modelo]||0;
+    const life=LIFESPAN[modelo]||6;
+    const install=INSTALL_YEAR[r['NOME CANAL']||'']||2022;
     const age=Math.min(currentYear-install, life);
     return s+price*(1-age/life);
   },0);
@@ -6042,9 +6112,10 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
 
   <h2>Resumo Operacional</h2>
   <div class="kpis">
-    <div class="kpi"><div class="kv">${allCams.length}</div><div class="kl">Câmeras mapeadas</div></div>
-    <div class="kpi ok"><div class="kv">${ok}</div><div class="kl">Ativas</div></div>
-    <div class="kpi nf"><div class="kv">${inativas}</div><div class="kl">Inativas</div></div>
+    <div class="kpi"><div class="kv">${totalAll}</div><div class="kl">Total no Banco</div></div>
+    <div class="kpi"><div class="kv">${allCams.length}</div><div class="kl">Mapeadas</div></div>
+    <div class="kpi ok"><div class="kv">${totalOk}</div><div class="kl">Ativas</div></div>
+    <div class="kpi nf"><div class="kv">${totalNf}</div><div class="kl">Inativas</div></div>
     <div class="kpi wn"><div class="kv">R$&nbsp;${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Custo est. (NF)</div></div>
   </div>
 
@@ -6058,25 +6129,27 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
 
   <h2 style="margin-top:6px">Distribuição do Parque CFTV</h2>
   ${(()=>{
-    const total=allCams.length||1;
-    const pctOk=Math.round(ok/total*100);
+    const total=totalAll||1;
+    const pctOk=Math.round(totalOk/total*100);
     // Donut SVG
     const C=226.2,r=36;
-    const dashOk=Math.max(0.1,C*ok/total);
+    const dashOk=Math.max(0.1,C*totalOk/total);
     const dashNf=C-dashOk;
     const donut=`<svg width="100" height="100" viewBox="0 0 88 88">
       <circle cx="44" cy="44" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="11"/>
       <circle cx="44" cy="44" r="${r}" fill="none" stroke="#16a34a" stroke-width="11"
         stroke-dasharray="${dashOk.toFixed(1)} ${dashNf.toFixed(1)}"
         stroke-dashoffset="${(C/4).toFixed(1)}" stroke-linecap="round"/>
-      ${inativas>0?`<circle cx="44" cy="44" r="${r}" fill="none" stroke="#dc2626" stroke-width="11"
+      ${totalNf>0?`<circle cx="44" cy="44" r="${r}" fill="none" stroke="#dc2626" stroke-width="11"
         stroke-dasharray="${dashNf.toFixed(1)} ${dashOk.toFixed(1)}"
         stroke-dashoffset="${(C/4-dashOk).toFixed(1)}" stroke-linecap="round"/>`:''}
       <text x="44" y="40" text-anchor="middle" font-size="13" font-weight="800" fill="#0f1923">${pctOk}%</text>
       <text x="44" y="52" text-anchor="middle" font-size="7" fill="#64748b">ativas</text>
     </svg>`;
-    // Modelos
-    const mc={};allCams.forEach(c=>{const m=c.info?.modelo||'N/D';mc[m]=(mc[m]||0)+1;});
+    // Modelos — usa banco completo (mapeadas + DB)
+    const mc={};
+    allCams.forEach(c=>{const m=c.info?.modelo||'N/D';mc[m]=(mc[m]||0)+1;});
+    dbOnlyCams.forEach(r=>{const m=r['MODELO CÂMERA']||'N/D';mc[m]=(mc[m]||0)+1;});
     const models=Object.entries(mc).sort((a,b)=>b[1]-a[1]).slice(0,5);
     const maxM=models[0]?.[1]||1;
     const modelBars=models.map(([m,n])=>`<div class="bar-row">
@@ -6098,10 +6171,10 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
         <div class="donut-wrap">
           ${donut}
           <div class="donut-legend">
-            <div class="leg-item"><div class="leg-dot" style="background:#16a34a"></div>Ativas<span class="leg-val" style="color:#16a34a">${ok}</span></div>
-            <div class="leg-item"><div class="leg-dot" style="background:#dc2626"></div>Inativas<span class="leg-val" style="color:#dc2626">${inativas}</span></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#16a34a"></div>Ativas<span class="leg-val" style="color:#16a34a">${totalOk}</span></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#dc2626"></div>Inativas<span class="leg-val" style="color:#dc2626">${totalNf}</span></div>
             <div class="leg-item" style="border-top:1px solid #e2e8f0;margin-top:3px;padding-top:3px">
-              <div class="leg-dot" style="background:#94a3b8"></div>Total<span class="leg-val">${total}</span>
+              <div class="leg-dot" style="background:#94a3b8"></div>Total<span class="leg-val">${totalAll}</span>
             </div>
           </div>
         </div>
@@ -6127,19 +6200,39 @@ ${selectedFloors.map(fl=>{
 }).join('')}
 
 <!-- PÁG CÂMERAS INATIVAS: só renderiza se houver inativas -->
-${inativas > 0 ? `
+${totalNfCount > 0 ? `
 <div class="table-pg ${plantImgSrc ? 'after-plant' : ''}">
-  <h2>Câmeras Inativas — Orçamento de Manutenção</h2>
+  <h2>Câmeras Inativas — Orçamento de Manutenção (${totalNfCount} câmera${totalNfCount>1?'s':''})</h2>
   <table>
     <thead><tr>
-      <th>Câmera</th><th>Modelo</th><th>Localização</th>
+      <th>Câmera</th><th>Modelo</th><th>Gravador / Setor</th>
+      <th>Serial</th>
       <th style="text-align:right">Custo Est.</th>
     </tr></thead>
     <tbody>${nfRows}</tbody>
     <tfoot><tr>
-      <td colspan="3"><strong>Total estimado</strong></td>
+      <td colspan="4"><strong>Total estimado</strong></td>
       <td class="cost">R$ ${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
     </tr></tfoot>
+  </table>
+</div>
+` : ''}
+
+${allDBCams.length > 0 ? `
+<div class="table-pg" style="break-before:page;page-break-before:always">
+  <h2>Inventário Completo — Banco de Dados CFTV (${allDBCams.length} câmeras)</h2>
+  <table style="font-size:7.5pt">
+    <thead><tr>
+      <th>Canal / Nome</th>
+      <th>Modelo</th>
+      <th>Gravador</th>
+      <th style="text-align:center">Canal</th>
+      <th>Serial</th>
+      <th style="text-align:center">Ativo</th>
+      <th>Status</th>
+      <th>Observação</th>
+    </tr></thead>
+    <tbody>${allCamRows}</tbody>
   </table>
 </div>
 ` : ''}
@@ -6171,10 +6264,13 @@ ${(()=>{
     const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.target='_blank';a.rel='noopener';
+  const _floorNameSafe = f.name.replace(/[^a-zA-Z0-9À-ú\s]/g,'').replace(/\s+/g,'_').slice(0,30);
+  a.href=url;
+  a.download=`IBMP_CFTV_Relatorio_Tecnico_${_floorNameSafe}_${_dateStr}.html`;
+  a.target='_blank';a.rel='noopener';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),20000);
-  toast('Relatório aberto na nova aba — use Ctrl+P para salvar como PDF');
+  toast('Relatório Técnico aberto — use Ctrl+P → Salvar como PDF para exportar');
 }
 // ═══════════════ XLSX IMPORT ═══════════════
 function importInventory(e){
