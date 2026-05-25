@@ -4445,7 +4445,6 @@ function renderCoverage(){
   });
   const mStatus={};
   floors.forEach(fl=>fl.cameras.forEach(c=>{ mStatus[c.name]={fn:c.fn,rec:c.rec||false}; }));
-
   const rows=DB.recorders.map(rec=>{
     const nome  =rec['NOME DO GRAVADOR']||rec['NOME']||'Gravador';
     const ip    =rec['IP DE ACESSO']||rec['IP']||'—';
@@ -4465,8 +4464,7 @@ function renderCoverage(){
       const s=mStatus[cam['NOME CANAL']];
       const ch=cam['CANAL']||'?';
       const bg=!s?'var(--surface3)':s.rec?'#ea580c':s.fn?'var(--ok)':'var(--nf)';
-      const tt=`Ch ${ch}: ${cam['NOME CANAL']}`;
-      return `<div title="${tt}" style="width:18px;height:18px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;cursor:default">${ch}</div>`;
+      return `<div title="Ch ${ch}: ${cam['NOME CANAL']}" style="width:18px;height:18px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;cursor:default">${ch}</div>`;
     }).join('');
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
@@ -4935,7 +4933,6 @@ function loadAutoSave(){
     if(!raw)return false;
     const data=JSON.parse(raw);
     if(!data.floors||!data.floors.length)return false;
-    // DB.recommended deve ser carregado ANTES de Cam.from
     if(data.db?.recommended?.length) DB.recommended=data.db.recommended;
     else if(data.recommended?.length) DB.recommended=data.recommended;
     if(data.db?.cameras?.length)   DB.cameras=data.db.cameras;
@@ -5487,13 +5484,8 @@ function exportExecutivo(selectedFloors, _retry=0){
   }
   const f=selectedFloors[0];
   if(!f.image&&f.cameras.length===0){toast('Adicione uma planta ou câmeras antes de exportar');return;}
-  // Aguardar imagens carregadas
-  const anyNotLoaded=selectedFloors.some(fl=>fl.image&&fl.imgB64&&!(fl.image.naturalWidth||fl.image.width));
-  if(anyNotLoaded&&_retry<5){
-    setTimeout(()=>exportExecutivo(selectedFloors,_retry+1),200);
-    if(_retry===0)toast('Carregando imagens...');
-    return;
-  }
+  const _notLoaded2=selectedFloors.some(fl=>fl.image&&!(fl.image.naturalWidth||fl.image.width));
+  if(_notLoaded2&&_retry<8){setTimeout(()=>exportExecutivo(selectedFloors,_retry+1),150);if(_retry===0)toast('Carregando imagens...');return;}
   const now=new Date();
   const nowFmt=now.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const dateFmt=now.toISOString().slice(0,10);
@@ -5514,7 +5506,7 @@ function exportExecutivo(selectedFloors, _retry=0){
 
   // Capturar imagem de cada planta selecionada usando capturePlantImg global
   const showRecExec = document.getElementById('chk-show-rec')?.checked || false;
-  const mapsImgs=selectedFloors.map(fl=>({{
+  const mapsImgs=selectedFloors.map(fl=>({
     name:fl.name,
     src:capturePlantImg(fl, showRecExec)
   })).filter(m=>m.src);
@@ -5530,7 +5522,7 @@ function exportExecutivo(selectedFloors, _retry=0){
 <style>
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm}
 .page{width:210mm;height:297mm;padding:10mm 13mm 10mm;position:relative;display:flex;flex-direction:column;gap:7px;overflow:hidden;background-image:url(${TIMBRADO_B64});background-size:210mm 297mm;background-repeat:no-repeat}
 
 /* Header */
@@ -5578,8 +5570,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
 /* Footer */
 .exec-footer{border-top:1px solid #e2e8f0;padding-top:5px;display:flex;justify-content:space-between;font-size:6.5pt;color:#94a3b8;flex-shrink:0}
 </style>
-</head><body>
-<div class="page">
+</head><body><div class="page">
 
   <!-- HEADER -->
   <div class="exec-header">
@@ -5701,7 +5692,7 @@ ${(()=>{
     const custo=(PRICES[m]||0)+(LABOR[m]||150);
     return `<tr style="font-size:8pt"><td style="padding:5px 7px;border-bottom:1px solid #f0f0f0">${r['LOCAL']||'—'}</td><td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;color:#d97706;font-weight:600">${m}</td><td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;color:#64748b">${r['JUSTIFICATIVA']||'—'}</td><td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:700;color:#c2410c">R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
   }).join('');
-  return `<div class="page" style="page-break-before:always;break-before:page;display:flex;flex-direction:column;gap:8px">
+  return `<div class="page" style="page-break-before:always;break-before:page">
   <div class="exec-header">
     <div class="exec-title">
       <h1 style="font-size:13pt">Câmeras Recomendadas — Proposta de Expansão</h1>
@@ -5710,7 +5701,7 @@ ${(()=>{
     </div>
     <div class="exec-meta"><strong>Gerado em:</strong> ${nowFmt}</div>
   </div>
-  <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:8px;padding:8px 12px;font-size:8pt;color:#92400e">
+  <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:8px;padding:8px 12px;font-size:8pt;color:#92400e;flex-shrink:0">
     <strong>Custo total estimado (equipamento + mão de obra):</strong>
     <span style="font-size:12pt;font-weight:900;color:#c2410c;margin-left:8px">R$ ${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
   </div>
@@ -5836,21 +5827,8 @@ function confirmFloorSel(){
 // showRec=true também renderiza câmeras recomendadas (CamRec)
 function capturePlantImg(fl, showRec=false){
   try{
-    // Usar naturalWidth/width do fl.image; se não disponível, recriar do imgB64
-    const src = fl.imgB64 || (fl.image ? fl.image.src : null);
-    if(!src) return '';
-    let iw = fl.image ? (fl.image.naturalWidth||fl.image.width||0) : 0;
-    let ih = fl.image ? (fl.image.naturalHeight||fl.image.height||0) : 0;
-    // Se imagem não tem dimensões mas temos o base64, criar sincrono via canvas trick
-    if((!iw||!ih) && src){
-      // Tentar reusar imagem existente
-      if(fl.image && fl.image.complete && fl.image.width>0){
-        iw=fl.image.width; ih=fl.image.height;
-      } else {
-        return ''; // imagem ainda não carregada — relatório será gerado sem ela
-      }
-    }
-    if(!iw||!ih)return'';
+    if(!fl.image)return'';
+    const iw=fl.image.width, ih=fl.image.height;
     const tc=document.createElement('canvas');
     tc.width=iw; tc.height=ih;
     const ctx=tc.getContext('2d');
@@ -5927,17 +5905,10 @@ function exportPDF(selectedFloors, _retry=0) {
     );
     return;
   }
-  const f = selectedFloors[0]; // planta principal do relatório
-  if (!f.image && f.cameras.length === 0) {
-    toast('Adicione uma planta ou câmeras antes de exportar'); return;
-  }
-  // Se imagem não carregada ainda, aguardar e re-tentar (até 5x)
-  const anyNotLoaded = selectedFloors.some(fl=>fl.image && fl.imgB64 && !(fl.image.naturalWidth||fl.image.width));
-  if(anyNotLoaded && _retry < 5){
-    setTimeout(()=>exportPDF(selectedFloors, _retry+1), 200);
-    if(_retry===0) toast('Carregando imagens...');
-    return;
-  }
+  const f = selectedFloors[0];
+  if (!f.image && f.cameras.length === 0) { toast('Adicione uma planta ou câmeras antes de exportar'); return; }
+  const _notLoaded=selectedFloors.some(fl=>fl.image&&!(fl.image.naturalWidth||fl.image.width));
+  if(_notLoaded&&_retry<8){ setTimeout(()=>exportPDF(selectedFloors,_retry+1),150); if(_retry===0)toast('Carregando imagens...'); return; }
 
   const now = new Date().toLocaleDateString('pt-BR',{
     day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
@@ -5949,7 +5920,7 @@ function exportPDF(selectedFloors, _retry=0) {
 
   // Planta em resolução original
   const showRec = document.getElementById('chk-show-rec')?.checked || false;
-  const plantImgSrc = capturePlantImg(f, showRec);
+  const plantImgSrc = capturePlantImg(f, showRec); // para compatibilidade com table-pg
 
   const nfRows = allCams.filter(c=>!c.fn).map(cam=>{
     const price=PRICES[cam.info.modelo]||0;
@@ -7234,14 +7205,13 @@ async function saveToCloud(){
 
 // ── loadProjectJSON: reutilizável pelo doRefresh e autoload
 function loadProjectJSON(data){
-  // ── DB PRIMEIRO — Cam.from depende de DB.recommended ──
+  // DB PRIMEIRO — Cam.from depende de DB.recommended
   if(data.db){
     if(data.db.cameras  && data.db.cameras.length)   DB.cameras   = data.db.cameras;
     if(data.db.recorders&& data.db.recorders.length) DB.recorders = data.db.recorders;
     if(data.db.pareceres&& data.db.pareceres.length) DB.pareceres = data.db.pareceres;
     if(data.db.recommended && data.db.recommended.length) DB.recommended = data.db.recommended;
   }
-  // suporte à chave legada 'recommended' no topo
   if((!DB.recommended||!DB.recommended.length) && data.recommended?.length){
     DB.recommended = data.recommended;
   }
@@ -7294,9 +7264,8 @@ function loadProjectJSON(data){
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(async () => {
     try{
-      // Remover autosave de versão antiga (sem db) para evitar conflito
-      const rawAs = localStorage.getItem('ibmp_autosave');
-      if(rawAs){ try{ const d=JSON.parse(rawAs); if(!d.db) localStorage.removeItem('ibmp_autosave'); }catch(e){} }
+      const rawAs=localStorage.getItem('ibmp_autosave');
+      if(rawAs){try{const d=JSON.parse(rawAs);if(!d.db)localStorage.removeItem('ibmp_autosave');}catch(e){}}
       const base = location.href.replace(/[^\/]*$/, '');
       const r    = await fetch(base + 'projeto.json', {cache:'no-store'});
       if(!r.ok) return;
