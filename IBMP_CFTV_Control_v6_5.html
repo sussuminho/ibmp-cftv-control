@@ -2105,16 +2105,9 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <div class="view-overlay" id="view-coverage">
       <div class="view-nav" id="vnav-coverage"></div>
       <div class="cov-header">
-        <h2>Mapa de Cobertura</h2>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button class="hbtn" id="btn-audit" onclick="toggleAudit()"
-            style="display:flex;align-items:center;gap:6px">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.3 3.3l1.4 1.4M11.3 11.3l1.4 1.4M3.3 12.7l1.4-1.4M11.3 4.7l1.4-1.4"/></svg>
-            Auditoria
-          </button>
-        </div>
+        <h2>Gravadores</h2>
       </div>
-      <div class="cov-canvas-wrap"><canvas id="cov-c"></canvas></div>
+      <div id="rec-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:0 20px 20px;overflow-y:auto;flex:1"></div>
     </div>
 
     <!-- Timeline view -->
@@ -4443,155 +4436,106 @@ function renderBudget(){
 }
 
 // ═══════════════ COVERAGE AUDIT ═══════════════
-let _auditMode=false;
-function toggleAudit(){
-  _auditMode=!_auditMode;
-  const btn=document.getElementById('btn-audit');
-  btn.style.background=_auditMode?'var(--g)':'';
-  btn.style.color=_auditMode?'#fff':'';
-  btn.style.boxShadow=_auditMode?'0 0 14px rgba(21,155,119,.4)':'';
-  renderCoverage();
-}
-
-// ═══════════════ COVERAGE ═══════════════
 function renderCoverage(){
-  const cv=document.getElementById('cov-c');
-  const parent=cv.parentElement;
-  // Measure after layout paint so clientWidth is not 0
-  if(!parent.clientWidth){
-    requestAnimationFrame(()=>renderCoverage());
-    return;
-  }
-  cv.width=parent.clientWidth;cv.height=parent.clientHeight;
-  const f=F(),ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);
-  if(!f.image){
-    ctx.font='14px Inter,sans-serif';ctx.textAlign='center';ctx.fillStyle='var(--text3)';
-    ctx.fillText('Carregue uma planta para ver a cobertura',cv.width/2,cv.height/2);
-    return;
-  }
-  const sx=cv.width/f.image.width,sy=cv.height/f.image.height,sc=Math.min(sx,sy);
-  const ox=(cv.width-f.image.width*sc)/2,oy=(cv.height-f.image.height*sc)/2;
-  if(_auditMode){
-    // ── MODO AUDITORIA ─────────────────────────────────────────
-    // Estratégia: planta levemente visível + overlay escuro +
-    // cones que "rasgam" a escuridão com luz amarelo-branca intensa
-    // ─────────────────────────────────────────────────────────────
+  const grid = document.getElementById('rec-grid');
+  if(!grid) return;
 
-    // 1. Planta bem visível — base para o olho localizar paredes
-    ctx.globalAlpha=0.65;
-    ctx.drawImage(f.image,ox,oy,f.image.width*sc,f.image.height*sc);
-    ctx.globalAlpha=1;
-
-    // 2. Overlay escuro suave — só escurece o suficiente para o contraste
-    ctx.fillStyle='rgba(5,10,20,0.52)';
-    ctx.fillRect(ox,oy,f.image.width*sc,f.image.height*sc);
-
-    // 3. Canvas auxiliar de luz — cones brilhantes
-    const lightC=document.createElement('canvas');
-    lightC.width=cv.width;lightC.height=cv.height;
-    const lc=lightC.getContext('2d');
-
-    f.cameras.filter(c=>c.fn).forEach(cam=>{
-      const cx2=cam.x*sc+ox,cy2=cam.y*sc+oy,ir2=cam.ir*sc;
-      const fR=cam.fov*Math.PI/180,r=cam.rot*Math.PI/180;
-      // Cone de luz com gradiente forte
-      const gr=lc.createRadialGradient(cx2,cy2,0,cx2,cy2,ir2);
-      gr.addColorStop(0,'rgba(255,250,220,1)');
-      gr.addColorStop(0.25,'rgba(255,235,150,0.92)');
-      gr.addColorStop(0.6,'rgba(255,210,80,0.55)');
-      gr.addColorStop(0.85,'rgba(255,185,30,0.2)');
-      gr.addColorStop(1,'rgba(255,170,0,0)');
-      lc.save();lc.translate(cx2,cy2);lc.rotate(r);
-      lc.beginPath();lc.moveTo(0,0);lc.arc(0,0,ir2,-fR/2,fR/2);lc.closePath();
-      lc.fillStyle=gr;lc.fill();
-      lc.restore();
-      // Ponto da câmera — círculo brilhante
-      const g2=lc.createRadialGradient(cx2,cy2,0,cx2,cy2,12);
-      g2.addColorStop(0,'rgba(255,255,255,1)');
-      g2.addColorStop(0.4,'rgba(255,240,100,0.9)');
-      g2.addColorStop(1,'rgba(255,220,0,0)');
-      lc.beginPath();lc.arc(cx2,cy2,12,0,Math.PI*2);
-      lc.fillStyle=g2;lc.fill();
-    });
-
-    // 4. Compor luz sobre a escuridão com 'lighter' (acumula brilho)
-    ctx.save();
-    ctx.globalCompositeOperation='lighter';
-    ctx.globalAlpha=0.9;
-    ctx.drawImage(lightC,0,0);
-    ctx.restore();
-
-    // 5. Revelar a planta real só dentro dos cones (screen blend)
-    const revealC=document.createElement('canvas');
-    revealC.width=cv.width;revealC.height=cv.height;
-    const rc=revealC.getContext('2d');
-    // Máscara: cones sólidos
-    f.cameras.filter(c=>c.fn).forEach(cam=>{
-      const cx2=cam.x*sc+ox,cy2=cam.y*sc+oy,ir2=cam.ir*sc;
-      const fR=cam.fov*Math.PI/180,r=cam.rot*Math.PI/180;
-      rc.save();rc.translate(cx2,cy2);rc.rotate(r);
-      rc.beginPath();rc.moveTo(0,0);rc.arc(0,0,ir2,-fR/2,fR/2);rc.closePath();
-      rc.fillStyle='rgba(255,255,255,0.85)';rc.fill();
-      rc.restore();
-    });
-    // Recortar planta pela máscara
-    const plantC=document.createElement('canvas');
-    plantC.width=cv.width;plantC.height=cv.height;
-    const pc=plantC.getContext('2d');
-    pc.drawImage(revealC,0,0);
-    pc.globalCompositeOperation='source-in';
-    pc.globalAlpha=0.95;
-    pc.drawImage(f.image,ox,oy,f.image.width*sc,f.image.height*sc);
-    // Sobrepor planta recortada
-    ctx.save();
-    ctx.globalCompositeOperation='screen';
-    ctx.globalAlpha=0.95;
-    ctx.drawImage(plantC,0,0);
-    ctx.restore();
-
-  } else {
-    ctx.globalAlpha=.85;ctx.drawImage(f.image,ox,oy,f.image.width*sc,f.image.height*sc);ctx.globalAlpha=1;
-  }
-  // Câmeras ativas — cone de cobertura verde
-  f.cameras.filter(c=>c.fn).forEach(cam=>{
-    const cx=cam.x*sc+ox,cy=cam.y*sc+oy,ir=cam.ir*sc;
-    const fR=cam.fov*Math.PI/180,r=cam.rot*Math.PI/180;
-    const gr=ctx.createRadialGradient(cx,cy,0,cx,cy,ir);
-    gr.addColorStop(0,'rgba(22,163,74,.5)');gr.addColorStop(.7,'rgba(22,163,74,.18)');gr.addColorStop(1,'rgba(22,163,74,0)');
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(r);
-    ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,ir,-fR/2,fR/2);ctx.closePath();
-    ctx.fillStyle=gr;ctx.fill();
-    ctx.strokeStyle='rgba(22,163,74,.55)';ctx.lineWidth=1.2;ctx.stroke();
-    // ponto da câmera
-    ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fillStyle='#16a34a';ctx.fill();
-    ctx.restore();
+  // Montar mapa câmera→gravador a partir do DB
+  const camMap = {}; // gravadorNome → [cams]
+  DB.cameras.forEach(c=>{
+    const g = c['GRAVADOR']||'Sem Gravador';
+    if(!camMap[g]) camMap[g]=[];
+    camMap[g].push(c);
   });
-  // Câmeras inativas — mancha vermelha (ponto cego)
-  if(!_auditMode) f.cameras.filter(c=>!c.fn).forEach(cam=>{
-    const cx=cam.x*sc+ox,cy=cam.y*sc+oy,ir=Math.max(cam.ir*sc*.4,20);
-    const gr=ctx.createRadialGradient(cx,cy,0,cx,cy,ir);
-    gr.addColorStop(0,'rgba(220,38,38,.6)');gr.addColorStop(1,'rgba(220,38,38,0)');
-    ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();
-    // X vermelho
-    ctx.strokeStyle='rgba(220,38,38,.9)';ctx.lineWidth=2;
-    const s=5;
-    ctx.beginPath();ctx.moveTo(cx-s,cy-s);ctx.lineTo(cx+s,cy+s);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx+s,cy-s);ctx.lineTo(cx-s,cy+s);ctx.stroke();
+
+  // Para cada câmera mapeada, verificar se está ativa
+  const mappedStatus = {};
+  floors.forEach(fl=>fl.cameras.forEach(c=>{
+    mappedStatus[c.name] = { fn: c.fn, rec: c.rec||false };
+  }));
+
+  const rows = DB.recorders.map(rec=>{
+    const nome   = rec['NOME DO GRAVADOR']||rec['NOME']||'Gravador';
+    const ip     = rec['IP DE ACESSO']||rec['IP']||'—';
+    const modelo = rec['MODELO']||'—';
+    const local  = rec['LOCALIZAÇÃO']||rec['LOCAL']||'—';
+    const cams   = camMap[nome]||[];
+
+    // Contagens
+    const total  = cams.length;
+    const ativas = cams.filter(c=>{ const s=mappedStatus[c['NOME CANAL']]; return s&&s.fn&&!s.rec; }).length;
+    const inats  = cams.filter(c=>{ const s=mappedStatus[c['NOME CANAL']]; return s&&!s.fn&&!s.rec; }).length;
+    const nmap   = cams.filter(c=>!mappedStatus[c['NOME CANAL']]).length;
+    const pct    = total>0?Math.round(ativas/total*100):0;
+    const barColor = pct>=80?'var(--ok)': pct>=50?'var(--warn)':'var(--nf)';
+
+    // Canais — grid de 16 células (máx suportado por DVR típico)
+    const slots = Math.max(16, total);
+    const channelCells = cams.map(c=>{
+      const s = mappedStatus[c['NOME CANAL']];
+      const ch = c['CANAL']||'?';
+      let bg, title;
+      if(!s)        { bg='var(--surface3)';  title=`Ch ${ch}: ${c['NOME CANAL']} (não mapeado)`; }
+      else if(s.rec){ bg='#ea580c';          title=`Ch ${ch}: ${c['NOME CANAL']} (recomendada)`; }
+      else if(s.fn) { bg='var(--ok)';        title=`Ch ${ch}: ${c['NOME CANAL']} (ativa)`; }
+      else          { bg='var(--nf)';        title=`Ch ${ch}: ${c['NOME CANAL']} (inativa)`; }
+      return `<div title="${title}" style="width:18px;height:18px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;cursor:default;flex-shrink:0">${ch}</div>`;
+    }).join('');
+
+    // Badge de status geral
+    const badge = inats>0
+      ? `<span style="background:var(--nf-bg);color:var(--nf);border:1px solid var(--nf-border);border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px">${inats} inativa${inats>1?'s':''}</span>`
+      : `<span style="background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border);border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px">OK</span>`;
+
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${nome}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${modelo} · ${local}</div>
+        </div>
+        ${badge}
+      </div>
+      <!-- IP -->
+      <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:7px;padding:6px 10px;font-size:11px;font-family:monospace">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--text3)" stroke-width="1.8"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M6 3V2M10 3V2"/></svg>
+        <span style="color:var(--text2)">${ip}</span>
+      </div>
+      <!-- Barra de saúde -->
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px">
+          <span>${ativas} ativas · ${inats} inativas · ${nmap} não mapeadas</span>
+          <span style="font-weight:700;color:${barColor}">${pct}%</span>
+        </div>
+        <div style="background:var(--surface3);border-radius:4px;height:7px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width .4s"></div>
+        </div>
+      </div>
+      <!-- Canais -->
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Canais (${total})</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">${channelCells}</div>
+        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--ok)"></div>Ativa</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--nf)"></div>Inativa</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:#ea580c"></div>Recomendada</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--surface3)"></div>Não mapeada</div>
+        </div>
+      </div>
+    </div>`;
   });
-  // Legenda fixa no canto inferior esquerdo
-  const lx=12,ly=cv.height-12,lw=210,lh=54;
-  ctx.fillStyle='rgba(0,0,0,.62)';
-  ctx.beginPath();ctx.roundRect(lx,ly-lh,lw,lh,8);ctx.fill();
-  ctx.font='bold 11px Inter,sans-serif';ctx.textAlign='left';
-  // linha 1
-  ctx.fillStyle='#4ade80';ctx.beginPath();ctx.arc(lx+14,ly-lh+16,5,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#fff';ctx.fillText('Cobertura ativa (câmera OK)',lx+24,ly-lh+20);
-  // linha 2
-  ctx.fillStyle='#f87171';ctx.beginPath();ctx.arc(lx+14,ly-lh+36,5,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='rgba(220,38,38,.9)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(lx+10,ly-lh+33);ctx.lineTo(lx+18,ly-lh+40);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(lx+18,ly-lh+33);ctx.lineTo(lx+10,ly-lh+40);ctx.stroke();
-  ctx.fillStyle='#fff';ctx.fillText('Ponto cego (câmera inativa)',lx+24,ly-lh+40);
+
+  // Adicionar card de câmeras sem gravador (se existirem no mapa)
+  const semGrav = floors.flatMap(fl=>fl.cameras).filter(c=>{
+    const db = DB.cameras.find(d=>d['NOME CANAL']===c.name);
+    return !db || !db['GRAVADOR'];
+  });
+
+  grid.innerHTML = rows.join('') + (semGrav.length ? `
+    <div style="background:var(--surface);border:1px dashed var(--border);border-radius:12px;padding:14px;opacity:.7">
+      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px">Sem gravador atribuído (${semGrav.length})</div>
+      <div style="font-size:11px;color:var(--text3)">${semGrav.map(c=>c.name).join(', ')}</div>
+    </div>` : '');
 }
 
 // ═══════════════ PRESENT ═══════════════
@@ -5032,7 +4976,13 @@ function loadAutoSave(){
     if(!raw)return false;
     const data=JSON.parse(raw);
     if(!data.floors||!data.floors.length)return false;
-    if(data.recommended?.length) DB.recommended=data.recommended;
+    // Carregar DB.recommended ANTES de Cam.from (o fallback depende disso)
+    if(data.db?.recommended?.length) DB.recommended=data.db.recommended;
+    else if(data.recommended?.length) DB.recommended=data.recommended; // chave legada
+    // Carregar resto do db se disponível
+    if(data.db?.cameras?.length) DB.cameras=data.db.cameras;
+    if(data.db?.recorders?.length) DB.recorders=data.db.recorders;
+    if(data.db?.pareceres?.length) DB.pareceres=data.db.pareceres;
     // Só restaura posições de câmeras — imagem precisa ser recarregada
     data.floors.forEach((saved,i)=>{
       if(!floors[i])floors.push({name:saved.name,cameras:[],riskZones:[],zoom:1,panX:0,panY:0,image:null,imgB64:'',scale:0});
@@ -6745,7 +6695,7 @@ function fitCanvas(){
 
 // ── Navegação entre views (setas + pills)
 const VIEW_ORDER = ['dash','budget','coverage','timeline'];
-const VIEW_LABELS = { dash:'Dashboard', budget:'Orçamento', coverage:'Cobertura', timeline:'Timeline' };
+const VIEW_LABELS = { dash:'Dashboard', budget:'Orçamento', coverage:'Gravadores', timeline:'Timeline' };
 
 function buildViewNav(currentMode){
   VIEW_ORDER.forEach(v=>{
@@ -7406,6 +7356,18 @@ function loadProjectJSON(data){
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(async () => {
     try{
+      // Limpar autosave antigo (sem version:2 ou sem db) para forçar recarga limpa
+      const rawAs = localStorage.getItem('ibmp_autosave');
+      if(rawAs){
+        try{
+          const asData = JSON.parse(rawAs);
+          if(asData.v !== 2 || !asData.db){
+            // Autosave de versão antiga — remover para evitar conflito
+            localStorage.removeItem('ibmp_autosave');
+            console.log('[AutoLoad] autosave antigo removido');
+          }
+        }catch(e){}
+      }
       const base = location.href.replace(/[^\/]*$/, '');
       const r    = await fetch(base + 'projeto.json', {cache:'no-store'});
       if(!r.ok) return;
