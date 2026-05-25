@@ -1557,7 +1557,7 @@ canvas.chart { width: 100%; display: block; }
 #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 10px; opacity: 0; transition: all .22s; pointer-events: none; z-index: 9999; box-shadow: var(--shadow2); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
-<!-- SheetJS para leitura de Excel no import de inventário -->
+<!-- SheetJS para import de inventário Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -2104,9 +2104,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
 
     <div class="view-overlay" id="view-coverage">
       <div class="view-nav" id="vnav-coverage"></div>
-      <div class="cov-header">
-        <h2>Gravadores</h2>
-      </div>
+      <div class="cov-header"><h2>Gravadores</h2></div>
       <div id="rec-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:0 20px 20px;overflow-y:auto;flex:1"></div>
     </div>
 
@@ -4437,105 +4435,68 @@ function renderBudget(){
 
 // ═══════════════ COVERAGE AUDIT ═══════════════
 function renderCoverage(){
-  const grid = document.getElementById('rec-grid');
-  if(!grid) return;
-
-  // Montar mapa câmera→gravador a partir do DB
-  const camMap = {}; // gravadorNome → [cams]
-  DB.cameras.forEach(c=>{
-    const g = c['GRAVADOR']||'Sem Gravador';
-    if(!camMap[g]) camMap[g]=[];
-    camMap[g].push(c);
+  const grid=document.getElementById('rec-grid');
+  if(!grid)return;
+  const camMap={};
+  DB.cameras.forEach(cam=>{
+    const g=cam['GRAVADOR']||'Sem Gravador';
+    if(!camMap[g])camMap[g]=[];
+    camMap[g].push(cam);
   });
+  const mStatus={};
+  floors.forEach(fl=>fl.cameras.forEach(c=>{ mStatus[c.name]={fn:c.fn,rec:c.rec||false}; }));
 
-  // Para cada câmera mapeada, verificar se está ativa
-  const mappedStatus = {};
-  floors.forEach(fl=>fl.cameras.forEach(c=>{
-    mappedStatus[c.name] = { fn: c.fn, rec: c.rec||false };
-  }));
-
-  const rows = DB.recorders.map(rec=>{
-    const nome   = rec['NOME DO GRAVADOR']||rec['NOME']||'Gravador';
-    const ip     = rec['IP DE ACESSO']||rec['IP']||'—';
-    const modelo = rec['MODELO']||'—';
-    const local  = rec['LOCALIZAÇÃO']||rec['LOCAL']||'—';
-    const cams   = camMap[nome]||[];
-
-    // Contagens
-    const total  = cams.length;
-    const ativas = cams.filter(c=>{ const s=mappedStatus[c['NOME CANAL']]; return s&&s.fn&&!s.rec; }).length;
-    const inats  = cams.filter(c=>{ const s=mappedStatus[c['NOME CANAL']]; return s&&!s.fn&&!s.rec; }).length;
-    const nmap   = cams.filter(c=>!mappedStatus[c['NOME CANAL']]).length;
-    const pct    = total>0?Math.round(ativas/total*100):0;
-    const barColor = pct>=80?'var(--ok)': pct>=50?'var(--warn)':'var(--nf)';
-
-    // Canais — grid de 16 células (máx suportado por DVR típico)
-    const slots = Math.max(16, total);
-    const channelCells = cams.map(c=>{
-      const s = mappedStatus[c['NOME CANAL']];
-      const ch = c['CANAL']||'?';
-      let bg, title;
-      if(!s)        { bg='var(--surface3)';  title=`Ch ${ch}: ${c['NOME CANAL']} (não mapeado)`; }
-      else if(s.rec){ bg='#ea580c';          title=`Ch ${ch}: ${c['NOME CANAL']} (recomendada)`; }
-      else if(s.fn) { bg='var(--ok)';        title=`Ch ${ch}: ${c['NOME CANAL']} (ativa)`; }
-      else          { bg='var(--nf)';        title=`Ch ${ch}: ${c['NOME CANAL']} (inativa)`; }
-      return `<div title="${title}" style="width:18px;height:18px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;cursor:default;flex-shrink:0">${ch}</div>`;
+  const rows=DB.recorders.map(rec=>{
+    const nome  =rec['NOME DO GRAVADOR']||rec['NOME']||'Gravador';
+    const ip    =rec['IP DE ACESSO']||rec['IP']||'—';
+    const modelo=rec['MODELO']||'—';
+    const local =rec['LOCALIZAÇÃO']||rec['LOCAL']||'—';
+    const cams  =camMap[nome]||[];
+    const total =cams.length;
+    const ativas=cams.filter(c=>{ const s=mStatus[c['NOME CANAL']]; return s&&s.fn&&!s.rec; }).length;
+    const inats =cams.filter(c=>{ const s=mStatus[c['NOME CANAL']]; return s&&!s.fn&&!s.rec; }).length;
+    const nmap  =cams.filter(c=>!mStatus[c['NOME CANAL']]).length;
+    const pct   =total>0?Math.round(ativas/total*100):0;
+    const barColor=pct>=80?'var(--ok)':pct>=50?'var(--warn)':'var(--nf)';
+    const badge =inats>0
+      ?`<span style="background:var(--nf-bg);color:var(--nf);border:1px solid var(--nf-border);border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px">${inats} inativa${inats>1?'s':''}</span>`
+      :`<span style="background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border);border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px">OK</span>`;
+    const cells=cams.map(cam=>{
+      const s=mStatus[cam['NOME CANAL']];
+      const ch=cam['CANAL']||'?';
+      const bg=!s?'var(--surface3)':s.rec?'#ea580c':s.fn?'var(--ok)':'var(--nf)';
+      const tt=`Ch ${ch}: ${cam['NOME CANAL']}`;
+      return `<div title="${tt}" style="width:18px;height:18px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;cursor:default">${ch}</div>`;
     }).join('');
-
-    // Badge de status geral
-    const badge = inats>0
-      ? `<span style="background:var(--nf-bg);color:var(--nf);border:1px solid var(--nf-border);border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px">${inats} inativa${inats>1?'s':''}</span>`
-      : `<span style="background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border);border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px">OK</span>`;
-
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px">
-      <!-- Header -->
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text)">${nome}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${modelo} · ${local}</div>
-        </div>
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">${nome}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${modelo} · ${local}</div></div>
         ${badge}
       </div>
-      <!-- IP -->
-      <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:7px;padding:6px 10px;font-size:11px;font-family:monospace">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="var(--text3)" stroke-width="1.8"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M6 3V2M10 3V2"/></svg>
-        <span style="color:var(--text2)">${ip}</span>
-      </div>
-      <!-- Barra de saúde -->
+      <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:7px;padding:6px 10px;font-size:11px;font-family:monospace;color:var(--text2)">${ip}</div>
       <div>
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px">
           <span>${ativas} ativas · ${inats} inativas · ${nmap} não mapeadas</span>
           <span style="font-weight:700;color:${barColor}">${pct}%</span>
         </div>
         <div style="background:var(--surface3);border-radius:4px;height:7px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px;transition:width .4s"></div>
+          <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px"></div>
         </div>
       </div>
-      <!-- Canais -->
       <div>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Canais (${total})</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px">${channelCells}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px">${cells}</div>
         <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--ok)"></div>Ativa</div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--nf)"></div>Inativa</div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:#ea580c"></div>Recomendada</div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--surface3)"></div>Não mapeada</div>
+          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--ok)"></div>Ativa</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--nf)"></div>Inativa</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:#ea580c"></div>Recomendada</span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--surface3)"></div>Não mapeada</span>
         </div>
       </div>
     </div>`;
-  });
-
-  // Adicionar card de câmeras sem gravador (se existirem no mapa)
-  const semGrav = floors.flatMap(fl=>fl.cameras).filter(c=>{
-    const db = DB.cameras.find(d=>d['NOME CANAL']===c.name);
-    return !db || !db['GRAVADOR'];
-  });
-
-  grid.innerHTML = rows.join('') + (semGrav.length ? `
-    <div style="background:var(--surface);border:1px dashed var(--border);border-radius:12px;padding:14px;opacity:.7">
-      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px">Sem gravador atribuído (${semGrav.length})</div>
-      <div style="font-size:11px;color:var(--text3)">${semGrav.map(c=>c.name).join(', ')}</div>
-    </div>` : '');
+  }).join('');
+  grid.innerHTML=rows;
 }
 
 // ═══════════════ PRESENT ═══════════════
@@ -4656,10 +4617,9 @@ function exportProject(){
   const now=new Date();
   const dateFmt=now.toISOString().slice(0,10);
   const data={
-    version: 2,
-    exported: now.toISOString(),
-    db:{ cameras:DB.cameras, recorders:DB.recorders, pareceres:DB.pareceres,
-         recommended:DB.recommended||[] },
+    version:2,
+    exported:now.toISOString(),
+    db:{cameras:DB.cameras,recorders:DB.recorders,pareceres:DB.pareceres,recommended:DB.recommended||[]},
     camFin:CAM_FIN,
     camObs:CAM_OBS,
     camLog:CAM_LOG,
@@ -4946,9 +4906,8 @@ function scheduleAutoSave(){
         camFin:CAM_FIN,
         camObs:CAM_OBS,
         camLog:CAM_LOG,
-        db:{ cameras:DB.cameras, recorders:DB.recorders, pareceres:DB.pareceres,
-             recommended:DB.recommended||[] },
-        recommended: DB.recommended||[],
+        db:{cameras:DB.cameras,recorders:DB.recorders,pareceres:DB.pareceres,recommended:DB.recommended||[]},
+        recommended:DB.recommended||[],
         floors:floors.map(f=>({
           name:f.name,
           scale:f.scale,
@@ -4976,11 +4935,10 @@ function loadAutoSave(){
     if(!raw)return false;
     const data=JSON.parse(raw);
     if(!data.floors||!data.floors.length)return false;
-    // Carregar DB.recommended ANTES de Cam.from (o fallback depende disso)
+    // DB.recommended deve ser carregado ANTES de Cam.from
     if(data.db?.recommended?.length) DB.recommended=data.db.recommended;
-    else if(data.recommended?.length) DB.recommended=data.recommended; // chave legada
-    // Carregar resto do db se disponível
-    if(data.db?.cameras?.length) DB.cameras=data.db.cameras;
+    else if(data.recommended?.length) DB.recommended=data.recommended;
+    if(data.db?.cameras?.length)   DB.cameras=data.db.cameras;
     if(data.db?.recorders?.length) DB.recorders=data.db.recorders;
     if(data.db?.pareceres?.length) DB.pareceres=data.db.pareceres;
     // Só restaura posições de câmeras — imagem precisa ser recarregada
@@ -5565,7 +5523,7 @@ function exportExecutivo(selectedFloors){
 <style>
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm}
 .page{width:210mm;height:297mm;padding:10mm 13mm 10mm;position:relative;display:flex;flex-direction:column;gap:7px;overflow:hidden}
 
 /* Header */
@@ -5613,9 +5571,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
 /* Footer */
 .exec-footer{border-top:1px solid #e2e8f0;padding-top:5px;display:flex;justify-content:space-between;font-size:6.5pt;color:#94a3b8;flex-shrink:0}
 </style>
-</head><body>
-<!-- PÁG 1: Sumário Executivo -->
-<div class="page">
+</head><body><div class="page">
 
   <!-- HEADER -->
   <div class="exec-header">
@@ -5641,7 +5597,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
     <div class="exec-kpi ${inativas>0?'nf':'ok'}"><div class="exec-kpi-val">${inativas}</div><div class="exec-kpi-lbl">Inoperantes</div></div>
     <div class="exec-kpi ${manut>0?'warn':'ok'}"><div class="exec-kpi-val">${manut}</div><div class="exec-kpi-lbl">Em Manutenção</div></div>
     <div class="exec-kpi blue"><div class="exec-kpi-val">R$${Math.round(totalAssets/1000)}K</div><div class="exec-kpi-lbl">Patrimônio Total</div></div>
-    <div class="exec-kpi" style="border-color:#fed7aa;background:#fff7ed"><div class="exec-kpi-val" style="color:#c2410c;font-size:16pt">${(DB.recommended||[]).length}</div><div class="exec-kpi-lbl">Expansões Previstas</div></div>
+    <div class="exec-kpi" style="border-color:#fed7aa;background:#fff7ed"><div class="exec-kpi-val" style="color:#c2410c">${(DB.recommended||[]).length}</div><div class="exec-kpi-lbl">Expansões Previstas</div></div>
   </div>
 
   <!-- MAPAS -->
@@ -5698,7 +5654,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
       ${manut>0?`<div class="summary-item"><span>●</span><span>${manut} câmera${manut>1?'s':''} em manutenção preventiva necessária</span></div>`:''}
       ${zonasCriticas.map(z=>`<div class="summary-item"><span>⚠</span><span>Zona de risco "${z.name}" (Grau ${z.grau}/5) sem monitoramento — solicitar orçamento para cobertura</span></div>`).join('')}
       ${zonasCriticas.length===0&&inativas===0&&manut===0?`<div class="summary-item"><span>✅</span><span>Todas as câmeras operantes e zonas de risco monitoradas.</span></div>`:''}
-      ${(DB.recommended||[]).length>0?`<div class="summary-item"><span>📋</span><span>${(DB.recommended||[]).length} câmera${(DB.recommended||[]).length>1?'s':''} recomendada${(DB.recommended||[]).length>1?'s':''} para expansão do parque CFTV — detalhes na última página.</span></div>`:''}
+      ${(DB.recommended||[]).length>0?`<div class="summary-item"><span>📋</span><span>${(DB.recommended||[]).length} câmera${(DB.recommended||[]).length>1?'s':''} recomendada${(DB.recommended||[]).length>1?'s':''} para expansão — detalhes na última página.</span></div>`:''}
     </div>
   </div>
 
@@ -5729,66 +5685,47 @@ ${mapsImgs.length>1?mapsImgs.map(m=>`
 </div>`).join(''):''}
 
 ${(()=>{
-  const recCams = DB.recommended||[];
-  if(recCams.length===0) return '';
-  const recCost = recCams.reduce((s,r)=>{
-    const m=r['MODELO SUGERIDO']||'';
-    return s+(PRICES[m]||0)+(LABOR[m]||150);
-  },0);
-  const recRows = recCams.map(r=>{
-    const modelo=r['MODELO SUGERIDO']||'—';
-    const preco=PRICES[modelo]||0;
-    const mao=LABOR[modelo]||150;
-    return \`<tr style="font-size:8pt">
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0">\${r['LOCAL']||'—'}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;color:#d97706;font-weight:600">\${modelo}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;color:#64748b">\${r['JUSTIFICATIVA']||'—'}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:700;color:#c2410c">R$ \${(preco+mao).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-    </tr>\`;
+  const recCams=DB.recommended||[];
+  if(!recCams.length)return'';
+  const recCost=recCams.reduce((s,r)=>s+(PRICES[r['MODELO SUGERIDO']]||0)+(LABOR[r['MODELO SUGERIDO']]||150),0);
+  const recRows=recCams.map(r=>{
+    const m=r['MODELO SUGERIDO']||'—';
+    const custo=(PRICES[m]||0)+(LABOR[m]||150);
+    return `<tr style="font-size:8pt"><td style="padding:5px 7px;border-bottom:1px solid #f0f0f0">${r['LOCAL']||'—'}</td><td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;color:#d97706;font-weight:600">${m}</td><td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;color:#64748b">${r['JUSTIFICATIVA']||'—'}</td><td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:700;color:#c2410c">R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
   }).join('');
-  return \`
-<div class="page" style="page-break-before:always;break-before:page;display:flex;flex-direction:column;gap:8px">
+  return `<div class="page" style="page-break-before:always;break-before:page;display:flex;flex-direction:column;gap:8px">
   <div class="exec-header">
     <div class="exec-title">
       <h1 style="font-size:13pt">Câmeras Recomendadas — Proposta de Expansão</h1>
       <p>IBMP · Segurança do Trabalho · Parque CFTV</p>
-      <div class="status-badge" style="color:#c2410c;border-color:#c2410c;background:#fff7ed">
-        ⚠ \${recCams.length} PONTOS DE EXPANSÃO IDENTIFICADOS
-      </div>
+      <div class="status-badge" style="color:#c2410c;border-color:#c2410c;background:#fff7ed">⚠ ${recCams.length} PONTOS DE EXPANSÃO IDENTIFICADOS</div>
     </div>
-    <div class="exec-meta"><strong>Gerado em:</strong> \${nowFmt}</div>
+    <div class="exec-meta"><strong>Gerado em:</strong> ${nowFmt}</div>
   </div>
-
   <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:8px;padding:8px 12px;font-size:8pt;color:#92400e">
-    <strong>Custo total estimado de implantação (equipamento + mão de obra):</strong>
-    <span style="font-size:12pt;font-weight:900;color:#c2410c;margin-left:8px">R$ \${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+    <strong>Custo total estimado (equipamento + mão de obra):</strong>
+    <span style="font-size:12pt;font-weight:900;color:#c2410c;margin-left:8px">R$ ${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
   </div>
-
   <div style="flex:1;overflow:auto">
-    <table style="width:100%;border-collapse:collapse;font-size:8pt">
-      <thead>
-        <tr style="background:#f1f5f9">
-          <th style="padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700">Local</th>
-          <th style="padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700">Modelo Sugerido</th>
-          <th style="padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700">Justificativa</th>
-          <th style="padding:6px 8px;text-align:right;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700">Custo Est.</th>
-        </tr>
-      </thead>
-      <tbody>\${recRows}</tbody>
-      <tfoot>
-        <tr style="background:#fef2f2">
-          <td colspan="3" style="padding:7px 8px;font-weight:700"><strong>Total estimado</strong></td>
-          <td style="padding:7px 8px;text-align:right;font-weight:800;color:#c2410c">R$ \${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-        </tr>
-      </tfoot>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#f1f5f9">
+        <th style="padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;color:#64748b;font-weight:700">Local</th>
+        <th style="padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;color:#64748b;font-weight:700">Modelo</th>
+        <th style="padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;color:#64748b;font-weight:700">Justificativa</th>
+        <th style="padding:6px 8px;text-align:right;font-size:7.5pt;text-transform:uppercase;color:#64748b;font-weight:700">Custo Est.</th>
+      </tr></thead>
+      <tbody>${recRows}</tbody>
+      <tfoot><tr style="background:#fef2f2">
+        <td colspan="3" style="padding:7px 8px;font-weight:700">Total estimado</td>
+        <td style="padding:7px 8px;text-align:right;font-weight:800;color:#c2410c">R$ ${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+      </tr></tfoot>
     </table>
   </div>
-
   <div class="exec-footer">
     <span>IBMP — Segurança do Trabalho · Relatório Executivo CFTV · Uso interno</span>
-    <span>Gerado por IBMP CFTV Control · \${dateFmt}</span>
+    <span>Gerado por IBMP CFTV Control · ${dateFmt}</span>
   </div>
-</div>\`;
+</div>`;
 })()}
 
 <script>window.onload=()=>window.print();<\/script>
@@ -6208,52 +6145,26 @@ ${inativas > 0 ? `
 </div>
 ` : ''}
 
-<!-- PÁG CÂMERAS RECOMENDADAS: só renderiza se houver recomendadas -->
 ${(()=>{
-  const recCams = DB.recommended||[];
-  if(recCams.length===0) return '';
-  const recCost = recCams.reduce((s,r)=>{
-    const m=r['MODELO SUGERIDO']||'';
-    return s+(PRICES[m]||0)+(LABOR[m]||150);
-  },0);
-  const recRows = recCams.map(r=>{
-    const modelo=r['MODELO SUGERIDO']||'—';
-    const preco=PRICES[modelo]||0;
-    const mao=LABOR[modelo]||150;
-    return \`<tr>
-      <td>\${r['LOCAL']||'—'}</td>
-      <td class="model">\${modelo}</td>
-      <td class="loc">\${r['JUSTIFICATIVA']||'—'}</td>
-      <td class="cost">R$ \${(preco+mao).toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-    </tr>\`;
+  const recCams=DB.recommended||[];
+  if(!recCams.length)return'';
+  const recCost=recCams.reduce((s,r)=>s+(PRICES[r['MODELO SUGERIDO']]||0)+(LABOR[r['MODELO SUGERIDO']]||150),0);
+  const recRows=recCams.map(r=>{
+    const m=r['MODELO SUGERIDO']||'—';
+    const custo=(PRICES[m]||0)+(LABOR[m]||150);
+    return `<tr><td>${r['LOCAL']||'—'}</td><td class="model">${m}</td><td class="loc">${r['JUSTIFICATIVA']||'—'}</td><td class="cost">R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
   }).join('');
-  return \`
-<style>
-.rec-pg{position:relative;z-index:1;padding:40mm 16mm 30mm 24mm;break-before:page;page-break-before:always}
-.rec-badge{display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;
-           font-size:7pt;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:8px;text-transform:uppercase}
-</style>
-<div class="rec-pg">
-  <div class="bg"><img src="\${TIMBRADO_B64}" alt=""></div>
-  <div class="rec-badge">⚠ Expansão Recomendada</div>
+  return `<div class="table-pg" style="break-before:page;page-break-before:always;padding:40mm 16mm 30mm 24mm;position:relative;z-index:1">
+  <div class="bg"><img src="${TIMBRADO_B64}" alt=""></div>
+  <div style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;font-size:7pt;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:8px;text-transform:uppercase">⚠ Expansão Recomendada</div>
   <h2>Câmeras Recomendadas — Proposta de Expansão do Parque CFTV</h2>
-  <p style="font-size:8pt;color:#475569;margin:6px 0 12px 0">
-    Câmeras identificadas para ampliar a cobertura de segurança.
-    Custo total estimado (equipamento + mão de obra):
-    <strong style="color:#c2410c">R$ \${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong>
-  </p>
+  <p style="font-size:8pt;color:#475569;margin:4px 0 12px">Custo total estimado (equipamento + mão de obra): <strong style="color:#c2410c">R$ ${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong></p>
   <table>
-    <thead><tr>
-      <th>Local</th><th>Modelo Sugerido</th><th>Justificativa</th>
-      <th style="text-align:right">Custo Est.</th>
-    </tr></thead>
-    <tbody>\${recRows}</tbody>
-    <tfoot><tr>
-      <td colspan="3"><strong>Total estimado</strong></td>
-      <td class="cost" style="color:#c2410c">R$ \${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-    </tr></tfoot>
+    <thead><tr><th>Local</th><th>Modelo Sugerido</th><th>Justificativa</th><th style="text-align:right">Custo Est.</th></tr></thead>
+    <tbody>${recRows}</tbody>
+    <tfoot><tr><td colspan="3"><strong>Total estimado</strong></td><td class="cost" style="color:#c2410c">R$ ${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr></tfoot>
   </table>
-</div>\`;
+</div>`;
 })()}
 
 </body></html>`;
@@ -7295,18 +7206,17 @@ async function saveToCloud(){
 
 // ── loadProjectJSON: reutilizável pelo doRefresh e autoload
 function loadProjectJSON(data){
-  // ── 1. Carregar DB PRIMEIRO (antes de Cam.from que depende de DB.recommended)
+  // ── DB PRIMEIRO — Cam.from depende de DB.recommended ──
   if(data.db){
-    if(data.db.cameras   && data.db.cameras.length)   DB.cameras   = data.db.cameras;
-    if(data.db.recorders && data.db.recorders.length) DB.recorders = data.db.recorders;
-    if(data.db.pareceres && data.db.pareceres.length) DB.pareceres = data.db.pareceres;
+    if(data.db.cameras  && data.db.cameras.length)   DB.cameras   = data.db.cameras;
+    if(data.db.recorders&& data.db.recorders.length) DB.recorders = data.db.recorders;
+    if(data.db.pareceres&& data.db.pareceres.length) DB.pareceres = data.db.pareceres;
     if(data.db.recommended && data.db.recommended.length) DB.recommended = data.db.recommended;
   }
-  // suporte à chave legada 'recommended' no topo (autosave antigo)
-  if((!DB.recommended||!DB.recommended.length) && data.recommended && data.recommended.length){
+  // suporte à chave legada 'recommended' no topo
+  if((!DB.recommended||!DB.recommended.length) && data.recommended?.length){
     DB.recommended = data.recommended;
   }
-
   if(data.floors && data.floors.length){
     floors = data.floors.map(fd => {
       const fl      = mkFloor(fd.name);
@@ -7356,18 +7266,9 @@ function loadProjectJSON(data){
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(async () => {
     try{
-      // Limpar autosave antigo (sem version:2 ou sem db) para forçar recarga limpa
+      // Remover autosave de versão antiga (sem db) para evitar conflito
       const rawAs = localStorage.getItem('ibmp_autosave');
-      if(rawAs){
-        try{
-          const asData = JSON.parse(rawAs);
-          if(asData.v !== 2 || !asData.db){
-            // Autosave de versão antiga — remover para evitar conflito
-            localStorage.removeItem('ibmp_autosave');
-            console.log('[AutoLoad] autosave antigo removido');
-          }
-        }catch(e){}
-      }
+      if(rawAs){ try{ const d=JSON.parse(rawAs); if(!d.db) localStorage.removeItem('ibmp_autosave'); }catch(e){} }
       const base = location.href.replace(/[^\/]*$/, '');
       const r    = await fetch(base + 'projeto.json', {cache:'no-store'});
       if(!r.ok) return;
