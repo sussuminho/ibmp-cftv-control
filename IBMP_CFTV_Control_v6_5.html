@@ -3956,9 +3956,7 @@ function printList(){
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  const _listDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
-  a.href=url;
-  a.download=`IBMP_CFTV_Lista_Cameras_${_listDateStr}.html`;
+  a.href=url;a.download=`IBMP_CFTV_Lista_Cameras_${dateFmt}.html`;
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),5000);
   toast(`Lista baixada (${total} câmeras) — abra o arquivo e use Ctrl+P para imprimir/salvar como PDF`);
@@ -5768,22 +5766,22 @@ function _doPrintFloorMap(selectedFloors){
       </div>`;
   }).join('');
 
-  const _plantDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
-  const _plantName=selectedFloors.map(f=>f.name.replace(/\s+/g,'_').slice(0,20)).join('-').slice(0,50);
-  const plantBlob=new Blob([`<!DOCTYPE html><html><head>
+  const _plantaDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const _plantaName=selectedFloors.length===1?selectedFloors[0].name.replace(/\s+/g,'_'):'Multiplas';
+  const plantaHtml=`<!DOCTYPE html><html><head>
     <title>Plantas CFTV — IBMP</title>
     <style>
       @media print { body{margin:0} @page{margin:10mm} }
       body{margin:12px;background:#fff}
     </style>
-  </head><body>${pages}</body></html>`],{type:'text/html;charset=utf-8'});
-  const plantUrl=URL.createObjectURL(plantBlob);
-  const plantA=document.createElement('a');
-  plantA.href=plantUrl;
-  plantA.download=`IBMP_CFTV_Plantas_${_plantName}_${_plantDateStr}.html`;
-  document.body.appendChild(plantA);plantA.click();document.body.removeChild(plantA);
-  setTimeout(()=>URL.revokeObjectURL(plantUrl),5000);
-  toast(`${selectedFloors.length} planta(s) baixada(s) — abra o arquivo e use Ctrl+P para imprimir`);
+  </head><body>${pages}</body></html>`;
+  const blob=new Blob([plantaHtml],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`IBMP_CFTV_Plantas_${_plantaName}_${_plantaDateStr}.html`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  toast('Plantas baixadas — abra o arquivo e use Ctrl+P para imprimir/salvar como PDF');
 }
 
 function openFloorSel(title, sub, callback, showExtras=false){
