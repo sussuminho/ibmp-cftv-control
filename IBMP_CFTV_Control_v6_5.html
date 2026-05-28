@@ -4723,6 +4723,7 @@ function importProject(e){
       if(hasCams)updateRpIdle();
       const totalCams=floors.reduce((a,f)=>a+f.cameras.length,0);
       toast(`✓ Importado: ${floors.length} planta${floors.length>1?'s':''} · ${totalCams} câmeras`);
+      if(typeof isMob==='function' && isMob() && typeof mobRender==='function') setTimeout(()=>mobRender(),300);
     }catch(err){toast('Erro ao importar: '+err.message);}
   };
   reader.readAsText(file);e.target.value='';
@@ -7434,6 +7435,10 @@ function loadProjectJSON(data){
   document.getElementById('sbar').classList.toggle('visible', true);
   document.getElementById('minimap').classList.toggle('visible', hasImg);
   setTimeout(()=>{ E.fitToScreen && E.fitToScreen(); E.render(); }, 300);
+  // Mobile: atualiza lista e KPIs após carregar projeto
+  if(typeof isMob==='function' && isMob() && typeof mobRender==='function'){
+    setTimeout(()=>mobRender(), 400);
+  }
 }
 
 // ══════════════════════════════════════════════════════
@@ -7451,7 +7456,11 @@ window.addEventListener('DOMContentLoaded', () => {
       console.log('[AutoLoad] OK, chaves:', Object.keys(data));
       loadProjectJSON(data);
       toast('Projeto carregado automaticamente');
-    }catch(e){ console.warn('[AutoLoad] erro:', e); }
+    }catch(e){
+      console.warn('[AutoLoad] erro:', e);
+      // No mobile, avisa que está usando banco embutido
+      if(typeof isMob==='function' && isMob()) toast('Usando banco embutido — salve o projeto no GitHub para carregar automaticamente');
+    }
   }, 500);
 });
 
