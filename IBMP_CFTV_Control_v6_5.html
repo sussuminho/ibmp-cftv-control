@@ -3951,16 +3951,17 @@ function printList(){
   <span>IBMP — Instituto de Biologia Molecular do Paraná · ibmp.org.br</span>
   <span>Lista CFTV_${dateFmt} · ${total} câmeras</span>
 </div>
-<script>window.onload=()=>window.print();<\/script>
 </body></html>`;
 
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.target='_blank';a.rel='noopener';
+  const _listDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.href=url;
+  a.download=`IBMP_CFTV_Lista_Cameras_${_listDateStr}.html`;
   document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url),20000);
-  toast(`Lista aberta — Ctrl+P para imprimir (${total} câmeras)`);
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  toast(`Lista baixada (${total} câmeras) — abra o arquivo e use Ctrl+P para imprimir/salvar como PDF`);
 }
 
 function filterList(q){q=q.toLowerCase();document.querySelectorAll('.ci').forEach(el=>{el.style.display=el.querySelector('.ci-name').textContent.toLowerCase().includes(q)?'':'none';});}
@@ -5727,7 +5728,6 @@ ${(()=>{
 </div>`;
 })()}
 
-<script>window.onload=()=>window.print();<\/script>
 </body></html>`;
 
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
@@ -5736,10 +5736,9 @@ ${(()=>{
   const _execDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
   a.href=url;
   a.download=`IBMP_CFTV_Relatorio_Executivo_${_execDateStr}.html`;
-  a.target='_blank';a.rel='noopener';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url),20000);
-  toast('Relatório Executivo aberto — Ctrl+P para imprimir/salvar como PDF');
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  toast('Relatório Executivo baixado — abra o arquivo e use Ctrl+P para imprimir/salvar como PDF');
 }
 
 // ═══════════════ SELETOR DE PLANTAS PARA RELATÓRIO ═══════════════
@@ -5769,15 +5768,22 @@ function _doPrintFloorMap(selectedFloors){
       </div>`;
   }).join('');
 
-  const w = window.open('','_blank','width=1000,height=800');
-  w.document.write(`<!DOCTYPE html><html><head>
+  const _plantDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const _plantName=selectedFloors.map(f=>f.name.replace(/\s+/g,'_').slice(0,20)).join('-').slice(0,50);
+  const plantBlob=new Blob([`<!DOCTYPE html><html><head>
     <title>Plantas CFTV — IBMP</title>
     <style>
       @media print { body{margin:0} @page{margin:10mm} }
       body{margin:12px;background:#fff}
     </style>
-  </head><body>${pages}<script>window.onload=()=>{window.print();}<\/script></body></html>`);
-  w.document.close();
+  </head><body>${pages}</body></html>`],{type:'text/html;charset=utf-8'});
+  const plantUrl=URL.createObjectURL(plantBlob);
+  const plantA=document.createElement('a');
+  plantA.href=plantUrl;
+  plantA.download=`IBMP_CFTV_Plantas_${_plantName}_${_plantDateStr}.html`;
+  document.body.appendChild(plantA);plantA.click();document.body.removeChild(plantA);
+  setTimeout(()=>URL.revokeObjectURL(plantUrl),5000);
+  toast(`${selectedFloors.length} planta(s) baixada(s) — abra o arquivo e use Ctrl+P para imprimir`);
 }
 
 function openFloorSel(title, sub, callback, showExtras=false){
@@ -6098,7 +6104,6 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
 .bar-fill{height:100%;border-radius:4px}
 .bar-num{width:24px;text-align:right;font-weight:700;color:#0f1923;font-size:8.5pt}
 </style>
-<script>window.onload=()=>{window.print();};<\/script>
 </head>
 <body>
 
@@ -6267,10 +6272,9 @@ ${(()=>{
   const _floorNameSafe = f.name.replace(/[^a-zA-Z0-9À-ú\s]/g,'').replace(/\s+/g,'_').slice(0,30);
   a.href=url;
   a.download=`IBMP_CFTV_Relatorio_Tecnico_${_floorNameSafe}_${_dateStr}.html`;
-  a.target='_blank';a.rel='noopener';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url),20000);
-  toast('Relatório Técnico aberto — use Ctrl+P → Salvar como PDF para exportar');
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  toast('Relatório Técnico baixado — abra o arquivo e use Ctrl+P para imprimir/salvar como PDF');
 }
 // ═══════════════ XLSX IMPORT ═══════════════
 function importInventory(e){
