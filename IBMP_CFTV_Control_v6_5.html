@@ -5558,7 +5558,9 @@ async function exportExecutivo(selectedFloors, _retry=0){
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm}
-.page{width:210mm;height:297mm;padding:10mm 13mm 10mm;position:relative;display:flex;flex-direction:column;gap:7px;overflow:hidden;background-image:url(${TIMBRADO_B64});background-size:210mm 297mm;background-repeat:no-repeat}
+.timbrado-bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
+.timbrado-bg img{width:210mm;height:297mm;display:block;object-fit:fill}
+.page{width:210mm;height:297mm;padding:10mm 13mm 10mm;position:relative;z-index:1;display:flex;flex-direction:column;gap:7px;overflow:hidden}
 
 /* Header */
 .exec-header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:7px;border-bottom:3px solid #159b77}
@@ -5605,7 +5607,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
 /* Footer */
 .exec-footer{border-top:1px solid #e2e8f0;padding-top:5px;display:flex;justify-content:space-between;font-size:6.5pt;color:#94a3b8;flex-shrink:0}
 </style>
-</head><body><div class="page">
+</head><body><div class="timbrado-bg"><img src="${TIMBRADO_B64}" alt=""></div><div class="page">
 
   <!-- HEADER -->
   <div class="exec-header">
@@ -6551,6 +6553,20 @@ let _mf = 'all', _mq = '';
 
 function mobRender(){
   if(!isMob()) return;
+  // Garante que lista está visível na inicialização (estado padrão)
+  const listEl = document.getElementById('mob-list');
+  const kpisEl = document.getElementById('mob-kpis');
+  const searchEl = document.getElementById('mob-search-wrap');
+  const footer = document.getElementById('mob-contact-footer');
+  const ov = document.getElementById('mob-overlay');
+  if(listEl && listEl.style.display === 'none'){
+    // Estava numa overlay — restaura lista
+    if(listEl)   listEl.style.display   = '';
+    if(kpisEl)   kpisEl.style.display   = '';
+    if(searchEl) searchEl.style.display = '';
+    if(footer)   footer.style.display   = '';
+    if(ov)       ov.style.display       = 'none';
+  }
   // KPIs
   const allCams = floors.flatMap(f=>f.cameras);
   const mapped  = allCams.length;
