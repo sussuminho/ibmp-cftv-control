@@ -3850,37 +3850,43 @@ function buildList(){
   }
 }
 
-// ── Helper: salvar blob com dialog nativo "Salvar como" (Chrome/Edge)
-//    Fallback automático para download direto em browsers sem suporte
+// ── Helper: abrir relatório em nova aba e disparar impressão (PDF via Ctrl+P)
 async function saveFileAs(blob, suggestedName, mimeType='text/html') {
-  if (window.showSaveFilePicker) {
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+  // Desktop com showSaveFilePicker (Chrome/Edge): dialog nativo de salvar
+  if (!isMobile && window.showSaveFilePicker) {
     try {
       const handle = await window.showSaveFilePicker({
         suggestedName,
-        types: [{
-          description: 'Arquivo HTML',
-          accept: { [mimeType]: ['.html'] }
-        }]
+        types: [{ description: 'Arquivo HTML', accept: { [mimeType]: ['.html'] } }]
       });
       const writable = await handle.createWritable();
       await writable.write(blob);
       await writable.close();
       return true;
     } catch (e) {
-      // Usuário cancelou (AbortError) ou erro inesperado — fallback silencioso
       if (e.name === 'AbortError') return false;
-      // fallthrough para download direto
+      // fallthrough para nova aba
     }
   }
-  // Fallback: download direto (Firefox, Safari, ou se showSaveFilePicker falhar)
+
+  // Mobile ou fallback: abre em nova aba e dispara print automaticamente
+  // (usuário escolhe "Salvar como PDF" no diálogo de impressão do browser)
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = suggestedName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  const win = window.open(url, '_blank');
+  if (win) {
+    const cleanup = () => setTimeout(() => URL.revokeObjectURL(url), 30000);
+    win.onload = () => { setTimeout(() => { win.print(); cleanup(); }, 600); };
+    // Fallback caso onload não dispare
+    setTimeout(() => { try { win.print(); } catch(e){} cleanup(); }, 2000);
+  } else {
+    // Popup bloqueado: download direto
+    const a = document.createElement('a');
+    a.href = url; a.download = suggestedName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
   return true;
 }
 
@@ -3989,7 +3995,7 @@ async function printList(){
 
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const saved = await saveFileAs(blob, `IBMP_CFTV_Lista_Cameras_${dateFmt}.html`);
-  if(saved) toast(`Lista salva (${total} câmeras) — abra o arquivo e use Ctrl+P para salvar como PDF`);
+  if(saved) toast(`Lista aberta — selecione 'Salvar como PDF' no diálogo de impressão`);
 }
 
 function filterList(q){q=q.toLowerCase();document.querySelectorAll('.ci').forEach(el=>{el.style.display=el.querySelector('.ci-name').textContent.toLowerCase().includes(q)?'':'none';});}
@@ -5761,7 +5767,7 @@ ${(()=>{
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const _execDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
   const saved = await saveFileAs(blob, `IBMP_CFTV_Relatorio_Executivo_${_execDateStr}.html`);
-  if(saved) toast('Relatório Executivo salvo — abra o arquivo e use Ctrl+P para salvar como PDF');
+  if(saved) toast('Relatório Executivo aberto — selecione 'Salvar como PDF' no diálogo');
 }
 
 // ═══════════════ SELETOR DE PLANTAS PARA RELATÓRIO ═══════════════
@@ -5802,7 +5808,7 @@ async function _doPrintFloorMap(selectedFloors){
   </head><body>${pages}</body></html>`;
   const blob=new Blob([plantaHtml],{type:'text/html;charset=utf-8'});
   const saved = await saveFileAs(blob, `IBMP_CFTV_Plantas_${_plantaName}_${_plantaDateStr}.html`);
-  if(saved) toast('Plantas salvas — abra o arquivo e use Ctrl+P para salvar como PDF');
+  if(saved) toast('Plantas abertas — selecione 'Salvar como PDF' no diálogo de impressão');
 }
 
 function openFloorSel(title, sub, callback, showExtras=false){
@@ -6288,7 +6294,7 @@ ${(()=>{
     const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const _floorNameSafe = f.name.replace(/[^a-zA-Z0-9À-ú\s]/g,'').replace(/\s+/g,'_').slice(0,30);
   const saved = await saveFileAs(blob, `IBMP_CFTV_Relatorio_Tecnico_${_floorNameSafe}_${_dateStr}.html`);
-  if(saved) toast('Relatório Técnico salvo — abra o arquivo e use Ctrl+P para salvar como PDF');
+  if(saved) toast('Relatório Técnico aberto — selecione 'Salvar como PDF' no diálogo');
 }
 // ═══════════════ XLSX IMPORT ═══════════════
 function importInventory(e){
