@@ -6508,7 +6508,10 @@ function finishInit(){
   document.getElementById('btn-export').classList.add('ready');
   document.getElementById('btn-pdf').classList.add('ready');
   const sc=document.getElementById('btn-save-cloud');if(sc)sc.classList.add('ready');
-  if(window.innerWidth<=768 && typeof mobRender==='function') mobRender();
+  // Mobile: aguarda CSS aplicar antes de checar
+  setTimeout(()=>{
+    if(typeof mobRender==='function' && isMob()) mobRender();
+  }, 100);
 }
 function restoreAutoSave(){
   closeModal('autosave-modal');
@@ -6548,7 +6551,11 @@ function discardAutoSave(){
 // ═══════════════════════════════════════════════════════════════
 //  MOBILE VIEW — consulta rápida
 // ═══════════════════════════════════════════════════════════════
-function isMob(){ return window.innerWidth <= 768; }
+function isMob(){
+  if(window.innerWidth <= 768) return true;
+  const mv = document.getElementById('mob-view');
+  return mv ? window.getComputedStyle(mv).display !== 'none' : false;
+}
 
 let _mf = 'all', _mq = '';
 
