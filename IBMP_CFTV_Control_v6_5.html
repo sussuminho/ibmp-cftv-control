@@ -5770,7 +5770,7 @@ ${(()=>{
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const _execDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
   const saved = await saveFileAs(blob, `IBMP_CFTV_Relatorio_Executivo_${_execDateStr}.html`);
-  if(saved) toast('Relatório Executivo aberto — selecione 'Salvar como PDF' no diálogo');
+  if(saved) toast('Relatório Executivo aberto — selecione "Salvar como PDF" no diálogo');
 }
 
 // ═══════════════ SELETOR DE PLANTAS PARA RELATÓRIO ═══════════════
@@ -5811,7 +5811,7 @@ async function _doPrintFloorMap(selectedFloors){
   </head><body>${pages}</body></html>`;
   const blob=new Blob([plantaHtml],{type:'text/html;charset=utf-8'});
   const saved = await saveFileAs(blob, `IBMP_CFTV_Plantas_${_plantaName}_${_plantaDateStr}.html`);
-  if(saved) toast('Plantas abertas — selecione 'Salvar como PDF' no diálogo de impressão');
+  if(saved) toast('Plantas abertas — selecione "Salvar como PDF" no diálogo de impressão');
 }
 
 function openFloorSel(title, sub, callback, showExtras=false){
@@ -6297,7 +6297,7 @@ ${(()=>{
     const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const _floorNameSafe = f.name.replace(/[^a-zA-Z0-9À-ú\s]/g,'').replace(/\s+/g,'_').slice(0,30);
   const saved = await saveFileAs(blob, `IBMP_CFTV_Relatorio_Tecnico_${_floorNameSafe}_${_dateStr}.html`);
-  if(saved) toast('Relatório Técnico aberto — selecione 'Salvar como PDF' no diálogo');
+  if(saved) toast('Relatório Técnico aberto — selecione "Salvar como PDF" no diálogo');
 }
 // ═══════════════ XLSX IMPORT ═══════════════
 function importInventory(e){
