@@ -3852,40 +3852,21 @@ function buildList(){
 
 // ── Helper: abrir relatório em nova aba e disparar impressão (PDF via Ctrl+P)
 async function saveFileAs(blob, suggestedName, mimeType='text/html') {
-  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-
-  // Desktop com showSaveFilePicker (Chrome/Edge): dialog nativo de salvar
-  if (!isMobile && window.showSaveFilePicker) {
-    try {
-      const handle = await window.showSaveFilePicker({
-        suggestedName,
-        types: [{ description: 'Arquivo HTML', accept: { [mimeType]: ['.html'] } }]
-      });
-      const writable = await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      return true;
-    } catch (e) {
-      if (e.name === 'AbortError') return false;
-      // fallthrough para nova aba
-    }
-  }
-
-  // Mobile ou fallback: abre em nova aba e dispara print automaticamente
-  // (usuário escolhe "Salvar como PDF" no diálogo de impressão do browser)
+  // Sempre abre em nova aba e dispara window.print() — usuário salva como PDF via diálogo do browser
   const url = URL.createObjectURL(blob);
+  const cleanup = () => setTimeout(() => URL.revokeObjectURL(url), 30000);
   const win = window.open(url, '_blank');
   if (win) {
-    const cleanup = () => setTimeout(() => URL.revokeObjectURL(url), 30000);
     win.onload = () => { setTimeout(() => { win.print(); cleanup(); }, 600); };
-    // Fallback caso onload não dispare
+    // Fallback caso onload não dispare (blob já em cache)
     setTimeout(() => { try { win.print(); } catch(e){} cleanup(); }, 2000);
   } else {
-    // Popup bloqueado: download direto
+    // Popup bloqueado: faz download direto
     const a = document.createElement('a');
     a.href = url; a.download = suggestedName;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast('Download iniciado — abra o arquivo e use Ctrl+P para salvar como PDF');
   }
   return true;
 }
