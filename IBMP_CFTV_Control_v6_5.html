@@ -6509,7 +6509,10 @@ function finishInit(){
   document.getElementById('btn-pdf').classList.add('ready');
   const sc=document.getElementById('btn-save-cloud');if(sc)sc.classList.add('ready');
   // Mobile: sempre chama mobRender — a guarda está dentro da função
-  if(typeof mobRender==='function') mobRender();
+  // Usa rAF + timeout para garantir que o CSS mobile já foi calculado
+  if(typeof mobRender==='function'){
+    requestAnimationFrame(()=>{ setTimeout(()=>mobRender(), 50); });
+  }
 }
 function restoreAutoSave(){
   closeModal('autosave-modal');
@@ -6560,8 +6563,10 @@ let _mf = 'all', _mq = '';
 function mobRender(){
   const _mv = document.getElementById('mob-view');
   if(!_mv) return;
-  const _mvStyle = window.getComputedStyle(_mv);
-  if(_mvStyle.display === 'none') return;
+  // Considera mobile se largura <= 768 OU se o CSS já calculou display != none
+  const _isMobWidth = window.innerWidth <= 768;
+  const _isMobCSS   = window.getComputedStyle(_mv).display !== 'none';
+  if(!_isMobWidth && !_isMobCSS) return;
   // Garante que lista está visível na inicialização (estado padrão)
   const listEl = document.getElementById('mob-list');
   const kpisEl = document.getElementById('mob-kpis');
@@ -7443,8 +7448,8 @@ function loadProjectJSON(data){
   document.getElementById('sbar').classList.toggle('visible', true);
   document.getElementById('minimap').classList.toggle('visible', hasImg);
   setTimeout(()=>{ E.fitToScreen && E.fitToScreen(); E.render(); }, 300);
-  // Mobile: atualiza lista e KPIs após carregar projeto
-  if(typeof isMob==='function' && isMob() && typeof mobRender==='function'){
+  // Mobile: sempre atualiza lista e KPIs após carregar projeto
+  if(typeof mobRender==='function'){
     setTimeout(()=>mobRender(), 400);
   }
 }
