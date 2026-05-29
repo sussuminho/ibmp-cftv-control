@@ -3852,22 +3852,33 @@ function buildList(){
 
 // ── Helper: abrir relatório em nova aba e disparar impressão (PDF via Ctrl+P)
 async function saveFileAs(blob, suggestedName, mimeType='text/html') {
-  // Sempre abre em nova aba e dispara window.print() — usuário salva como PDF via diálogo do browser
   const url = URL.createObjectURL(blob);
-  const cleanup = () => setTimeout(() => URL.revokeObjectURL(url), 30000);
   const win = window.open(url, '_blank');
-  if (win) {
-    win.onload = () => { setTimeout(() => { win.print(); cleanup(); }, 600); };
-    // Fallback caso onload não dispare (blob já em cache)
-    setTimeout(() => { try { win.print(); } catch(e){} cleanup(); }, 2000);
-  } else {
+  if (!win) {
     // Popup bloqueado: faz download direto
     const a = document.createElement('a');
     a.href = url; a.download = suggestedName;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     toast('Download iniciado — abra o arquivo e use Ctrl+P para salvar como PDF');
+    return true;
   }
+  // Aguarda mensagem da nova aba sinalizando que o conteúdo renderizou,
+  // com fallback progressivo para garantir que o print não dispara em branco
+  let printed = false;
+  const doPrint = () => {
+    if (printed) return;
+    printed = true;
+    try { win.print(); } catch(e) {}
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  };
+  // Escuta o sinal da nova aba (postMessage 'ready-to-print')
+  const onMsg = (e) => { if (e.source === win && e.data === 'ready-to-print') { window.removeEventListener('message', onMsg); doPrint(); } };
+  window.addEventListener('message', onMsg);
+  // Fallback: se onload disparar, espera 1.5s para CSS/imagens renderizarem
+  win.onload = () => { setTimeout(doPrint, 1500); };
+  // Fallback final: 5s independente de qualquer evento
+  setTimeout(() => { window.removeEventListener('message', onMsg); doPrint(); }, 5000);
   return true;
 }
 
@@ -3972,7 +3983,7 @@ async function printList(){
   <span>IBMP — Instituto de Biologia Molecular do Paraná · ibmp.org.br</span>
   <span>Lista CFTV_${dateFmt} · ${total} câmeras</span>
 </div>
-</body></html>`;
+<script>window.onload=function(){if(window.opener)window.opener.postMessage("ready-to-print",location.origin||"*");}</script></body></html>`;
 
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const saved = await saveFileAs(blob, `IBMP_CFTV_Lista_Cameras_${dateFmt}.html`);
@@ -5746,7 +5757,7 @@ ${(()=>{
 </div>`;
 })()}
 
-</body></html>`;
+<script>window.onload=function(){if(window.opener)window.opener.postMessage("ready-to-print",location.origin||"*");}</script></body></html>`;
 
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const _execDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
@@ -5789,7 +5800,7 @@ async function _doPrintFloorMap(selectedFloors){
       @media print { body{margin:0} @page{margin:10mm} }
       body{margin:12px;background:#fff}
     </style>
-  </head><body>${pages}</body></html>`;
+  </head><body>${pages}<script>window.onload=function(){if(window.opener)window.opener.postMessage("ready-to-print",location.origin||"*");}</script></body></html>`;
   const blob=new Blob([plantaHtml],{type:'text/html;charset=utf-8'});
   const saved = await saveFileAs(blob, `IBMP_CFTV_Plantas_${_plantaName}_${_plantaDateStr}.html`);
   if(saved) toast('Plantas abertas — selecione "Salvar como PDF" no diálogo de impressão');
@@ -6273,7 +6284,7 @@ ${(()=>{
 </div>`;
 })()}
 
-</body></html>`;
+<script>window.onload=function(){if(window.opener)window.opener.postMessage("ready-to-print",location.origin||"*");}</script></body></html>`;
 
     const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const _floorNameSafe = f.name.replace(/[^a-zA-Z0-9À-ú\s]/g,'').replace(/\s+/g,'_').slice(0,30);
