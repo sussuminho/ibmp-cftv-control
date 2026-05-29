@@ -5944,7 +5944,9 @@ async function exportPDF(selectedFloors, _retry=0) {
     day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
   });
   const _dateStr = _nowDate.toISOString().slice(0,10).replace(/-/g,'');
-  const allCams   = selectedFloors.flatMap(fl=>fl.cameras);
+  const allCamsRaw = selectedFloors.flatMap(fl=>fl.cameras);
+  const allCams    = allCamsRaw.filter(c=>!c.rec);  // câmeras reais (exclui recomendadas plotadas)
+  const recPlotted = allCamsRaw.filter(c=>c.rec);   // câmeras recomendadas plotadas no mapa
 
   // ── Dados consolidados: mapa + banco DB.cameras ──────────────────────────
   // Para KPIs e gráficos usamos as câmeras mapeadas (com status real do mapa)
@@ -5968,7 +5970,7 @@ async function exportPDF(selectedFloors, _retry=0) {
   const totalNf      = inativas + dbNfExtra;
   const totalAll     = allCams.length + dbOnlyCams.length;
 
-  const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0)
+  const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info?.modelo]||0),0)
     + dbOnlyCams.filter(r=>(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não'))
         .reduce((s,r)=>s+(PRICES[r['MODELO CÂMERA']||'']||0),0);
 
@@ -5978,12 +5980,12 @@ async function exportPDF(selectedFloors, _retry=0) {
 
   // Tabela de câmeras inativas — mapa + banco
   const nfCamsMapa = allCams.filter(c=>!c.fn).map(cam=>{
-    const price=PRICES[cam.info.modelo]||0;
+    const price=PRICES[cam.info?.modelo]||0;
     return `<tr>
       <td>${cam.name||'—'}</td>
-      <td class="model">${cam.info.modelo||'—'}</td>
-      <td class="loc">${cam.info.gravador||cam.info.setor||'—'}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;color:#64748b">${cam.info.serial||'—'}</td>
+      <td class="model">${cam.info?.modelo||'—'}</td>
+      <td class="loc">${cam.info?.gravador||cam.info?.setor||'—'}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;color:#64748b">${cam.info?.serial||'—'}</td>
       <td class="cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
     </tr>`;
   });
@@ -6022,11 +6024,11 @@ async function exportPDF(selectedFloors, _retry=0) {
 
   // KPIs patrimoniais
   const currentYear = new Date().getFullYear();
-  const totalAssets = allCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0)
+  const totalAssets = allCams.reduce((s,c)=>s+(PRICES[c.info?.modelo]||0),0)
     + dbOnlyCams.reduce((s,r)=>s+(PRICES[r['MODELO CÂMERA']||'']||0),0);
   const depreciated = allCams.reduce((s,c)=>{
-    const price=PRICES[c.info.modelo]||0;
-    const life=LIFESPAN[c.info.modelo]||6;
+    const price=PRICES[c.info?.modelo]||0;
+    const life=LIFESPAN[c.info?.modelo]||6;
     const install=INSTALL_YEAR[c.name]||2022;
     const age=Math.min(currentYear-install, life);
     return s+price*(1-age/life);
@@ -6263,13 +6265,22 @@ ${allDBCams.length > 0 ? `
 ` : ''}
 
 ${(()=>{
-  const recCams=DB.recommended||[];
+  // Câmeras recomendadas PLOTADAS no mapa (cam.rec===true) nas plantas selecionadas
+  const recCams=recPlotted.map(cam=>{
+    const recData=(DB.recommended||[]).find(r=>r['LOCAL']===cam.name)||{};
+    const modelo=recData['MODELO SUGERIDO']||cam._modelo||cam.info?.modelo||'VIP-3220-D';
+    return {
+      local: cam.name||'—',
+      modelo,
+      justificativa: recData['JUSTIFICATIVA']||recData['SETOR']||'Área sem cobertura — câmera recomendada.',
+    };
+  });
   if(!recCams.length)return'';
-  const recCost=recCams.reduce((s,r)=>s+(PRICES[r['MODELO SUGERIDO']]||0)+(LABOR[r['MODELO SUGERIDO']]||150),0);
+  const recCost=recCams.reduce((s,r)=>s+(PRICES[r.modelo]||0)+(LABOR[r.modelo]||150),0);
   const recRows=recCams.map(r=>{
-    const m=r['MODELO SUGERIDO']||'—';
+    const m=r.modelo;
     const custo=(PRICES[m]||0)+(LABOR[m]||150);
-    return `<tr><td>${r['LOCAL']||'—'}</td><td class="model">${m}</td><td class="loc">${r['JUSTIFICATIVA']||'—'}</td><td class="cost">R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+    return `<tr><td>${r.local}</td><td class="model">${m}</td><td class="loc">${r.justificativa}</td><td class="cost">R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
   }).join('');
   return `<div class="table-pg" style="break-before:page;page-break-before:always;padding:40mm 16mm 30mm 24mm;position:relative;z-index:1">
   <div class="bg"><img src="${TIMBRADO_B64}" alt=""></div>
