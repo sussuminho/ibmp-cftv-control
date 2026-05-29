@@ -5535,7 +5535,8 @@ async function exportExecutivo(selectedFloors, _retry=0){
   const zonasOK=allZones.filter(z=>checkZoneCoverage(z));
 
   // Capturar imagem de cada planta selecionada usando capturePlantImg global
-  const showRecExec = document.getElementById('chk-show-rec')?.checked || false;
+  // Sempre inclui as recomendadas plotadas (em laranja) na planta do executivo
+  const showRecExec = true;
   const mapsImgs=selectedFloors.map(fl=>({
     name:fl.name,
     src:capturePlantImg(fl, showRecExec)
@@ -5915,6 +5916,9 @@ function capturePlantImg(fl, showRec=false){
     });
 
     // 3. Câmeras — usar o mesmo sistema do cam.draw() mas forçando zoom=1, pan=0
+    // Força tema claro durante a captura para cores corretas no PDF (fundo branco)
+    const _savedTheme=document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme','light');
     const savedZoom=fl.zoom, savedPanX=fl.panX, savedPanY=fl.panY;
     fl.zoom=1; fl.panX=0; fl.panY=0;
     ctx.save();
@@ -5926,6 +5930,9 @@ function capturePlantImg(fl, showRec=false){
     });
     ctx.restore();
     fl.zoom=savedZoom; fl.panX=savedPanX; fl.panY=savedPanY;
+    // Restaura o tema original da tela
+    if(_savedTheme)document.documentElement.setAttribute('data-theme',_savedTheme);
+    else document.documentElement.removeAttribute('data-theme');
 
     return tc.toDataURL('image/jpeg',0.92);
   }catch(e){console.warn('capturePlantImg:',e);return'';}
