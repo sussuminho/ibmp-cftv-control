@@ -5517,14 +5517,16 @@ async function exportExecutivo(selectedFloors, _retry=0){
   const now=new Date();
   const nowFmt=now.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const dateFmt=now.toISOString().slice(0,10);
-  const allCams=selectedFloors.flatMap(fl=>fl.cameras);
+  const allCamsRaw=selectedFloors.flatMap(fl=>fl.cameras);
+  const allCams=allCamsRaw.filter(c=>!c.rec);   // câmeras reais
+  const recPlotted=allCamsRaw.filter(c=>c.rec); // recomendadas plotadas no mapa
   const total=allCams.length;
   const ativas=allCams.filter(c=>c.fn).length;
   const inativas=allCams.filter(c=>!c.fn).length;
   const manut=allCams.filter(c=>c.isWarn).length;
   const pctOp=total?Math.round(ativas/total*100):0;
-  const totalAssets=allCams.reduce((s,c)=>{const fin=CAM_FIN[c.name]||{};return s+(fin.valor||PRICES[c.info.modelo]||0);},0);
-  const custoMnt=allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
+  const totalAssets=allCams.reduce((s,c)=>{const fin=CAM_FIN[c.name]||{};return s+(fin.valor||PRICES[c.info?.modelo]||0);},0);
+  const custoMnt=allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info?.modelo]||0),0);
 
   // Zonas de risco
   // Consolidar zonas de todas as plantas selecionadas
@@ -5626,7 +5628,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
     <div class="exec-kpi ${inativas>0?'nf':'ok'}"><div class="exec-kpi-val">${inativas}</div><div class="exec-kpi-lbl">Inoperantes</div></div>
     <div class="exec-kpi ${manut>0?'warn':'ok'}"><div class="exec-kpi-val">${manut}</div><div class="exec-kpi-lbl">Em Manutenção</div></div>
     <div class="exec-kpi blue"><div class="exec-kpi-val">R$${Math.round(totalAssets/1000)}K</div><div class="exec-kpi-lbl">Patrimônio Total</div></div>
-    <div class="exec-kpi" style="border-color:#fed7aa;background:#fff7ed"><div class="exec-kpi-val" style="color:#c2410c">${(DB.recommended||[]).length}</div><div class="exec-kpi-lbl">Expansões Previstas</div></div>
+    <div class="exec-kpi" style="border-color:#fed7aa;background:#fff7ed"><div class="exec-kpi-val" style="color:#c2410c">${recPlotted.length}</div><div class="exec-kpi-lbl">Expansões Previstas</div></div>
   </div>
 
   <!-- MAPAS -->
@@ -5683,7 +5685,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
       ${manut>0?`<div class="summary-item"><span>●</span><span>${manut} câmera${manut>1?'s':''} em manutenção preventiva necessária</span></div>`:''}
       ${zonasCriticas.map(z=>`<div class="summary-item"><span>⚠</span><span>Zona de risco "${z.name}" (Grau ${z.grau}/5) sem monitoramento — solicitar orçamento para cobertura</span></div>`).join('')}
       ${zonasCriticas.length===0&&inativas===0&&manut===0?`<div class="summary-item"><span>✅</span><span>Todas as câmeras operantes e zonas de risco monitoradas.</span></div>`:''}
-      ${(DB.recommended||[]).length>0?`<div class="summary-item"><span>📋</span><span>${(DB.recommended||[]).length} câmera${(DB.recommended||[]).length>1?'s':''} recomendada${(DB.recommended||[]).length>1?'s':''} para expansão — detalhes na última página.</span></div>`:''}
+      ${recPlotted.length>0?`<div class="summary-item"><span>📋</span><span>${recPlotted.length} câmera${recPlotted.length>1?'s':''} recomendada${recPlotted.length>1?'s':''} para expansão — detalhes na última página.</span></div>`:''}
     </div>
   </div>
 
@@ -5714,7 +5716,16 @@ ${mapsImgs.length>1?mapsImgs.map(m=>`
 </div>`).join(''):''}
 
 ${(()=>{
-  const recCams=DB.recommended||[];
+  // Câmeras recomendadas PLOTADAS no mapa (não do banco fixo)
+  const recCams=recPlotted.map(cam=>{
+    const recData=(DB.recommended||[]).find(r=>r['LOCAL']===cam.name)||{};
+    const modelo=recData['MODELO SUGERIDO']||cam._modelo||cam.info?.modelo||'VIP-3220-D';
+    return {
+      'LOCAL': cam.name||'—',
+      'MODELO SUGERIDO': modelo,
+      'JUSTIFICATIVA': recData['JUSTIFICATIVA']||recData['SETOR']||'Área sem cobertura — câmera recomendada.',
+    };
+  });
   if(!recCams.length)return'';
   const recCost=recCams.reduce((s,r)=>s+(PRICES[r['MODELO SUGERIDO']]||0)+(LABOR[r['MODELO SUGERIDO']]||150),0);
   const recRows=recCams.map(r=>{
