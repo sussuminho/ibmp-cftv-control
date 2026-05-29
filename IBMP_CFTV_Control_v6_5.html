@@ -3983,7 +3983,7 @@ async function printList(){
   <span>IBMP — Instituto de Biologia Molecular do Paraná · ibmp.org.br</span>
   <span>Lista CFTV_${dateFmt} · ${total} câmeras</span>
 </div>
-<script>window.onload=function(){if(window.opener)window.opener.postMessage("ready-to-print",location.origin||"*");}<\/script></body></html>`;
+${String.fromCharCode(60)+'script>'}window.onload=function(){if(window.opener)window.opener.postMessage('ready-to-print',location.origin||'*');}${String.fromCharCode(60)+'/script>'}</body></html>`;
 
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const saved = await saveFileAs(blob, `IBMP_CFTV_Lista_Cameras_${dateFmt}.html`);
@@ -5551,9 +5551,9 @@ async function exportExecutivo(selectedFloors, _retry=0){
 @page{size:A4;margin:0}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;background:#fff;width:210mm}
-.timbrado-bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
+.timbrado-bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:-1;pointer-events:none}
 .timbrado-bg img{width:210mm;height:297mm;display:block;object-fit:fill}
-.page{width:210mm;height:297mm;padding:10mm 13mm 10mm;position:relative;z-index:1;display:flex;flex-direction:column;gap:7px;overflow:hidden}
+.page{width:210mm;height:297mm;padding:38mm 13mm 28mm 13mm;position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;overflow:hidden}
 
 /* Header */
 .exec-header{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:7px;border-bottom:3px solid #159b77}
@@ -5757,7 +5757,7 @@ ${(()=>{
 </div>`;
 })()}
 
-<script>window.onload=function(){if(window.opener)window.opener.postMessage("ready-to-print",location.origin||"*");}<\/script></body></html>`;
+${String.fromCharCode(60)+'script>'}window.onload=function(){if(window.opener)window.opener.postMessage('ready-to-print',location.origin||'*');}${String.fromCharCode(60)+'/script>'}</body></html>`;
 
   const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const _execDateStr=new Date().toISOString().slice(0,10).replace(/-/g,'');
@@ -5800,7 +5800,7 @@ async function _doPrintFloorMap(selectedFloors){
       @media print { body{margin:0} @page{margin:10mm} }
       body{margin:12px;background:#fff}
     </style>
-  </head><body>${pages}<script>window.onload=function(){if(window.opener)window.opener.postMessage("ready-to-print",location.origin||"*");}<\/script></body></html>`;
+  </head><body>${pages}${String.fromCharCode(60)+'script>'}window.onload=function(){if(window.opener)window.opener.postMessage('ready-to-print',location.origin||'*');}${String.fromCharCode(60)+'/script>'}</body></html>`;
   const blob=new Blob([plantaHtml],{type:'text/html;charset=utf-8'});
   const saved = await saveFileAs(blob, `IBMP_CFTV_Plantas_${_plantaName}_${_plantaDateStr}.html`);
   if(saved) toast('Plantas abertas — selecione "Salvar como PDF" no diálogo de impressão');
@@ -6053,7 +6053,7 @@ html,body{
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
 /* Timbrado fixo — Chrome repete em todas as páginas ao imprimir */
-.bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
+.bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:-1;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
 /* Margens calibradas: topo 40mm, esq 24mm, dir 16mm, base 30mm */
 .wrap{position:relative;z-index:1;padding:40mm 16mm 30mm 24mm}
@@ -6284,7 +6284,7 @@ ${(()=>{
 </div>`;
 })()}
 
-<script>window.onload=function(){if(window.opener)window.opener.postMessage("ready-to-print",location.origin||"*");}<\/script></body></html>`;
+${String.fromCharCode(60)+'script>'}window.onload=function(){if(window.opener)window.opener.postMessage('ready-to-print',location.origin||'*');}${String.fromCharCode(60)+'/script>'}</body></html>`;
 
     const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const _floorNameSafe = f.name.replace(/[^a-zA-Z0-9À-ú\s]/g,'').replace(/\s+/g,'_').slice(0,30);
