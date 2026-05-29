@@ -2,7 +2,7 @@
 <html lang="pt-BR" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>IBMP CFTV Control</title>
 <style id="login-style">
 #login-wall{position:fixed;inset:0;z-index:99999;background:#0f1923;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',Arial,sans-serif}
@@ -929,9 +929,9 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
 
 /* ── MOBILE VIEW ── */
 #mob-view { display: none; }
-@media (max-width: 768px) {
+@media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
+  #mob-view { display: flex !important; flex-direction: column; height: 100vh; height: 100dvh; background: var(--bg); overflow: hidden; }
   #hdr, #app { display: none !important; }
-  #mob-view { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: var(--bg); overflow: hidden; }
   #mob-hdr { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 52px; flex-shrink: 0; background: var(--surface); border-bottom: 1px solid var(--border); }
   #mob-hdr-left { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--text); }
   #mob-hdr-left strong { font-weight: 800; }
@@ -6508,10 +6508,8 @@ function finishInit(){
   document.getElementById('btn-export').classList.add('ready');
   document.getElementById('btn-pdf').classList.add('ready');
   const sc=document.getElementById('btn-save-cloud');if(sc)sc.classList.add('ready');
-  // Mobile: aguarda CSS aplicar antes de checar
-  setTimeout(()=>{
-    if(typeof mobRender==='function' && isMob()) mobRender();
-  }, 100);
+  // Mobile: sempre chama mobRender — a guarda está dentro da função
+  if(typeof mobRender==='function') mobRender();
 }
 function restoreAutoSave(){
   closeModal('autosave-modal');
@@ -6560,7 +6558,10 @@ function isMob(){
 let _mf = 'all', _mq = '';
 
 function mobRender(){
-  if(!isMob()) return;
+  const _mv = document.getElementById('mob-view');
+  if(!_mv) return;
+  const _mvStyle = window.getComputedStyle(_mv);
+  if(_mvStyle.display === 'none') return;
   // Garante que lista está visível na inicialização (estado padrão)
   const listEl = document.getElementById('mob-list');
   const kpisEl = document.getElementById('mob-kpis');
@@ -7470,6 +7471,23 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }, 500);
 });
+// ── Orientação: re-renderiza layout ao girar o dispositivo
+window.addEventListener('orientationchange', ()=>{
+  setTimeout(()=>{
+    const mv = document.getElementById('mob-view');
+    const isMobNow = mv && window.getComputedStyle(mv).display !== 'none';
+    if(isMobNow && typeof mobRender === 'function') mobRender();
+    else if(!isMobNow) { buildList && buildList(); updateSB && updateSB(); }
+  }, 300);
+});
+if(screen.orientation){
+  screen.orientation.addEventListener('change', ()=>{
+    setTimeout(()=>{
+      const mv = document.getElementById('mob-view');
+      if(mv && window.getComputedStyle(mv).display !== 'none' && typeof mobRender === 'function') mobRender();
+    }, 300);
+  });
+}
 
 </script>
 </body>
