@@ -6072,7 +6072,7 @@ async function exportPDF(selectedFloors, _retry=0) {
     </div>`;
   }).join('');
   // Câmeras mais críticas (maior % de vida consumida)
-  const criticas = [...camLife].sort((a,b)=>b.pctUsed-a.pctUsed).slice(0,12);
+  const criticas = [...camLife].sort((a,b)=>b.pctUsed-a.pctUsed).slice(0,20);
   const criticasRows = criticas.map(c=>{
     const color = c.pctUsed>=90?'#dc2626':c.pctUsed>=70?'#d97706':'#16a34a';
     const badge = c.pctUsed>=90?'Urgente':c.pctUsed>=70?'Atenção':'OK';
@@ -6103,10 +6103,10 @@ async function exportPDF(selectedFloors, _retry=0) {
 @page{size:A4;margin:0}
 html,body{
   width:210mm;font-family:Arial,sans-serif;font-size:10pt;
-  color:#1a1a1a;background:#fff;
+  color:#1a1a1a;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
-.bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:-1;pointer-events:none}
+.bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
 .wrap{position:relative;z-index:1;padding:38mm 13mm 28mm 13mm}
 h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
@@ -6181,19 +6181,25 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
 
   <h2 style="margin-top:6px">Distribuição do Parque CFTV</h2>
   ${(()=>{
-    const total=totalReal||1;
-    const pctOk=Math.round(ok/total*100);
-    const C=226.2,r=36;
-    const dashOk=Math.max(0.1,C*ok/total);
-    const dashNf=C-dashOk;
-    const donut=`<svg width="100" height="100" viewBox="0 0 88 88">
+    // Donut com 3 segmentos: ativas (verde), inativas (vermelho), recomendadas (laranja)
+    const totalDonut = (ok + inativas + recPlotted.length) || 1;
+    const pctOk = Math.round(ok/totalDonut*100);
+    const C = 226.2, r = 36;
+    const segOk  = C * ok / totalDonut;
+    const segNf  = C * inativas / totalDonut;
+    const segRec = C * recPlotted.length / totalDonut;
+    // offsets acumulados (cada segmento começa onde o anterior terminou)
+    const offOk  = C/4;
+    const offNf  = C/4 - segOk;
+    const offRec = C/4 - segOk - segNf;
+    const arc = (seg, color, off) => seg > 0.1
+      ? `<circle cx="44" cy="44" r="${r}" fill="none" stroke="${color}" stroke-width="11" stroke-dasharray="${seg.toFixed(1)} ${(C-seg).toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/>`
+      : '';
+    const donut = `<svg width="100" height="100" viewBox="0 0 88 88">
       <circle cx="44" cy="44" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="11"/>
-      <circle cx="44" cy="44" r="${r}" fill="none" stroke="#16a34a" stroke-width="11"
-        stroke-dasharray="${dashOk.toFixed(1)} ${dashNf.toFixed(1)}"
-        stroke-dashoffset="${(C/4).toFixed(1)}" stroke-linecap="round"/>
-      ${inativas>0?`<circle cx="44" cy="44" r="${r}" fill="none" stroke="#dc2626" stroke-width="11"
-        stroke-dasharray="${dashNf.toFixed(1)} ${dashOk.toFixed(1)}"
-        stroke-dashoffset="${(C/4-dashOk).toFixed(1)}" stroke-linecap="round"/>`:''}
+      ${arc(segOk, '#16a34a', offOk)}
+      ${arc(segNf, '#dc2626', offNf)}
+      ${arc(segRec, '#ea580c', offRec)}
       <text x="44" y="40" text-anchor="middle" font-size="13" font-weight="800" fill="#0f1923">${pctOk}%</text>
       <text x="44" y="52" text-anchor="middle" font-size="7" fill="#64748b">ativas</text>
     </svg>`;
