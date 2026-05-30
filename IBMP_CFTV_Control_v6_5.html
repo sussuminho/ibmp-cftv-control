@@ -5506,7 +5506,7 @@ async function exportExecutivo(selectedFloors, _retry=0){
       'Relatório Executivo — Plantas',
       'Escolha quais plantas incluir no relatório executivo.',
       (sel)=>exportExecutivo(sel),
-      true
+      false
     );
     return;
   }
@@ -5948,7 +5948,7 @@ async function exportPDF(selectedFloors, _retry=0) {
       'Relatório Técnico — Plantas',
       'Escolha quais plantas incluir no relatório técnico PDF.',
       (sel)=>exportPDF(sel),
-      true // showExtras: opção de incluir câmeras recomendadas
+      false
     );
     return;
   }
@@ -5992,8 +5992,8 @@ async function exportPDF(selectedFloors, _retry=0) {
     + dbOnlyCams.filter(r=>(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não'))
         .reduce((s,r)=>s+(PRICES[r['MODELO CÂMERA']||'']||0),0);
 
-  // Planta em resolução original
-  const showRec = document.getElementById('chk-show-rec')?.checked || false;
+  // Planta em resolução original — sempre inclui recomendadas plotadas (laranja)
+  const showRec = true;
   const plantImgSrc = capturePlantImg(f, showRec);
 
   // Tabela de câmeras inativas — mapa + banco
@@ -6076,7 +6076,7 @@ html,body{
 .bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:-1;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
 /* Margens calibradas: topo 40mm, esq 24mm, dir 16mm, base 30mm */
-.wrap{position:relative;z-index:1;padding:40mm 16mm 30mm 24mm}
+.wrap{position:relative;z-index:1;padding:38mm 13mm 28mm 13mm}
 /* ── Tipografia ── */
 h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
 .sub{font-size:8.5pt;color:#5a6a7a;margin-bottom:10px;line-height:1.5}
@@ -6098,14 +6098,14 @@ h2{font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;
   break-before:page;page-break-before:always;
   position:relative;z-index:1;
   box-sizing:border-box;
-  padding:40mm 16mm 30mm 24mm;
+  padding:38mm 13mm 28mm 13mm;
   height:297mm;overflow:hidden
 }
 .plant-pg h2{margin-bottom:6px;flex-shrink:0}
 .plant-box{
   display:flex;align-items:center;justify-content:center;
   width:100%;
-  height:calc(297mm - 40mm - 30mm - 14mm);
+  height:calc(297mm - 38mm - 28mm - 14mm);
   border:1px solid #e2e8f0;border-radius:6px;
   background:#f8f9fb;overflow:hidden
 }
@@ -6117,7 +6117,7 @@ h2{font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;
 /* ── Tabela ──
    Só renderiza se houver câmeras inativas.
    Sem break-before quando não há planta (evita pág em branco). */
-.table-pg{position:relative;z-index:1;padding:40mm 16mm 30mm 24mm}
+.table-pg{position:relative;z-index:1;padding:38mm 13mm 28mm 13mm}
 .table-pg.after-plant{break-before:page;page-break-before:always;height:297mm}
 table{width:100%;border-collapse:collapse;font-size:8.5pt}
 thead th{background:#f1f5f9;padding:6px 8px;text-align:left;
@@ -6300,7 +6300,7 @@ ${(()=>{
     const custo=(PRICES[m]||0)+(LABOR[m]||150);
     return `<tr><td>${r.local}</td><td class="model">${m}</td><td class="loc">${r.justificativa}</td><td class="cost">R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
   }).join('');
-  return `<div class="table-pg" style="break-before:page;page-break-before:always;padding:40mm 16mm 30mm 24mm;position:relative;z-index:1">
+  return `<div class="table-pg" style="break-before:page;page-break-before:always;padding:38mm 13mm 28mm 13mm;position:relative;z-index:1">
   <div class="bg"><img src="${TIMBRADO_B64}" alt=""></div>
   <div style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;font-size:7pt;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:8px;text-transform:uppercase">⚠ Expansão Recomendada</div>
   <h2>Câmeras Recomendadas — Proposta de Expansão do Parque CFTV</h2>
