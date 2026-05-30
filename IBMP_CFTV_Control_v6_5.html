@@ -5962,42 +5962,28 @@ async function exportPDF(selectedFloors, _retry=0) {
     day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
   });
   const _dateStr = _nowDate.toISOString().slice(0,10).replace(/-/g,'');
+  const currentYear = _nowDate.getFullYear();
+
+  // ── Escopo: SOMENTE câmeras das plantas selecionadas ──
   const allCamsRaw = selectedFloors.flatMap(fl=>fl.cameras);
-  const allCams    = allCamsRaw.filter(c=>!c.rec);  // câmeras reais (exclui recomendadas plotadas)
-  const recPlotted = allCamsRaw.filter(c=>c.rec);   // câmeras recomendadas plotadas no mapa
+  const allCams    = allCamsRaw.filter(c=>!c.rec);  // câmeras reais
+  const recPlotted = allCamsRaw.filter(c=>c.rec);   // recomendadas plotadas
 
-  // ── Dados consolidados: mapa + banco DB.cameras ──────────────────────────
-  // Para KPIs e gráficos usamos as câmeras mapeadas (com status real do mapa)
-  // Para a tabela completa usamos DB.cameras (banco completo)
-  const mappedNames = new Set(allCams.map(c=>c.name));
-
-  // Câmeras do DB não mapeadas ainda (só DB)
-  const dbOnlyCams = (DB.cameras||[]).filter(r=>{
-    const n = r['NOME CANAL']||'';
-    return n && !mappedNames.has(n);
-  });
-
-  // Status: câmeras mapeadas
+  // ── Status (câmeras reais das plantas) ──
   const ok        = allCams.filter(c=>c.fn).length;
   const inativas  = allCams.filter(c=>!c.fn).length;
+  const totalReal = allCams.length;
+  const totalComRec = totalReal + recPlotted.length; // inclui recomendadas na contagem total
 
-  // Status total (mapa + DB não mapeado)
-  const dbOkExtra    = dbOnlyCams.filter(r=>!(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não')).length;
-  const dbNfExtra    = dbOnlyCams.filter(r=>(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não')).length;
-  const totalOk      = ok + dbOkExtra;
-  const totalNf      = inativas + dbNfExtra;
-  const totalAll     = allCams.length + dbOnlyCams.length;
-
-  const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info?.modelo]||0),0)
-    + dbOnlyCams.filter(r=>(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não'))
-        .reduce((s,r)=>s+(PRICES[r['MODELO CÂMERA']||'']||0),0);
+  const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info?.modelo]||0),0);
 
   // Planta em resolução original — sempre inclui recomendadas plotadas (laranja)
   const showRec = true;
   const plantImgSrc = capturePlantImg(f, showRec);
 
-  // Tabela de câmeras inativas — mapa + banco
-  const nfCamsMapa = allCams.filter(c=>!c.fn).map(cam=>{
+  // ── Tabela de inativas (só das plantas selecionadas) ──
+  const nfCams = allCams.filter(c=>!c.fn);
+  const nfRows = nfCams.map(cam=>{
     const price=PRICES[cam.info?.modelo]||0;
     return `<tr>
       <td>${cam.name||'—'}</td>
@@ -6006,64 +5992,112 @@ async function exportPDF(selectedFloors, _retry=0) {
       <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;color:#64748b">${cam.info?.serial||'—'}</td>
       <td class="cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
     </tr>`;
-  });
-  const nfCamsDB = dbOnlyCams.filter(r=>(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não')).map(r=>{
-    const modelo=r['MODELO CÂMERA']||'—';
-    const price=PRICES[modelo]||0;
-    return `<tr>
-      <td>${r['NOME CANAL']||'—'}</td>
-      <td class="model">${modelo}</td>
-      <td class="loc">${r['GRAVADOR']||'—'}</td>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;color:#64748b">${r['SERIAL']||'—'}</td>
-      <td class="cost">R$ ${price.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
-    </tr>`;
-  });
-  const nfRows = [...nfCamsMapa, ...nfCamsDB].join('');
-  const totalNfCount = nfCamsMapa.length + nfCamsDB.length;
+  }).join('');
+  const totalNfCount = nfCams.length;
 
-  // Tabela completa de câmeras (banco DB)
-  const allDBCams = DB.cameras||[];
-  const allCamRows = allDBCams.map(r=>{
-    const status = r['STATUS DE OPERAÇÃO']||'Ativo';
-    const isNF = status.toLowerCase().includes('não');
-    const modelo = r['MODELO CÂMERA']||'—';
+  // ── Inventário (só câmeras das plantas selecionadas) ──
+  const invRows = allCams.map(cam=>{
+    const isNF = !cam.fn;
     const statusColor = isNF ? '#dc2626' : '#16a34a';
+    const statusTxt = isNF ? 'Inativo' : 'Ativo';
     return `<tr>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt">${r['NOME CANAL']||'—'}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#d97706">${modelo}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#64748b">${r['GRAVADOR']||'—'}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#64748b">${r['CANAL']||'—'}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#475569">${r['SERIAL']||'—'}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#475569">${r['ATIVO']||'—'}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:7.5pt;font-weight:700;color:${statusColor}">${status}</td>
-      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:7.5pt;color:#64748b">${r['Observação']||''}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt">${cam.name||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#d97706">${cam.info?.modelo||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#64748b">${cam.info?.gravador||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#64748b">${cam.info?.canal||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:8pt;color:#475569">${cam.info?.serial||'—'}</td>
+      <td style="padding:5px 7px;border-bottom:1px solid #f0f0f0;font-size:7.5pt;font-weight:700;color:${statusColor}">${statusTxt}</td>
     </tr>`;
   }).join('');
 
-  // KPIs patrimoniais
-  const currentYear = new Date().getFullYear();
-  const totalAssets = allCams.reduce((s,c)=>s+(PRICES[c.info?.modelo]||0),0)
-    + dbOnlyCams.reduce((s,r)=>s+(PRICES[r['MODELO CÂMERA']||'']||0),0);
+  // ── KPIs patrimoniais (só plantas selecionadas) ──
+  const totalAssets = allCams.reduce((s,c)=>s+(PRICES[c.info?.modelo]||0),0);
   const depreciated = allCams.reduce((s,c)=>{
     const price=PRICES[c.info?.modelo]||0;
     const life=LIFESPAN[c.info?.modelo]||6;
     const install=INSTALL_YEAR[c.name]||2022;
     const age=Math.min(currentYear-install, life);
     return s+price*(1-age/life);
-  },0) + dbOnlyCams.reduce((s,r)=>{
-    const modelo=r['MODELO CÂMERA']||'';
-    const price=PRICES[modelo]||0;
-    const life=LIFESPAN[modelo]||6;
-    const install=INSTALL_YEAR[r['NOME CANAL']||'']||2022;
-    const age=Math.min(currentYear-install, life);
-    return s+price*(1-age/life);
   },0);
+
+  // ── Cobertura por gravador/DVR (das plantas selecionadas) ──
+  const byRec = {};
+  allCams.forEach(c=>{
+    const g = c.info?.gravador || 'Sem gravador';
+    if(!byRec[g]) byRec[g]={total:0, ok:0, nf:0};
+    byRec[g].total++;
+    if(c.fn) byRec[g].ok++; else byRec[g].nf++;
+  });
+  const recorderRows = Object.entries(byRec).sort((a,b)=>b[1].total-a[1].total).map(([g,d])=>{
+    const pct = d.total ? Math.round(d.ok/d.total*100) : 0;
+    const barColor = pct>=80?'#16a34a':pct>=50?'#d97706':'#dc2626';
+    return `<tr>
+      <td style="font-size:8.5pt">${g}</td>
+      <td style="text-align:center;font-size:8.5pt">${d.total}</td>
+      <td style="text-align:center;font-size:8.5pt;color:#16a34a;font-weight:700">${d.ok}</td>
+      <td style="text-align:center;font-size:8.5pt;color:#dc2626;font-weight:700">${d.nf}</td>
+      <td style="width:120px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;background:#e2e8f0;border-radius:4px;height:10px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${barColor};border-radius:4px"></div>
+          </div>
+          <span style="font-size:8pt;font-weight:700;color:${barColor};width:30px;text-align:right">${pct}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // ── Vida útil / cronograma de troca (das plantas selecionadas) ──
+  const camLife = allCams.map(c=>{
+    const life=LIFESPAN[c.info?.modelo]||6;
+    const install=INSTALL_YEAR[c.name]||2022;
+    const trocaYear = install + life;
+    const age = currentYear - install;
+    const pctUsed = Math.min(100, Math.round(age/life*100));
+    return {name:c.name, modelo:c.info?.modelo||'—', install, trocaYear, pctUsed};
+  });
+  // Agrupar por ano de troca
+  const byYear = {};
+  camLife.forEach(c=>{ byYear[c.trocaYear]=(byYear[c.trocaYear]||0)+1; });
+  const years = Object.keys(byYear).map(Number).sort((a,b)=>a-b);
+  const maxYearCount = Math.max(1, ...Object.values(byYear));
+  const lifeBars = years.map(y=>{
+    const n = byYear[y];
+    const vencido = y <= currentYear;
+    const color = vencido ? '#dc2626' : (y <= currentYear+1 ? '#d97706' : '#159b77');
+    return `<div class="bar-row">
+      <div class="bar-lbl" style="width:60px">${y}${vencido?' ⚠':''}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxYearCount*100)}%;background:${color}"></div></div>
+      <div class="bar-num">${n}</div>
+    </div>`;
+  }).join('');
+  // Câmeras mais críticas (maior % de vida consumida)
+  const criticas = [...camLife].sort((a,b)=>b.pctUsed-a.pctUsed).slice(0,12);
+  const criticasRows = criticas.map(c=>{
+    const color = c.pctUsed>=90?'#dc2626':c.pctUsed>=70?'#d97706':'#16a34a';
+    const badge = c.pctUsed>=90?'Urgente':c.pctUsed>=70?'Atenção':'OK';
+    return `<tr>
+      <td style="font-size:8pt">${c.name}</td>
+      <td style="font-size:8pt;color:#d97706">${c.modelo}</td>
+      <td style="text-align:center;font-size:8pt">${c.install}</td>
+      <td style="text-align:center;font-size:8pt;font-weight:700">${c.trocaYear}</td>
+      <td style="width:110px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;background:#e2e8f0;border-radius:4px;height:9px;overflow:hidden">
+            <div style="width:${c.pctUsed}%;height:100%;background:${color};border-radius:4px"></div>
+          </div>
+          <span style="font-size:7.5pt;font-weight:700;color:${color};width:28px;text-align:right">${c.pctUsed}%</span>
+        </div>
+      </td>
+      <td style="text-align:center"><span style="font-size:7pt;font-weight:700;color:${color};background:${color}18;padding:1px 6px;border-radius:8px">${badge}</span></td>
+    </tr>`;
+  }).join('');
 
   const reportHtml = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Relatório CFTV — ${f.name} — ${now}</title>
+<title>Relatório Técnico CFTV — ${f.name} — ${now}</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 @page{size:A4;margin:0}
@@ -6072,67 +6106,40 @@ html,body{
   color:#1a1a1a;background:#fff;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
-/* Timbrado fixo — Chrome repete em todas as páginas ao imprimir */
 .bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:-1;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
-/* Margens calibradas: topo 40mm, esq 24mm, dir 16mm, base 30mm */
-.wrap{position:relative;z-index:1;padding:15mm 15mm 15mm 15mm}
-/* ── Tipografia ── */
+.wrap{position:relative;z-index:1;padding:38mm 13mm 28mm 13mm}
 h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
 .sub{font-size:8.5pt;color:#5a6a7a;margin-bottom:10px;line-height:1.5}
 .rule{height:2px;background:linear-gradient(90deg,#159b77,#0e7a5e 55%,transparent);margin-bottom:16px;border-radius:1px}
 h2{font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;
    letter-spacing:.07em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #d1fae5}
-/* ── KPIs ── */
 .kpis{display:flex;gap:6px;margin-bottom:18px}
 .kpi{flex:1;background:#f8f9fb;border:1px solid #e2e8f0;border-radius:7px;padding:8px 9px}
 .kv{font-size:15pt;font-weight:800;line-height:1;color:#0f1923}
 .kl{font-size:6.5pt;color:#64748b;margin-top:3px}
 .kpi.ok .kv{color:#16a34a}.kpi.nf .kv{color:#dc2626}
-.kpi.wn .kv{color:#d97706}.kpi.pat .kv{color:#2563eb}
-/* ── Planta ──
-   Cada planta = 1 página A4.
-   Usamos height:100vh no contexto de impressão (equivale a 297mm por página).
-   A caixa da imagem usa calc para preencher o espaço disponível após título e margens. */
-.plant-pg{
-  break-before:page;page-break-before:always;
-  position:relative;z-index:1;
-  box-sizing:border-box;
-  padding:15mm 15mm 15mm 15mm;
-  height:297mm;overflow:hidden
-}
+.kpi.wn .kv{color:#d97706}.kpi.pat .kv{color:#2563eb}.kpi.rec .kv{color:#ea580c}
+.plant-pg{break-before:page;page-break-before:always;position:relative;z-index:1;box-sizing:border-box;padding:38mm 13mm 28mm 13mm;height:297mm;overflow:hidden}
 .plant-pg h2{margin-bottom:6px;flex-shrink:0}
-.plant-box{
-  display:flex;align-items:center;justify-content:center;
-  width:100%;
-  height:calc(297mm - 15mm - 15mm - 14mm);
-  border:1px solid #e2e8f0;border-radius:6px;
-  background:#f8f9fb;overflow:hidden
-}
-.plant-box img{
-  max-width:100%;max-height:100%;
-  width:auto;height:auto;
-  display:block;object-fit:contain
-}
-/* ── Tabela ──
-   Só renderiza se houver câmeras inativas.
-   Sem break-before quando não há planta (evita pág em branco). */
-.table-pg{position:relative;z-index:1;padding:15mm 15mm 15mm 15mm}
-.table-pg.after-plant{break-before:page;page-break-before:always;height:297mm}
+.plant-box{display:flex;align-items:center;justify-content:center;width:100%;height:calc(297mm - 38mm - 28mm - 14mm);border:1px solid #e2e8f0;border-radius:6px;background:#f8f9fb;overflow:hidden}
+.plant-box img{max-width:100%;max-height:100%;width:auto;height:auto;display:block;object-fit:contain}
+.table-pg{position:relative;z-index:1;padding:38mm 13mm 28mm 13mm}
+.table-pg.after-plant{break-before:page;page-break-before:always}
+.section-break{break-before:page;page-break-before:always}
+/* Evita páginas em branco entre seções */
+.section-break:empty,.table-pg:empty,.plant-pg:empty{display:none!important;break-before:auto!important;page-break-before:auto!important}
+.table-pg,.plant-pg,.section-break{break-inside:avoid}
 table{width:100%;border-collapse:collapse;font-size:8.5pt}
-thead th{background:#f1f5f9;padding:6px 8px;text-align:left;
-         font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700}
+thead th{background:#f1f5f9;padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700}
 td{padding:6px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
 .model{color:#d97706}.loc{color:#64748b}
 .cost{text-align:right;font-weight:700;color:#16a34a}
 tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
-.all-ok{padding:14px;text-align:center;color:#16a34a;font-weight:600;
-        background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:9pt}
-/* ── Gráficos ── */
+.all-ok{padding:14px;text-align:center;color:#16a34a;font-weight:600;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:9pt}
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px}
 .chart-box{background:#f8f9fb;border:1px solid #e2e8f0;border-radius:8px;padding:14px 15px}
-.chart-title{font-size:8pt;font-weight:700;color:#475569;text-transform:uppercase;
-             letter-spacing:.06em;margin-bottom:10px}
+.chart-title{font-size:8pt;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
 .donut-wrap{display:flex;align-items:center;gap:14px}
 .donut-legend{display:flex;flex-direction:column;gap:6px;flex:1}
 .leg-item{display:flex;align-items:center;gap:7px;font-size:9pt;color:#0f1923}
@@ -6143,57 +6150,55 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
 .bar-track{flex:1;background:#e2e8f0;border-radius:4px;height:12px;overflow:hidden}
 .bar-fill{height:100%;border-radius:4px}
 .bar-num{width:24px;text-align:right;font-weight:700;color:#0f1923;font-size:8.5pt}
+.sec-intro{font-size:8pt;color:#64748b;margin:-2px 0 10px}
 </style>
 </head>
 <body>
 
+<div class="bg"><img src="${TIMBRADO_B64}" alt=""></div>
 
-<!-- PÁG 1: Resumo -->
 <div class="wrap">
-  <h1>Relatório de Mapeamento CFTV</h1>
-  <div class="sub">Planta: <strong>${f.name}</strong> &nbsp;·&nbsp; Gerado em: ${now} &nbsp;·&nbsp; IBMP CFTV Control · by Luan Hachiguti</div>
+  <h1>Relatório Técnico CFTV</h1>
+  <div class="sub">Planta: <strong>${selectedFloors.map(fl=>fl.name).join(', ')}</strong> &nbsp;·&nbsp; Gerado em: ${now} &nbsp;·&nbsp; IBMP CFTV Control · by Luan Hachiguti</div>
   <div class="rule"></div>
 
   <h2>Resumo Operacional</h2>
   <div class="kpis">
-    <div class="kpi"><div class="kv">${totalAll}</div><div class="kl">Total no Banco</div></div>
-    <div class="kpi"><div class="kv">${allCams.length}</div><div class="kl">Mapeadas</div></div>
-    <div class="kpi ok"><div class="kv">${totalOk}</div><div class="kl">Ativas</div></div>
-    <div class="kpi nf"><div class="kv">${totalNf}</div><div class="kl">Inativas</div></div>
-    <div class="kpi wn"><div class="kv">R$&nbsp;${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Custo est. (NF)</div></div>
+    <div class="kpi"><div class="kv">${totalComRec}</div><div class="kl">Total (c/ recomendadas)</div></div>
+    <div class="kpi ok"><div class="kv">${ok}</div><div class="kl">Ativas</div></div>
+    <div class="kpi nf"><div class="kv">${inativas}</div><div class="kl">Inativas</div></div>
+    <div class="kpi rec"><div class="kv">${recPlotted.length}</div><div class="kl">Recomendadas</div></div>
+    <div class="kpi wn"><div class="kv" style="font-size:11pt">R$&nbsp;${totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Custo est. (NF)</div></div>
   </div>
 
   <h2 style="margin-top:4px">Resumo Patrimonial</h2>
   <div class="kpis">
-    <div class="kpi pat"><div class="kv">R$&nbsp;${totalAssets.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Patrimônio total</div></div>
-    <div class="kpi wn"><div class="kv">R$&nbsp;${Math.round(depreciated).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Valor depreciado</div></div>
+    <div class="kpi pat"><div class="kv" style="font-size:12pt">R$&nbsp;${totalAssets.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Patrimônio total</div></div>
+    <div class="kpi wn"><div class="kv" style="font-size:12pt">R$&nbsp;${Math.round(depreciated).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div><div class="kl">Valor depreciado</div></div>
     <div class="kpi"><div class="kv">${Math.round((totalAssets>0?depreciated/totalAssets:0)*100)}%</div><div class="kl">Valor residual</div></div>
     <div class="kpi"><div class="kv">${currentYear}</div><div class="kl">Ano de referência</div></div>
   </div>
 
   <h2 style="margin-top:6px">Distribuição do Parque CFTV</h2>
   ${(()=>{
-    const total=totalAll||1;
-    const pctOk=Math.round(totalOk/total*100);
-    // Donut SVG
+    const total=totalReal||1;
+    const pctOk=Math.round(ok/total*100);
     const C=226.2,r=36;
-    const dashOk=Math.max(0.1,C*totalOk/total);
+    const dashOk=Math.max(0.1,C*ok/total);
     const dashNf=C-dashOk;
     const donut=`<svg width="100" height="100" viewBox="0 0 88 88">
       <circle cx="44" cy="44" r="${r}" fill="none" stroke="#e2e8f0" stroke-width="11"/>
       <circle cx="44" cy="44" r="${r}" fill="none" stroke="#16a34a" stroke-width="11"
         stroke-dasharray="${dashOk.toFixed(1)} ${dashNf.toFixed(1)}"
         stroke-dashoffset="${(C/4).toFixed(1)}" stroke-linecap="round"/>
-      ${totalNf>0?`<circle cx="44" cy="44" r="${r}" fill="none" stroke="#dc2626" stroke-width="11"
+      ${inativas>0?`<circle cx="44" cy="44" r="${r}" fill="none" stroke="#dc2626" stroke-width="11"
         stroke-dasharray="${dashNf.toFixed(1)} ${dashOk.toFixed(1)}"
         stroke-dashoffset="${(C/4-dashOk).toFixed(1)}" stroke-linecap="round"/>`:''}
       <text x="44" y="40" text-anchor="middle" font-size="13" font-weight="800" fill="#0f1923">${pctOk}%</text>
       <text x="44" y="52" text-anchor="middle" font-size="7" fill="#64748b">ativas</text>
     </svg>`;
-    // Modelos — usa banco completo (mapeadas + DB)
     const mc={};
     allCams.forEach(c=>{const m=c.info?.modelo||'N/D';mc[m]=(mc[m]||0)+1;});
-    dbOnlyCams.forEach(r=>{const m=r['MODELO CÂMERA']||'N/D';mc[m]=(mc[m]||0)+1;});
     const models=Object.entries(mc).sort((a,b)=>b[1]-a[1]).slice(0,5);
     const maxM=models[0]?.[1]||1;
     const modelBars=models.map(([m,n])=>`<div class="bar-row">
@@ -6201,11 +6206,10 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
       <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxM*100)}%;background:#159b77"></div></div>
       <div class="bar-num">${n}</div>
     </div>`).join('');
-    // Plantas (só se múltiplas)
-    const fd=floors.map(fl=>({n:fl.name,c:fl.cameras.length})).filter(x=>x.c>0).sort((a,b)=>b.c-a.c).slice(0,4);
+    const fd=selectedFloors.map(fl=>({n:fl.name,c:fl.cameras.filter(c=>!c.rec).length})).filter(x=>x.c>0).sort((a,b)=>b.c-a.c).slice(0,5);
     const maxF=fd[0]?.c||1;
     const floorBars=fd.map(({n,c})=>`<div class="bar-row">
-      <div class="bar-lbl" title="${n}">${n.length>12?n.slice(0,12)+'…':n}</div>
+      <div class="bar-lbl" title="${n}">${n.length>14?n.slice(0,14)+'…':n}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/maxF*100)}%;background:#2563eb"></div></div>
       <div class="bar-num">${c}</div>
     </div>`).join('');
@@ -6215,10 +6219,11 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
         <div class="donut-wrap">
           ${donut}
           <div class="donut-legend">
-            <div class="leg-item"><div class="leg-dot" style="background:#16a34a"></div>Ativas<span class="leg-val" style="color:#16a34a">${totalOk}</span></div>
-            <div class="leg-item"><div class="leg-dot" style="background:#dc2626"></div>Inativas<span class="leg-val" style="color:#dc2626">${totalNf}</span></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#16a34a"></div>Ativas<span class="leg-val" style="color:#16a34a">${ok}</span></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#dc2626"></div>Inativas<span class="leg-val" style="color:#dc2626">${inativas}</span></div>
+            ${recPlotted.length?`<div class="leg-item"><div class="leg-dot" style="background:#ea580c"></div>Recomendadas<span class="leg-val" style="color:#ea580c">${recPlotted.length}</span></div>`:''}
             <div class="leg-item" style="border-top:1px solid #e2e8f0;margin-top:3px;padding-top:3px">
-              <div class="leg-dot" style="background:#94a3b8"></div>Total<span class="leg-val">${totalAll}</span>
+              <div class="leg-dot" style="background:#94a3b8"></div>Total<span class="leg-val">${totalComRec}</span>
             </div>
           </div>
         </div>
@@ -6227,14 +6232,13 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
         <div class="chart-title">Por Modelo</div>
         ${modelBars||'<div style="color:#94a3b8;font-size:8pt">Sem dados</div>'}
       </div>
-      ${floors.length>1?`<div class="chart-box" style="grid-column:1/-1">
+      ${selectedFloors.length>1?`<div class="chart-box" style="grid-column:1/-1">
         <div class="chart-title">Câmeras por Planta</div>${floorBars}
       </div>`:''}
     </div>`;
   })()}
 </div>
 
-<!-- PÁG 2+: Uma página por planta selecionada -->
 ${selectedFloors.map(fl=>{
   const flSrc=capturePlantImg(fl, showRec);
   return flSrc?`<div class="plant-pg">
@@ -6243,7 +6247,6 @@ ${selectedFloors.map(fl=>{
 </div>`:'';
 }).join('')}
 
-<!-- PÁG CÂMERAS INATIVAS: só renderiza se houver inativas -->
 ${totalNfCount > 0 ? `
 <div class="table-pg ${plantImgSrc ? 'after-plant' : ''}">
   <h2>Câmeras Inativas — Orçamento de Manutenção (${totalNfCount} câmera${totalNfCount>1?'s':''})</h2>
@@ -6262,27 +6265,46 @@ ${totalNfCount > 0 ? `
 </div>
 ` : ''}
 
-${allDBCams.length > 0 ? `
-<div class="table-pg" style="break-before:page;page-break-before:always">
-  <h2>Inventário Completo — Banco de Dados CFTV (${allDBCams.length} câmeras)</h2>
-  <table style="font-size:7.5pt">
+${Object.keys(byRec).length > 0 ? `
+<div class="table-pg section-break">
+  <h2>Cobertura por Gravador / DVR</h2>
+  <p class="sec-intro">Distribuição das câmeras mapeadas por gravador e taxa de operação de cada um.</p>
+  <table>
     <thead><tr>
-      <th>Canal / Nome</th>
-      <th>Modelo</th>
-      <th>Gravador</th>
-      <th style="text-align:center">Canal</th>
-      <th>Serial</th>
-      <th style="text-align:center">Ativo</th>
-      <th>Status</th>
-      <th>Observação</th>
+      <th>Gravador / DVR</th>
+      <th style="text-align:center">Câmeras</th>
+      <th style="text-align:center">Ativas</th>
+      <th style="text-align:center">Inativas</th>
+      <th>Operacional</th>
     </tr></thead>
-    <tbody>${allCamRows}</tbody>
+    <tbody>${recorderRows}</tbody>
+  </table>
+</div>
+` : ''}
+
+${camLife.length > 0 ? `
+<div class="table-pg section-break">
+  <h2>Vida Útil & Cronograma de Troca</h2>
+  <p class="sec-intro">Previsão de substituição com base no ano de instalação e vida útil de cada modelo. Câmeras com prazo vencido (⚠) ou próximas do fim devem ser priorizadas.</p>
+  <div class="chart-box" style="margin-bottom:14px">
+    <div class="chart-title">Substituições previstas por ano</div>
+    ${lifeBars||'<div style="color:#94a3b8;font-size:8pt">Sem dados de instalação</div>'}
+  </div>
+  <h2 style="margin-top:4px">Câmeras por Prioridade de Renovação</h2>
+  <table>
+    <thead><tr>
+      <th>Câmera</th><th>Modelo</th>
+      <th style="text-align:center">Instalação</th>
+      <th style="text-align:center">Troca prev.</th>
+      <th>Vida consumida</th>
+      <th style="text-align:center">Status</th>
+    </tr></thead>
+    <tbody>${criticasRows}</tbody>
   </table>
 </div>
 ` : ''}
 
 ${(()=>{
-  // Câmeras recomendadas PLOTADAS no mapa (cam.rec===true) nas plantas selecionadas
   const recCams=recPlotted.map(cam=>{
     const recData=(DB.recommended||[]).find(r=>r['LOCAL']===cam.name)||{};
     const modelo=recData['MODELO SUGERIDO']||cam._modelo||cam.info?.modelo||'VIP-3220-D';
@@ -6299,9 +6321,9 @@ ${(()=>{
     const custo=(PRICES[m]||0)+(LABOR[m]||150);
     return `<tr><td>${r.local}</td><td class="model">${m}</td><td class="loc">${r.justificativa}</td><td class="cost">R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
   }).join('');
-  return `<div class="table-pg" style="break-before:page;page-break-before:always;padding:15mm 15mm 15mm 15mm;position:relative;z-index:1">
-    <div style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;font-size:7pt;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:8px;text-transform:uppercase">⚠ Expansão Recomendada</div>
-  <h2>Câmeras Recomendadas — Proposta de Expansão do Parque CFTV</h2>
+  return `<div class="table-pg section-break">
+    <div style="display:inline-block;background:#fff7ed;border:1px solid #fed7aa;color:#c2410c;font-size:7pt;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:8px">⚠ EXPANSÃO RECOMENDADA</div>
+  <h2>Câmeras Recomendadas — Proposta de Expansão (plotadas no mapa)</h2>
   <p style="font-size:8pt;color:#475569;margin:4px 0 12px">Custo total estimado (equipamento + mão de obra): <strong style="color:#c2410c">R$ ${recCost.toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong></p>
   <table>
     <thead><tr><th>Local</th><th>Modelo Sugerido</th><th>Justificativa</th><th style="text-align:right">Custo Est.</th></tr></thead>
@@ -6311,13 +6333,33 @@ ${(()=>{
 </div>`;
 })()}
 
+
+${allCams.length > 0 ? `
+<div class="table-pg section-break">
+  <h2>Inventário das Plantas Selecionadas (${allCams.length} câmera${allCams.length>1?'s':''})</h2>
+  <table style="font-size:7.5pt">
+    <thead><tr>
+      <th>Câmera</th>
+      <th>Modelo</th>
+      <th>Gravador</th>
+      <th style="text-align:center">Canal</th>
+      <th>Serial</th>
+      <th>Status</th>
+    </tr></thead>
+    <tbody>${invRows}</tbody>
+  </table>
+</div>
+` : ''}
+
+
 ${String.fromCharCode(60)+'script>'}window.onload=function(){if(window.opener)window.opener.postMessage('ready-to-print',location.origin||'*');}${String.fromCharCode(60)+'/script>'}</body></html>`;
 
-    const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
+  const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
   const _floorNameSafe = f.name.replace(/[^a-zA-Z0-9À-ú\s]/g,'').replace(/\s+/g,'_').slice(0,30);
   const saved = await saveFileAs(blob, `IBMP_CFTV_Relatorio_Tecnico_${_floorNameSafe}_${_dateStr}.html`);
   if(saved) toast('Relatório Técnico aberto — selecione "Salvar como PDF" no diálogo');
 }
+
 // ═══════════════ XLSX IMPORT ═══════════════
 function importInventory(e){
   const file=e.target.files[0];if(!file)return;
