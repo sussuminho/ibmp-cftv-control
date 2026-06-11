@@ -5,7 +5,7 @@
   "start_url": "/ibmp-cftv-control/IBMP_CFTV_Control_v6_5.html",
   "scope": "/ibmp-cftv-control/",
   "display": "standalone",
-  "orientation": "landscape",
+  "orientation": "any",
   "background_color": "#0f1923",
   "theme_color": "#159b77",
   "lang": "pt-BR",
