@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "exported": "2026-06-11T18:44:31.560Z",
+  "exported": "2026-06-11T19:36:38.379Z",
   "db": {
     "cameras": [
       {
@@ -2289,8 +2289,8 @@
     {
       "id": 1781202828387.8306,
       "name": "Logística e Controle Positivo",
-      "panX": 59.422399999999925,
-      "panY": 94.46079999999995,
+      "panX": 137.42239999999993,
+      "panY": -125.53920000000005,
       "zoom": 0.3893699764705883,
       "scale": null,
       "riskZones": [],
@@ -2379,6 +2379,60 @@
           "rot": 150,
           "fov": 90,
           "ir": 239
+        },
+        {
+          "id": 105,
+          "name": "Quarentena Estoque",
+          "x": 2752.0807066667694,
+          "y": 522.7398420519327,
+          "rot": 143,
+          "fov": 90,
+          "ir": 368
+        },
+        {
+          "id": 106,
+          "name": "Corredor Estoque 1",
+          "x": 2032.9703054539266,
+          "y": 432.85104190032723,
+          "rot": 175,
+          "fov": 90,
+          "ir": 409
+        },
+        {
+          "id": 107,
+          "name": "Corredor Estoque 4",
+          "x": 2184.497139995204,
+          "y": 543.2858535151568,
+          "rot": 165,
+          "fov": 90,
+          "ir": 372
+        },
+        {
+          "id": 108,
+          "name": "Escritorio Estoque",
+          "x": 2176.7923856964953,
+          "y": 838.634768299003,
+          "rot": 177,
+          "fov": 90,
+          "ir": 346
+        },
+        {
+          "id": 109,
+          "name": "Corredor Estoque 2",
+          "x": 2174.224134263592,
+          "y": 997.8663571389897,
+          "rot": 185,
+          "fov": 90,
+          "ir": 265
+        },
+        {
+          "id": 110,
+          "name": "Corredor Estoque 3",
+          "x": 350.76561690245444,
+          "y": 1126.2789287841401,
+          "rot": 304,
+          "fov": 90,
+          "ir": 453
         }
       ]
     }
@@ -2514,6 +2568,69 @@
     "Escritorio Recebimento": [
       {
         "id": 14,
+        "date": "—",
+        "text": "SEM SERIAL DAS CAMERAS",
+        "type": "info",
+        "_migrated": true
+      }
+    ],
+    "Quarentena Estoque": [
+      {
+        "id": 15,
+        "date": "—",
+        "text": "SEM SERIAL DAS CAMERAS",
+        "type": "info",
+        "_migrated": true
+      }
+    ],
+    "Corredor Estoque 1": [
+      {
+        "id": 16,
+        "date": "—",
+        "text": "SEM SERIAL DAS CAMERAS",
+        "type": "info",
+        "_migrated": true
+      }
+    ],
+    "Corredor Estoque 4": [
+      {
+        "id": 17,
+        "date": "—",
+        "text": "SEM SERIAL DAS CAMERAS",
+        "type": "info",
+        "_migrated": true
+      }
+    ],
+    "Escritorio Estoque": [
+      {
+        "id": 18,
+        "date": "—",
+        "text": "SEM SERIAL DAS CAMERAS",
+        "type": "info",
+        "_migrated": true
+      }
+    ],
+    "Corredor Estoque 2": [
+      {
+        "id": 19,
+        "date": "—",
+        "text": "SEM SERIAL DAS CAMERAS",
+        "type": "info",
+        "_migrated": true
+      }
+    ],
+    "Corredor Estoque 3": [
+      {
+        "id": 20,
+        "date": "—",
+        "text": "SEM SERIAL DAS CAMERAS",
+        "type": "info",
+        "_migrated": true
+      }
+    ],
+    "Estoque Logistica": [
+      {
+        "id": 21,
         "date": "—",
         "text": "SEM SERIAL DAS CAMERAS",
         "type": "info",
