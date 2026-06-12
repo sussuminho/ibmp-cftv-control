@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "exported": "2026-06-12T14:59:40.495Z",
+  "exported": "2026-06-12T15:11:44.893Z",
   "db": {
     "cameras": [
       {
@@ -389,17 +389,6 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "Corredor Sujo 1",
-        "GRAVADOR": "DVR-BLOCOC-02",
-        "MODELO CÂMERA": "VIP-1130-D-G3",
-        "MODELO GRAVADOR": "",
-        "CANAL": 4,
-        "STATUS DE OPERAÇÃO": "Ativo",
-        "SERIAL": "CJTK1106676ZR",
-        "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
-      },
-      {
         "NOME CANAL": "Empacotamento 1a",
         "GRAVADOR": "DVR-BLOCOC-02",
         "MODELO CÂMERA": "VIP-3220-D",
@@ -411,13 +400,13 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "Corredor Sujo 2",
+        "NOME CANAL": "Corredor Sujo 1",
         "GRAVADOR": "DVR-BLOCOC-02",
-        "MODELO CÂMERA": "VIP-1130-D-G4",
+        "MODELO CÂMERA": "VIP-1130-D-G3",
         "MODELO GRAVADOR": "",
-        "CANAL": 6,
-        "STATUS DE OPERAÇÃO": "Ativo",
-        "SERIAL": "56ZK4814348EP",
+        "CANAL": 4,
+        "STATUS DE OPERAÇÃO": "Não funcional",
+        "SERIAL": "CJTK1106676ZR",
         "ATIVO": "",
         "STATUS ATIVO": "Sem ativo"
       },
@@ -554,13 +543,13 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "Corredor Sujo Saida de Rejeitos",
-        "GRAVADOR": "DVR-BLOCOC-03",
-        "MODELO CÂMERA": "VIP-1130-D-G2",
+        "NOME CANAL": "Corredor Sujo 2",
+        "GRAVADOR": "DVR-BLOCOC-02",
+        "MODELO CÂMERA": "VIP-1130-D-G4",
         "MODELO GRAVADOR": "",
-        "CANAL": 9,
+        "CANAL": 6,
         "STATUS DE OPERAÇÃO": "Ativo",
-        "SERIAL": "56ZK4812379UP",
+        "SERIAL": "56ZK4814348EP",
         "ATIVO": "",
         "STATUS ATIVO": "Sem ativo"
       },
@@ -576,6 +565,17 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
+        "NOME CANAL": "Corredor Sujo Saida de Rejeitos",
+        "GRAVADOR": "DVR-BLOCOC-03",
+        "MODELO CÂMERA": "VIP-1130-D-G2",
+        "MODELO GRAVADOR": "",
+        "CANAL": 9,
+        "STATUS DE OPERAÇÃO": "Ativo",
+        "SERIAL": "56ZK4812379UP",
+        "ATIVO": "",
+        "STATUS ATIVO": "Sem ativo"
+      },
+      {
         "NOME CANAL": "Corredor Sujo 2 - Producao",
         "GRAVADOR": "DVR-BLOCOC-03",
         "MODELO CÂMERA": "VIP-1130-D-G2",
@@ -583,17 +583,6 @@
         "CANAL": 11,
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "56ZK48123623L",
-        "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
-      },
-      {
-        "NOME CANAL": "Corredor Sujo 3 - Producao",
-        "GRAVADOR": "DVR-BLOCOC-03",
-        "MODELO CÂMERA": "VIP-1130-D-G2",
-        "MODELO GRAVADOR": "",
-        "CANAL": 12,
-        "STATUS DE OPERAÇÃO": "Ativo",
-        "SERIAL": "56ZK4812384MI",
         "ATIVO": "",
         "STATUS ATIVO": "Sem ativo"
       },
@@ -829,13 +818,13 @@
         "STATUS ATIVO": "Sem ativo"
       },
       {
-        "NOME CANAL": "Corredor Sujo Produção C",
-        "GRAVADOR": "",
-        "MODELO CÂMERA": "VIP-3220-D",
+        "NOME CANAL": "Corredor Sujo 3 - Producao",
+        "GRAVADOR": "DVR-BLOCOC-03",
+        "MODELO CÂMERA": "VIP-1130-D-G2",
         "MODELO GRAVADOR": "",
-        "CANAL": "",
-        "STATUS DE OPERAÇÃO": "Não funcional",
-        "SERIAL": "",
+        "CANAL": 12,
+        "STATUS DE OPERAÇÃO": "Ativo",
+        "SERIAL": "56ZK4812384MI",
         "ATIVO": "",
         "STATUS ATIVO": "Sem ativo"
       },
@@ -1194,7 +1183,7 @@
       {
         "Câmera": 4,
         "Localização/Bloco": "Corredor Sujo 1 — DVR-BLOCOC-02",
-        "Parecer": "OK"
+        "Parecer": "Não funcional"
       },
       {
         "Câmera": 5,
@@ -1677,8 +1666,8 @@
     {
       "id": 1779373692233.053,
       "name": "Bloco C1 - IBMP - Térreo",
-      "panX": -126.90095238107506,
-      "panY": -131.22146729767474,
+      "panX": -9.900952381075058,
+      "panY": -646.2214672976747,
       "zoom": 0.4652787105286499,
       "scale": null,
       "riskZones": [],
@@ -1828,8 +1817,8 @@
         {
           "id": 37,
           "name": "Corredor Sujo 3 - Producao",
-          "x": 488.25040579716165,
-          "y": 1068.143508433598,
+          "x": 2044.306987834605,
+          "y": 782.2933352140124,
           "rot": 64,
           "fov": 90,
           "ir": 147
@@ -1855,9 +1844,9 @@
         {
           "id": 42,
           "name": "Corredor Sujo Saida de Rejeitos",
-          "x": 2050.9762362343868,
-          "y": 787.7599821282386,
-          "rot": 82,
+          "x": 2117.6029683382,
+          "y": 1926.8621761611737,
+          "rot": 252,
           "fov": 90,
           "ir": 117
         },
@@ -1900,9 +1889,9 @@
         {
           "id": 48,
           "name": "Corredor Sujo 2 - Producao",
-          "x": 2112.825543507628,
-          "y": 1944.3420281378471,
-          "rot": 267,
+          "x": 485.84373052096424,
+          "y": 1080.343760210979,
+          "rot": 64,
           "fov": 90,
           "ir": 150
         },
@@ -2044,6 +2033,15 @@
           "rot": 0,
           "fov": 90,
           "ir": 117
+        },
+        {
+          "id": 133,
+          "name": "Corredor Sujo 1",
+          "x": 1989.9920873857864,
+          "y": 864.4742563885429,
+          "rot": 183,
+          "fov": 90,
+          "ir": 113
         }
       ]
     },
