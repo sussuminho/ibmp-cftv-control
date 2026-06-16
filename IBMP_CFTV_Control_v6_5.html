@@ -6462,7 +6462,7 @@ html,body{
   color:#1a1a1a;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
-.bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
+.bg{position:fixed;top:-38mm;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
 .wrap{position:relative;z-index:1;padding:0 13mm 0 13mm}
 h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
@@ -6920,7 +6920,7 @@ async function exportGravadores(){
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 @page{size:A4;margin:38mm 0 28mm 0}
 html,body{width:210mm;font-family:Arial,sans-serif;font-size:10pt;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
+.bg{position:fixed;top:-38mm;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
 .wrap{position:relative;z-index:1;padding:0 13mm 0 13mm}
 .section{position:relative;z-index:1;padding:0 13mm 0 13mm;break-before:page;page-break-before:always}
@@ -7505,6 +7505,29 @@ function doRefresh(){
 
 // ── Changelog / versão
 const CHANGELOG = [
+  { v:'v0.8', d:'Jun 2026', items:[
+    'Relatório Técnico: seção Conclusão Técnica auto-gerada (status, prioridades, próxima revisão)',
+    'Relatório Executivo: nova página de câmeras inativas com custo detalhado (equipamento + MO)',
+    'Relatório Técnico e Gravadores: corrigida quebra de página sobre o cabeçalho timbrado',
+    'Seleção de plantas: checkbox "Incluir câmeras recomendadas" nos relatórios Técnico e Executivo',
+    'Campo CRITICIDADE: ALTA / MÉDIA / BAIXA — padrão MÉDIA, retrocompatível',
+    'Select colorido no painel de câmera, badge vermelho ALTA na lista lateral',
+    'Filtros por criticidade na barra de filtros',
+    'Coluna Criticidade no export XLSX e na Lista CFTV (PDF)',
+    'Mapeamento no import XLSX (CRITICIDADE / Criticidade / PRIORIDADE) — preserva valor do app ao reimportar',
+    'Matriz de Criticidade no Relatório Técnico',
+    'Breakdown ALTA/MÉDIA/BAIXA no KPI Inoperantes do Relatório Executivo',
+    'Categorias gerenciais de vida útil: Urgente (≤12m) / Planejamento / Longo Prazo — na Timeline e Técnico',
+    'Dashboard de Manutenção: nova aba com KPIs, inoperantes por criticidade, substituições urgentes, expansões',
+    'Relatório de Gravadores: KPIs + ranking de falhas + cards por gravador com timbrado institucional',
+  ]},
+  { v:'v6.5', d:'Mai 2026', items:[
+    'Fabricante "VIP" no Excel corrigido (era exibido como fabricante ao invés do modelo)',
+    'Contagem zero de câmeras nos gravadores — lookup corrigido',
+    'Nomes corrompidos "Bloco OB-01" na Lista CFTV — corrigido',
+    'Campo Observação ausente no import de gravadores — corrigido',
+    'Relatório Técnico: marca + modelo do gravador no cabeçalho (não o nome interno)',
+  ]},
   { v:'v6.4', d:'Mai 2026', items:[
     'Impressão de planta: eliminada página em branco no final (page-break-after removido da última planta)',
     'Navegação entre views: eliminado flash da planta baixa ao trocar de aba (view-overlay via opacity/visibility)',
