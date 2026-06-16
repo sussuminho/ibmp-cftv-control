@@ -5758,26 +5758,26 @@ function checkZoneCoverage(z){
 }
 
 // ═══════════════ RELATÓRIO EXECUTIVO ═══════════════
-async function exportExecutivo(selectedFloors, _retry=0){
+async function exportExecutivo(selectedFloors, showRec=true, _retry=0){
   if(!selectedFloors){
     openFloorSel(
       'Relatório Executivo — Plantas',
       'Escolha quais plantas incluir no relatório executivo.',
-      (sel)=>exportExecutivo(sel),
-      false
+      (sel,sr)=>exportExecutivo(sel,sr),
+      true
     );
     return;
   }
   const f=selectedFloors[0];
   if(!f.image&&f.cameras.length===0){toast('Adicione uma planta ou câmeras antes de exportar');return;}
   const _notLoaded2=selectedFloors.some(fl=>fl.image&&!(fl.image.naturalWidth||fl.image.width));
-  if(_notLoaded2&&_retry<8){setTimeout(()=>exportExecutivo(selectedFloors,_retry+1),150);if(_retry===0)toast('Carregando imagens...');return;}
+  if(_notLoaded2&&_retry<8){setTimeout(()=>exportExecutivo(selectedFloors,showRec,_retry+1),150);if(_retry===0)toast('Carregando imagens...');return;}
   const now=new Date();
   const nowFmt=now.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   const dateFmt=now.toISOString().slice(0,10);
   const allCamsRaw=selectedFloors.flatMap(fl=>fl.cameras);
   const allCams=allCamsRaw.filter(c=>!c.rec);   // câmeras reais
-  const recPlotted=allCamsRaw.filter(c=>c.rec); // recomendadas plotadas no mapa
+  const recPlotted=showRec?allCamsRaw.filter(c=>c.rec):[]; // recomendadas plotadas no mapa
   const total=allCams.length;
   const ativas=allCams.filter(c=>c.fn).length;
   const inativas=allCams.filter(c=>!c.fn).length;
@@ -5795,12 +5795,9 @@ async function exportExecutivo(selectedFloors, _retry=0){
   const zonasCriticas=allZones.filter(z=>!checkZoneCoverage(z));
   const zonasOK=allZones.filter(z=>checkZoneCoverage(z));
 
-  // Capturar imagem de cada planta selecionada usando capturePlantImg global
-  // Sempre inclui as recomendadas plotadas (em laranja) na planta do executivo
-  const showRecExec = true;
   const mapsImgs=selectedFloors.map(fl=>({
     name:fl.name,
-    src:capturePlantImg(fl, showRecExec)
+    src:capturePlantImg(fl, showRec)
   })).filter(m=>m.src);
 
   // Status geral
@@ -6133,7 +6130,8 @@ function confirmFloorSel(){
   const selected=floors.filter(f=>_floorSelChecked.has(f.id));
   if(!selected.length){toast('Selecione pelo menos uma planta');return;}
   closeModal('floor-sel-modal');
-  if(_floorSelCallback)_floorSelCallback(selected);
+  const showRec=document.getElementById('chk-show-rec')?.checked||false;
+  if(_floorSelCallback)_floorSelCallback(selected,showRec);
 }
 // Renderiza qualquer planta num canvas temporário com câmeras + zonas
 // showRec=true também renderiza câmeras recomendadas (CamRec)
@@ -6213,20 +6211,20 @@ const TIMBRADO_B64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA3ADcAAD/2wBDAAM
 
 // ═══════════════ PDF EXPORT ═══════════════
 
-async function exportPDF(selectedFloors, _retry=0) {
+async function exportPDF(selectedFloors, showRec=true, _retry=0) {
   if(!selectedFloors){
     openFloorSel(
       'Relatório Técnico — Plantas',
       'Escolha quais plantas incluir no relatório técnico PDF.',
-      (sel)=>exportPDF(sel),
-      false
+      (sel,sr)=>exportPDF(sel,sr),
+      true
     );
     return;
   }
   const f = selectedFloors[0];
   if (!f.image && f.cameras.length === 0 && !(DB.cameras&&DB.cameras.length)) { toast('Adicione câmeras ou importe o banco de dados antes de exportar'); return; }
   const _notLoaded=selectedFloors.some(fl=>fl.image&&!(fl.image.naturalWidth||fl.image.width));
-  if(_notLoaded&&_retry<8){ setTimeout(()=>exportPDF(selectedFloors,_retry+1),150); if(_retry===0)toast('Carregando imagens...'); return; }
+  if(_notLoaded&&_retry<8){ setTimeout(()=>exportPDF(selectedFloors,showRec,_retry+1),150); if(_retry===0)toast('Carregando imagens...'); return; }
 
   const _nowDate = new Date();
   const now = _nowDate.toLocaleDateString('pt-BR',{
@@ -6238,7 +6236,7 @@ async function exportPDF(selectedFloors, _retry=0) {
   // ── Escopo: SOMENTE câmeras das plantas selecionadas ──
   const allCamsRaw = selectedFloors.flatMap(fl=>fl.cameras);
   const allCams    = allCamsRaw.filter(c=>!c.rec);  // câmeras reais
-  const recPlotted = allCamsRaw.filter(c=>c.rec);   // recomendadas plotadas
+  const recPlotted = showRec ? allCamsRaw.filter(c=>c.rec) : [];   // recomendadas plotadas
 
   // ── Status (câmeras reais das plantas) ──
   const ok        = allCams.filter(c=>c.fn).length;
@@ -6258,8 +6256,6 @@ async function exportPDF(selectedFloors, _retry=0) {
   });
   const critMatriz=[_critRow('ALTA'),_critRow('MÉDIA'),_critRow('BAIXA')];
 
-  // Planta em resolução original — sempre inclui recomendadas plotadas (laranja)
-  const showRec = true;
   const plantImgSrc = capturePlantImg(f, showRec);
 
   // ── Tabela de inativas (só das plantas selecionadas) ──
@@ -6411,7 +6407,7 @@ async function exportPDF(selectedFloors, _retry=0) {
 <title>Relatório Técnico CFTV — ${f.name} — ${now}</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-@page{size:A4;margin:0}
+@page{size:A4;margin:0 0 28mm 0}
 html,body{
   width:210mm;font-family:Arial,sans-serif;font-size:10pt;
   color:#1a1a1a;
@@ -6419,7 +6415,7 @@ html,body{
 }
 .bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
-.wrap{position:relative;z-index:1;padding:38mm 13mm 28mm 13mm}
+.wrap{position:relative;z-index:1;padding:38mm 13mm 0 13mm}
 h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
 .sub{font-size:8.5pt;color:#5a6a7a;margin-bottom:10px;line-height:1.5}
 .rule{height:2px;background:linear-gradient(90deg,#159b77,#0e7a5e 55%,transparent);margin-bottom:16px;border-radius:1px}
@@ -6431,11 +6427,11 @@ h2{font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;
 .kl{font-size:6.5pt;color:#64748b;margin-top:3px}
 .kpi.ok .kv{color:#16a34a}.kpi.nf .kv{color:#dc2626}
 .kpi.wn .kv{color:#d97706}.kpi.pat .kv{color:#2563eb}.kpi.rec .kv{color:#ea580c}
-.plant-pg{break-before:page;page-break-before:always;position:relative;z-index:1;box-sizing:border-box;padding:38mm 13mm 28mm 13mm;height:297mm;overflow:hidden}
+.plant-pg{break-before:page;page-break-before:always;position:relative;z-index:1;box-sizing:border-box;padding:38mm 13mm 0 13mm;height:calc(297mm - 28mm);overflow:hidden}
 .plant-pg h2{margin-bottom:6px;flex-shrink:0}
 .plant-box{display:flex;align-items:center;justify-content:center;width:100%;height:calc(297mm - 38mm - 28mm - 14mm);border:1px solid #e2e8f0;border-radius:6px;background:#f8f9fb;overflow:hidden}
 .plant-box img{max-width:100%;max-height:100%;width:auto;height:auto;display:block;object-fit:contain}
-.table-pg{position:relative;z-index:1;padding:38mm 13mm 28mm 13mm}
+.table-pg{position:relative;z-index:1;padding:38mm 13mm 0 13mm}
 .table-pg.after-plant{break-before:page;page-break-before:always}
 .section-break{break-before:page;page-break-before:always}
 /* Evita páginas em branco entre seções */
@@ -6895,7 +6891,6 @@ thead th{background:#f1f5f9;padding:6px 8px;text-align:left;font-size:7.5pt;text
 </div>
 
 <div class="section">
-  <div class="bg"><img src="${TIMBRADO_B64}" alt=""></div>
   <h2>Detalhamento por Gravador</h2>
   <p style="font-size:8pt;color:#64748b;margin-bottom:12px">${gravData.length} gravador${gravData.length!==1?'es':''} · Câmeras: total, ativas, inativas e taxa operacional</p>
   ${gravCards}
@@ -6943,6 +6938,10 @@ function importInventory(e){
       if(rowsCam.length) console.log('[Import] primeira linha:', JSON.stringify(rowsCam[0]).slice(0,120));
       if(!rowsCam.length){toast('Aba de câmeras vazia ou não encontrada');return;}
 
+      // Snapshot da CRITICIDADE atual (valores definidos pelo usuário no app)
+      const _oldCritMap={};
+      DB.cameras.forEach(c=>{_oldCritMap[c['NOME CANAL']]=c['CRITICIDADE'];});
+
       DB.cameras=rowsCam.map(r=>{
         const nome=String(r['NOME CANAL']||r['Camera']||r['CÂMERA']||r['Nome']||'').trim();
         const serial=String(r['Número de Série']||r['SERIAL']||r['Serial']||r['N/S']||'').trim();
@@ -6953,6 +6952,10 @@ function importInventory(e){
         if(nome&&ano>=2000&&ano<=2099)INSTALL_YEAR[nome]=ano;
         // Observações do Excel → CAM_OBS (só se ainda não tem anotação manual)
         if(nome&&obs&&obs!=='nan'&&!CAM_OBS[nome])CAM_OBS[nome]=obs;
+        const xlsCrit=String(r['CRITICIDADE']||r['Criticidade']||r['PRIORIDADE']||'').trim()||'MÉDIA';
+        // Preserva CRITICIDADE do app se o Excel traz só o padrão (MÉDIA)
+        const appCrit=_oldCritMap[nome];
+        const criticidade=(xlsCrit==='MÉDIA'&&(appCrit==='ALTA'||appCrit==='BAIXA'))?appCrit:xlsCrit;
         return{
           'NOME CANAL':         nome,
           'GRAVADOR':           String(r['GRAVADOR']||r['Gravador']||'').trim(),
@@ -6963,7 +6966,7 @@ function importInventory(e){
           'SERIAL':             serial!=='nan'?serial:'',
           'ATIVO':              ativo!=='nan'?ativo:'',
           'STATUS ATIVO':       statusAtivo!=='nan'?statusAtivo:'',
-          'CRITICIDADE':        String(r['CRITICIDADE']||r['Criticidade']||r['PRIORIDADE']||'').trim()||'MÉDIA',
+          'CRITICIDADE':        criticidade,
         };
       }).filter(r=>r['NOME CANAL']);
 
