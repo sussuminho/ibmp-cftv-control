@@ -4172,6 +4172,7 @@ function switchFloor(i){
   document.getElementById('minimap').classList.toggle('visible',hasImg);
   document.getElementById('rp-idle').classList.toggle('show', hasImg);
   if(hasImg) updateRpIdle();
+  if(hasImg) _fitFloor();
   E.render();buildList();updateSB();mmUpdate();buildFloorBar();
   // Atualiza aba ativa se for dash/monitor/budget/coverage
   if(_mode==='dash')renderDash();
@@ -4919,7 +4920,7 @@ function importProject(e){
       floors.forEach((f,i)=>{
         if(f.imgB64){
           const img=new Image();
-          img.onload=()=>{f.image=img;if(i===activeFloor){E.render();mmUpdate();}};
+          img.onload=()=>{f.image=img;if(i===activeFloor){_fitFloor();E.render();mmUpdate();}};
           img.src=f.imgB64;
         }
       });
@@ -6456,15 +6457,15 @@ async function exportPDF(selectedFloors, showRec=true, _retry=0) {
 <title>Relatório Técnico CFTV — ${f.name} — ${now}</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-@page{size:A4;margin:38mm 0 28mm 0}
+@page{size:A4;margin:0 0 28mm 0}
 html,body{
   width:210mm;font-family:Arial,sans-serif;font-size:10pt;
   color:#1a1a1a;
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
-.bg{position:fixed;top:-38mm;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
+.bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:-1;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
-.wrap{position:relative;z-index:1;padding:0 13mm 0 13mm}
+.wrap{position:relative;z-index:1;padding:38mm 13mm 0 13mm}
 h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
 .sub{font-size:8.5pt;color:#5a6a7a;margin-bottom:10px;line-height:1.5}
 .rule{height:2px;background:linear-gradient(90deg,#159b77,#0e7a5e 55%,transparent);margin-bottom:16px;border-radius:1px}
@@ -6476,11 +6477,11 @@ h2{font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;
 .kl{font-size:6.5pt;color:#64748b;margin-top:3px}
 .kpi.ok .kv{color:#16a34a}.kpi.nf .kv{color:#dc2626}
 .kpi.wn .kv{color:#d97706}.kpi.pat .kv{color:#2563eb}.kpi.rec .kv{color:#ea580c}
-.plant-pg{break-before:page;page-break-before:always;position:relative;z-index:1;box-sizing:border-box;padding:0 13mm 0 13mm;height:calc(297mm - 38mm - 28mm);overflow:hidden}
+.plant-pg{break-before:page;page-break-before:always;position:relative;z-index:1;box-sizing:border-box;padding:38mm 13mm 0 13mm;height:calc(297mm - 28mm);overflow:hidden}
 .plant-pg h2{margin-bottom:6px;flex-shrink:0}
 .plant-box{display:flex;align-items:center;justify-content:center;width:100%;height:calc(297mm - 38mm - 28mm - 14mm);border:1px solid #e2e8f0;border-radius:6px;background:#f8f9fb;overflow:hidden}
 .plant-box img{max-width:100%;max-height:100%;width:auto;height:auto;display:block;object-fit:contain}
-.table-pg{position:relative;z-index:1;padding:0 13mm 0 13mm}
+.table-pg{position:relative;z-index:1;padding:38mm 13mm 0 13mm}
 .table-pg.after-plant{break-before:page;page-break-before:always}
 .section-break{break-before:page;page-break-before:always}
 /* Evita páginas em branco entre seções */
@@ -6722,17 +6723,22 @@ ${(()=>{
 
 
 ${allCams.length > 0 ? `
-<div class="table-pg section-break">
-  <h2>Inventário das Plantas Selecionadas (${allCams.length} câmera${allCams.length>1?'s':''})</h2>
+<div class="table-pg section-break" style="padding-top:0">
   <table style="font-size:7.5pt">
-    <thead><tr>
-      <th>Câmera</th>
-      <th>Modelo</th>
-      <th>Gravador</th>
-      <th style="text-align:center">Canal</th>
-      <th>Serial</th>
-      <th>Status</th>
-    </tr></thead>
+    <thead>
+      <tr style="height:38mm;visibility:hidden;line-height:0"><td colspan="6" style="padding:0;border:none"></td></tr>
+      <tr><td colspan="6" style="padding:6px 8px 4px;border-bottom:1px solid #d1fae5">
+        <span style="font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;letter-spacing:.07em">Inventário — Plantas Selecionadas (${allCams.length} câmera${allCams.length>1?'s':''})</span>
+      </td></tr>
+      <tr>
+        <th>Câmera</th>
+        <th>Modelo</th>
+        <th>Gravador</th>
+        <th style="text-align:center">Canal</th>
+        <th>Serial</th>
+        <th>Status</th>
+      </tr>
+    </thead>
     <tbody>${invRows}</tbody>
   </table>
 </div>
@@ -6835,7 +6841,7 @@ async function exportGravadores(){
   const ranking=[...gravData].filter(g=>g.total>0).sort((a,b)=>b.inativas-a.inativas||a.taxaOp-b.taxaOp);
 
   // ── Cartão de cada gravador ──
-  const gravCards=gravData.map(g=>{
+  const gravCards=gravData.map((g,_gi)=>{
     const taxaCor=g.taxaOp>=80?'#16a34a':g.taxaOp>=50?'#d97706':'#dc2626';
     const taxaBg =g.taxaOp>=80?'#f0fdf4':g.taxaOp>=50?'#fffbeb':'#fef2f2';
     const infoRows=[
@@ -6850,7 +6856,8 @@ async function exportGravadores(){
       <td style="padding:5px 8px;font-size:8.5pt;color:#1a1a1a;font-weight:500">${v}</td>
     </tr>`).join('');
     const obsHtml=g.obs?`<div style="margin-top:8px;padding:7px 10px;background:#f8f9fb;border-left:3px solid #d1d5db;border-radius:0 5px 5px 0;font-size:7.5pt;color:#64748b"><strong>Obs.:</strong> ${g.obs}</div>`:'';
-    return`<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px 15px;margin-bottom:14px;break-inside:avoid;page-break-inside:avoid">
+    const _hdr=_gi===0?`<h2>Detalhamento por Gravador</h2>\n  <p style="font-size:8pt;color:#64748b;margin-bottom:12px">${gravData.length} gravador${gravData.length!==1?'es':''} · Câmeras: total, ativas, inativas e taxa operacional</p>\n  `:'';
+    return`<div class="section">${_hdr}<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px 15px;break-inside:avoid;page-break-inside:avoid">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
     <div>
       <div style="font-size:11pt;font-weight:800;color:#0f1923">${g.nome}</div>
@@ -6885,7 +6892,7 @@ async function exportGravadores(){
     ${infoRows}
   </table>
   ${obsHtml}
-</div>`;
+</div></div>`;
   }).join('');
 
   // ── Ranking de falhas ──
@@ -6918,12 +6925,12 @@ async function exportGravadores(){
 <title>Relatório de Gravadores CFTV — ${_dateStr}</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-@page{size:A4;margin:38mm 0 28mm 0}
+@page{size:A4;margin:0 0 28mm 0}
 html,body{width:210mm;font-family:Arial,sans-serif;font-size:10pt;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.bg{position:fixed;top:-38mm;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
+.bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:-1;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
-.wrap{position:relative;z-index:1;padding:0 13mm 0 13mm}
-.section{position:relative;z-index:1;padding:0 13mm 0 13mm;break-before:page;page-break-before:always}
+.wrap{position:relative;z-index:1;padding:38mm 13mm 0 13mm}
+.section{position:relative;z-index:1;padding:38mm 13mm 0 13mm;break-before:page;page-break-before:always}
 h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
 .sub{font-size:8.5pt;color:#5a6a7a;margin-bottom:10px;line-height:1.5}
 .rule{height:2px;background:linear-gradient(90deg,#159b77,#0e7a5e 55%,transparent);margin-bottom:16px;border-radius:1px}
@@ -6971,11 +6978,7 @@ thead th{background:#f1f5f9;padding:6px 8px;text-align:left;font-size:7.5pt;text
   </table>
 </div>
 
-<div class="section">
-  <h2>Detalhamento por Gravador</h2>
-  <p style="font-size:8pt;color:#64748b;margin-bottom:12px">${gravData.length} gravador${gravData.length!==1?'es':''} · Câmeras: total, ativas, inativas e taxa operacional</p>
-  ${gravCards}
-</div>
+${gravCards}
 
 ${String.fromCharCode(60)+'script>'}window.onload=function(){if(window.opener)window.opener.postMessage('ready-to-print',location.origin||'*');}${String.fromCharCode(60)+'/script>'}
 </body>
@@ -7438,6 +7441,16 @@ function mobSyncTheme(){
 function mobToggleTheme(){
   toggleTheme();
   mobSyncTheme();
+}
+
+// ── Auto-fit silencioso (sem toast) — usado em switchFloor e loadProject
+function _fitFloor(){
+  const f=F();
+  if(!f.image||!f.image.complete||!f.image.naturalWidth)return;
+  const w=E.c.width,h=E.c.height,iw=f.image.naturalWidth,ih=f.image.naturalHeight;
+  f.zoom=Math.min(w/iw,h/ih)*0.92;
+  f.panX=Math.round((w-iw*f.zoom)/2);
+  f.panY=Math.round((h-ih*f.zoom)/2);
 }
 
 // ── Ajustar planta para caber na tela
@@ -8169,7 +8182,7 @@ function loadProjectJSON(data){
   const hasImg = floors.some(f=>f.image||f.imgB64);
   document.getElementById('sbar').classList.toggle('visible', true);
   document.getElementById('minimap').classList.toggle('visible', hasImg);
-  setTimeout(()=>{ E.fitToScreen && E.fitToScreen(); E.render(); }, 300);
+  setTimeout(()=>{ _fitFloor(); E.render(); }, 300);
   // Mobile: sempre atualiza lista e KPIs após carregar projeto
   if(typeof mobRender==='function'){
     setTimeout(()=>mobRender(), 400);
