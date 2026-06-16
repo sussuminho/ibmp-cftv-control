@@ -1032,7 +1032,8 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
 .view-overlay.show { pointer-events: auto; visibility: visible; opacity: 1; }
 
 /* ─ DASHBOARD ─ */
-#dash-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px; }
+#dash-grid  { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px; }
+#manut-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 14px; }
 .kpi-card {
   background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;
   box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px;
@@ -1655,6 +1656,10 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>
       Dashboard
     </button>
+    <button class="ntab" id="tab-manut" onclick="setMode('manut')">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13.5 2.5l-1 1-1-1L10 4l1 1-7 7-1.5.5.5-1.5 7-7 1 1 1.5-1.5z"/><circle cx="3.5" cy="12.5" r="1"/></svg>
+      Manutenção
+    </button>
     <button class="ntab" id="tab-monitor" onclick="setMode('monitor')">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="2" width="14" height="10" rx="1.5"/><path d="M5 15h6M8 12v3"/></svg>
       Monitor
@@ -1684,6 +1689,10 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <button class="rmitem" onclick="setMode('dash');closeViewsMenu()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>
           <div><div class="rmitem-title">Dashboard</div><div class="rmitem-sub">KPIs e gráficos de status</div></div>
+        </button>
+        <button class="rmitem" onclick="setMode('manut');closeViewsMenu()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13.5 2.5l-1 1-1-1L10 4l1 1-7 7-1.5.5.5-1.5 7-7 1 1 1.5-1.5z"/><circle cx="3.5" cy="12.5" r="1"/></svg>
+          <div><div class="rmitem-title">Manutenção</div><div class="rmitem-sub">Inoperantes, criticidade e substituições</div></div>
         </button>
         <button class="rmitem" onclick="setMode('budget');closeViewsMenu()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v12M5 5h5a2 2 0 010 4H5M5 9h5"/></svg>
@@ -1737,6 +1746,10 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <button class="rmitem" onclick="exportExecutivo();closeReportMenu()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 9h4M5 12h3"/></svg>
           <div><div class="rmitem-title">Relatório Executivo</div><div class="rmitem-sub">1 página · KPIs + mapa + zonas de risco</div></div>
+        </button>
+        <button class="rmitem" onclick="exportGravadores();closeReportMenu()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="14" height="9" rx="1.5"/><path d="M4 7h8M4 10h5"/><circle cx="12" cy="10" r="1.5"/></svg>
+          <div><div class="rmitem-title">Relatório de Gravadores</div><div class="rmitem-sub">Timbrado · detalhamento + ranking de falhas</div></div>
         </button>
         <button class="rmitem" onclick="printList();closeReportMenu()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6V2h8v4M4 11H2V7a1 1 0 011-1h10a1 1 0 011 1v4h-2M4 9h8v5H4z"/></svg>
@@ -1846,6 +1859,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <div id="mob-rep-drop" style="display:none;position:fixed;top:56px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px;min-width:200px;z-index:9000;box-shadow:0 8px 32px rgba(0,0,0,.18);flex-direction:column;gap:2px;">
           <button class="mob-drop-item" onclick="exportPDF();closeMobReports()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 2h7l4 4v8H2z"/><path d="M9 2v4h4"/><path d="M5 9h4M5 11h3"/></svg>Relatório Técnico</button>
           <button class="mob-drop-item" onclick="exportExecutivo();closeMobReports()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 6h6M5 9h4M5 12h3"/></svg>Relatório Executivo</button>
+          <button class="mob-drop-item" onclick="exportGravadores();closeMobReports()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="4" width="14" height="9" rx="1.5"/><path d="M4 7h8M4 10h5"/><circle cx="12" cy="10" r="1.5"/></svg>Rel. Gravadores</button>
           <button class="mob-drop-item" onclick="printList();closeMobReports()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6V2h8v4M4 11H2V7a1 1 0 011-1h10a1 1 0 011 1v4h-2M4 9h8v5H4z"/></svg>Lista de Inventário</button>
         </div>
       </div>
@@ -1976,6 +1990,11 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
           Ocorrências
         </button>
       </div>
+      <div class="filter-bar-row" style="margin-top:4px">
+        <button class="fbtn" id="fb-crit-alta"  onclick="setFilter('crit-alta')"  title="Criticidade ALTA"  style="font-size:10px;font-weight:700;color:#dc2626">● ALTA</button>
+        <button class="fbtn" id="fb-crit-media" onclick="setFilter('crit-media')" title="Criticidade MÉDIA" style="font-size:10px;font-weight:700;color:#d97706">● MÉDIA</button>
+        <button class="fbtn" id="fb-crit-baixa" onclick="setFilter('crit-baixa')" title="Criticidade BAIXA" style="font-size:10px;font-weight:700;color:#16a34a">● BAIXA</button>
+      </div>
       <button onclick="printList()" title="Imprimir lista completa" style="width:100%;margin-top:4px;padding:5px 10px;background:none;border:1px solid var(--border);border-radius:7px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--text3);display:flex;align-items:center;justify-content:center;gap:5px">
         <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6V2h8v4M4 11H2V7a1 1 0 011-1h10a1 1 0 011 1v4h-2M4 9h8v5H4z"/></svg>
         Imprimir Lista
@@ -2076,6 +2095,17 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       <div id="dash-grid"></div>
       <div class="dash-row"><div class="chart-card" id="donut-card"></div><div class="chart-card" id="bar-card"></div></div>
       <div class="chart-card" id="cov-table-card"></div>
+    </div>
+
+    <!-- Maintenance Dashboard view -->
+    <div class="view-overlay" id="view-manut">
+      <div class="view-nav" id="vnav-manut"></div>
+      <div id="manut-grid"></div>
+      <div class="dash-row" style="margin-bottom:14px">
+        <div class="chart-card" id="manut-inop-card"></div>
+        <div class="chart-card" id="manut-subst-card"></div>
+      </div>
+      <div class="chart-card" id="manut-rec-card"></div>
     </div>
 
     <div class="view-overlay" id="view-monitor">
@@ -2249,6 +2279,17 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <div class="rf"><div class="rf-lbl">Alcance IR</div><div class="rf-val green" id="rp-range">—</div></div>
         <div class="rf" id="rp-serial-row" style="display:none"><div class="rf-lbl">Nº de Série</div><div class="rf-val" id="rp-serial" style="font-size:11px;font-family:monospace">—</div></div>
         <div class="rf" id="rp-ativo-row" style="display:none"><div class="rf-lbl">Patrimônio</div><div class="rf-val" id="rp-ativo">—</div></div>
+        <div class="rf">
+          <div class="rf-lbl">Criticidade</div>
+          <div class="rf-val" style="padding:0">
+            <select id="rp-criticidade" onchange="saveCriticidade(this.value)"
+              style="width:100%;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:2px 0;outline:none">
+              <option value="ALTA">● ALTA</option>
+              <option value="MÉDIA" selected>● MÉDIA</option>
+              <option value="BAIXA">● BAIXA</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <!-- ③ GESTÃO PATRIMONIAL — acordeão colapsável -->
@@ -2745,7 +2786,8 @@ function lookup(nome){
     nome, canal:cam['CANAL']||'', gravador:grav, modelo:cam['MODELO CÂMERA']||'',
     serial:cam['SERIAL']||'', ativo:cam['ATIVO']||'', statusAtivo:cam['STATUS ATIVO']||'',
     ip:rec?rec['IP DE ACESSO']:'N/D', locGrav:rec?rec['LOCALIZAÇÃO']:'',
-    setor:par?par['Localização/Bloco']:'', parecer:parecerStr
+    setor:par?par['Localização/Bloco']:'', parecer:parecerStr,
+    criticidade: cam['CRITICIDADE']||'MÉDIA'
   };
 }
 function isFn(nome){return!lookup(nome).parecer.toLowerCase().includes('não');}
@@ -3544,6 +3586,9 @@ function showInfo(cam){
   const ativoRow=document.getElementById('rp-ativo-row');
   if(serialRow){const s=cam.info.serial||'';document.getElementById('rp-serial').textContent=s||'—';serialRow.style.display=s?'':'none';}
   if(ativoRow){const a=cam.info.ativo||'';document.getElementById('rp-ativo').textContent=a||'—';ativoRow.style.display=a?'':'none';}
+  // Criticidade
+  const critSel=document.getElementById('rp-criticidade');
+  if(critSel){critSel.value=cam.info.criticidade||'MÉDIA';_applyCritStyle(critSel);}
   // Patrimonial
   const modelo=cam.info.modelo||'';
   const life=LIFESPAN[modelo]||6;
@@ -3573,6 +3618,28 @@ function showInfo(cam){
 function saveObs(txt){
   if(!E.sel)return;
   CAM_OBS[E.sel.name]=txt.trim()||null;
+  scheduleAutoSave();
+}
+
+const _CRIT_COLOR={ALTA:'#dc2626',MÉDIA:'#d97706',BAIXA:'#16a34a'};
+const _CRIT_BG   ={ALTA:'#fef2f2',MÉDIA:'#fffbeb',BAIXA:'#f0fdf4'};
+function _applyCritStyle(sel){
+  const v=sel.value||'MÉDIA';
+  sel.style.color=_CRIT_COLOR[v]||'#d97706';
+  sel.style.background=_CRIT_BG[v]||'#fffbeb';
+  sel.style.borderRadius='5px';
+  sel.style.padding='2px 4px';
+}
+function saveCriticidade(val){
+  if(!E.sel)return;
+  const name=E.sel.name;
+  const dbCam=DB.cameras.find(c=>c['NOME CANAL']===name);
+  if(dbCam) dbCam['CRITICIDADE']=val;
+  E.sel.info.criticidade=val;
+  const sel=document.getElementById('rp-criticidade');
+  if(sel) _applyCritStyle(sel);
+  buildList();
+  saveLocalInventory();
   scheduleAutoSave();
 }
 
@@ -3804,6 +3871,10 @@ function buildList(){
     const nm=c['NOME CANAL'],isP=plottedAll.has(nm),fn=isFn(nm);
     if(filterMode==='nf'&&fn)return;
     if(filterMode==='log'&&!(CAM_LOG[nm]?.length>0))return;
+    const _crit=c['CRITICIDADE']||'MÉDIA';
+    if(filterMode==='crit-alta'&&_crit!=='ALTA')return;
+    if(filterMode==='crit-media'&&_crit!=='MÉDIA')return;
+    if(filterMode==='crit-baixa'&&_crit!=='BAIXA')return;
     const inCurrent=plottedCurrent.has(nm);
     const inOther=isP&&!inCurrent;
     const otherFloor=inOther?floors.find(f=>f.cameras.some(cam=>cam.name===nm))?.name:'';
@@ -3817,6 +3888,7 @@ function buildList(){
     const logCount=(CAM_LOG[nm]||[]).length;
     d.innerHTML=`<span class="ci-dot ${inCurrent?'pl':fn?'ok':'nf'}"></span>
       <span class="ci-name">${nm}</span>
+      ${_crit==='ALTA'?`<span style="font-size:8px;font-weight:700;color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:4px;flex-shrink:0;border:1px solid #fecaca">ALTA</span>`:''}
       ${logCount>0?`<span style="font-size:9px;font-weight:700;color:var(--text2);background:var(--surface3);padding:1px 5px;border-radius:8px;flex-shrink:0">${logCount}</span>`:''}
       ${noIp?`<span class="ci-noip" title="IP não cadastrado">⚠ sem IP</span>`:''}
       ${inOther?`<span class="ci-tag" title="Em uso: ${otherFloor}" style="color:var(--warn);font-size:9px">📌${(otherFloor||'').slice(0,6)}</span>`:(!noIp?`<span class="ci-tag">${(c['GRAVADOR']||'').replace('DVR-','')}</span>`:'')}`;
@@ -3901,12 +3973,15 @@ async function printList(){
     const statusCor=fn?'#16a34a':'#dc2626';
     const statusTxt=fn?'Ativa':'Inativa';
     const rowBg=fn?'':'#fff5f5';
+    const crit=c['CRITICIDADE']||'MÉDIA';
+    const critCor=_CRIT_COLOR[crit]||'#d97706';
     return `<tr style="background:${rowBg}">
       <td>${nm}</td>
       <td style="color:#d97706;font-weight:600">${modelo}</td>
-      <td>${gravador.replace('DVR-BLOC','Bloco ')}</td>
+      <td>${gravador}</td>
       <td style="font-family:monospace;font-size:8pt">${ip}</td>
       <td>${floor}</td>
+      <td style="color:${critCor};font-weight:700;text-align:center">${crit}</td>
       <td style="color:${statusCor};font-weight:700;text-align:center">${statusTxt}</td>
       <td style="color:#64748b;font-size:8pt">${obs}</td>
     </tr>`;
@@ -3973,8 +4048,9 @@ async function printList(){
     <th style="width:14%">Modelo</th>
     <th style="width:14%">Gravador</th>
     <th style="width:12%">IP de Acesso</th>
-    <th style="width:12%">Planta/Bloco</th>
-    <th style="width:8%;text-align:center">Status</th>
+    <th style="width:11%">Planta/Bloco</th>
+    <th style="width:8%;text-align:center">Criticidade</th>
+    <th style="width:7%;text-align:center">Status</th>
     <th>Observações</th>
   </tr></thead>
   <tbody>${rows}</tbody>
@@ -3998,6 +4074,9 @@ function setFilter(mode){
   document.getElementById('fb-all').classList.toggle('on',mode==='all');
   document.getElementById('fb-nf').classList.toggle('on',mode==='nf');
   document.getElementById('fb-log')?.classList.toggle('on',mode==='log');
+  document.getElementById('fb-crit-alta')?.classList.toggle('on',mode==='crit-alta');
+  document.getElementById('fb-crit-media')?.classList.toggle('on',mode==='crit-media');
+  document.getElementById('fb-crit-baixa')?.classList.toggle('on',mode==='crit-baixa');
   buildList();
 }
 
@@ -4148,15 +4227,15 @@ function confirmFloor(){
 // ═══════════════ MODES ═══════════════
 function setMode(m){
   _mode=m;
-  const viewModes=['dash','monitor','budget','coverage','timeline'];
-  ['editor','dash','monitor','budget','coverage','timeline'].forEach(x=>{
+  const viewModes=['dash','manut','monitor','budget','coverage','timeline'];
+  ['editor','dash','manut','monitor','budget','coverage','timeline'].forEach(x=>{
     document.getElementById('tab-'+x)?.classList.toggle('active',x===m);
   });
   // Highlight views dropdown button when a sub-view is active
   const vBtn=document.getElementById('tab-views-btn');
   if(vBtn) vBtn.classList.toggle('active', viewModes.includes(m));
   // hide/show views
-  ['dash','monitor','budget','coverage','timeline'].forEach(x=>{
+  ['dash','manut','monitor','budget','coverage','timeline'].forEach(x=>{
     const el=document.getElementById('view-'+x);if(el)el.classList.toggle('show',x===m);
   });
   // Build navigation bar for view modes
@@ -4194,6 +4273,7 @@ function setMode(m){
     rp.style.display='none';
   }
   if(m==='dash')renderDash();
+  if(m==='manut')renderManut();
   if(m==='monitor')renderMonitor();
   if(m==='budget')renderBudget();
   if(m==='coverage')renderCoverage();
@@ -4344,6 +4424,152 @@ function renderDash(){
     }).join('')}</tbody></table>`;
 }
 
+// ═══════════════ MAINTENANCE DASHBOARD ═══════════════
+function renderManut(){
+  const grid=document.getElementById('manut-grid');
+  if(!grid)return;
+  if(!DB.cameras.length){
+    grid.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)">Nenhum inventário carregado. Importe o banco XLSX para usar este painel.</div>';
+    return;
+  }
+
+  const now=new Date();
+  const currentYear=now.getFullYear();
+  const _mes=now.getMonth()+1;
+
+  // Meses restantes até troca recomendada
+  const _mesesAte=nome=>{
+    const fin=CAM_FIN[nome]||{};
+    const dbCam=DB.cameras.find(c=>c['NOME CANAL']===nome)||{};
+    const modelo=dbCam['MODELO CÂMERA']||'';
+    const ano=INSTALL_YEAR[nome];
+    const vida=fin.vidaUtil||LIFESPAN[modelo]||0;
+    if(!ano||!vida)return null;
+    return(ano+vida-currentYear)*12-_mes+1;
+  };
+
+  const allDB=DB.cameras;
+  const inop=allDB.filter(c=>!isFn(c['NOME CANAL']||''));
+  const inopAlta =inop.filter(c=>(c['CRITICIDADE']||'MÉDIA')==='ALTA');
+  const inopMedia=inop.filter(c=>(c['CRITICIDADE']||'MÉDIA')==='MÉDIA');
+  const inopBaixa=inop.filter(c=>(c['CRITICIDADE']||'MÉDIA')==='BAIXA');
+  const recList=DB.recommended;
+
+  // Câmeras com substituição prevista em ≤12 meses
+  const subst12=allDB.map(c=>{
+    const nome=c['NOME CANAL']||'';
+    const m=_mesesAte(nome);
+    if(m===null||m>12)return null;
+    const fin=CAM_FIN[nome]||{};
+    const modelo=c['MODELO CÂMERA']||'';
+    const ano=INSTALL_YEAR[nome];
+    const vida=fin.vidaUtil||LIFESPAN[modelo]||0;
+    return{nome,modelo,trocaYear:ano+(vida||0),meses:m,crit:c['CRITICIDADE']||'MÉDIA',gravador:c['GRAVADOR']||'—'};
+  }).filter(Boolean).sort((a,b)=>a.meses-b.meses);
+
+  // ── KPI cards ──
+  grid.innerHTML='';
+  const kpis=[
+    {cls:'red',val:inop.length,lbl:'Câmeras Inoperantes',
+     icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--nf)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M8 14l6-6M8 8l6 6"/></svg>`},
+    {cls:'red',val:inopAlta.length,lbl:'Inoperantes Crit. ALTA',
+     icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#dc2626" stroke-width="1.8"><path d="M11 3L2 19h18L11 3z"/><path d="M11 9v4"/><path d="M11 15.5v.5"/></svg>`,
+     xstyle:'border:1.5px solid #dc2626;background:rgba(220,38,38,.04)'},
+    {cls:'warn',val:recList.length,lbl:'Expansões Recomendadas',
+     icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#ea580c" stroke-width="1.8"><polygon points="11,2 13.5,8 20,8.5 15.2,13 16.9,19.5 11,16.3 5.1,19.5 6.8,13 2,8.5 8.5,8"/></svg>`},
+    {cls:'warn',val:subst12.length,lbl:'Substituições em até 12 meses',
+     icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--warn)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M11 7v4l3 3"/></svg>`},
+  ];
+  kpis.forEach(k=>{
+    const d=document.createElement('div');d.className='kpi-card';
+    if(k.xstyle)d.style.cssText=k.xstyle;
+    d.innerHTML=`<div class="kpi-icon ${k.cls}">${k.icon}</div><div><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`;
+    grid.appendChild(d);
+  });
+
+  // ── Card: Inoperantes por Criticidade ──
+  const inopCard=document.getElementById('manut-inop-card');
+  const _critBlock=(label,color,bg,list)=>{
+    const names=list.map(c=>`<span style="display:block;font-size:11px;padding:3px 0;border-bottom:1px solid var(--border);color:var(--text2)">${c['NOME CANAL']||''}</span>`).join('');
+    return`<div style="flex:1;background:${bg};border-radius:8px;padding:10px;min-width:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-weight:700;font-size:12px;color:${color}">${label}</span>
+        <span style="font-size:20px;font-weight:800;color:${color}">${list.length}</span>
+      </div>
+      <div style="max-height:160px;overflow-y:auto">${names||'<span style="font-size:11px;color:var(--text3)">Nenhuma</span>'}</div>
+    </div>`;
+  };
+  inopCard.innerHTML=`<h3>Inoperantes por Criticidade</h3>
+  <p class="sub">Total: ${inop.length} câmera${inop.length!==1?'s':''} inoperante${inop.length!==1?'s':''}</p>
+  <div style="display:flex;gap:8px;margin-top:4px">
+    ${_critBlock('ALTA','#dc2626','rgba(220,38,38,.05)',inopAlta)}
+    ${_critBlock('MÉDIA','#d97706','rgba(217,119,6,.05)',inopMedia)}
+    ${_critBlock('BAIXA','#16a34a','rgba(22,163,74,.05)',inopBaixa)}
+  </div>`;
+
+  // ── Card: Substituições em ≤12 meses ──
+  const substCard=document.getElementById('manut-subst-card');
+  const substRows=subst12.slice(0,25).map(s=>{
+    const critCor=_CRIT_COLOR[s.crit]||'#d97706';
+    const vencida=s.meses<=0;
+    const urgente=s.meses>0&&s.meses<=3;
+    const rowBg=vencida?'rgba(220,38,38,.06)':urgente?'rgba(217,119,6,.04)':'';
+    const prazoTxt=vencida?'Vencida':s.meses+'m';
+    const prazoCor=vencida?'#dc2626':urgente?'#d97706':'var(--text)';
+    return`<tr${rowBg?` style="background:${rowBg}"`:''}>
+      <td style="padding:4px 6px;font-weight:500;font-size:11px">${s.nome}</td>
+      <td style="padding:4px 6px;font-size:11px;color:var(--text2)">${s.modelo||'—'}</td>
+      <td style="padding:4px 6px;text-align:center"><span style="font-size:9px;font-weight:700;color:${critCor}">${s.crit}</span></td>
+      <td style="padding:4px 6px;text-align:right;font-weight:700;font-size:11px;color:${prazoCor}">${prazoTxt}</td>
+    </tr>`;
+  }).join('');
+  substCard.innerHTML=`<h3>Substituições em até 12 meses</h3>
+  <p class="sub">${subst12.length} câmera${subst12.length!==1?'s':''} com renovação prevista · prazo em meses</p>
+  ${subst12.length
+    ?`<div style="max-height:260px;overflow-y:auto;margin-top:6px"><table style="width:100%;border-collapse:collapse">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="padding:4px 6px;text-align:left;font-size:9px;color:var(--text3);font-weight:600">CÂMERA</th>
+          <th style="padding:4px 6px;text-align:left;font-size:9px;color:var(--text3);font-weight:600">MODELO</th>
+          <th style="padding:4px 6px;text-align:center;font-size:9px;color:var(--text3);font-weight:600">CRIT.</th>
+          <th style="padding:4px 6px;text-align:right;font-size:9px;color:var(--text3);font-weight:600">PRAZO</th>
+        </tr></thead>
+        <tbody>${substRows}</tbody>
+      </table></div>`
+    :'<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">Nenhuma substituição prevista para os próximos 12 meses 🎉</div>'}`;
+
+  // ── Card: Expansões Recomendadas (full width) ──
+  const recCard=document.getElementById('manut-rec-card');
+  const totalRecCusto=recList.reduce((s,r)=>s+(PRICES[r['MODELO SUGERIDO']]||0),0);
+  const recRows=recList.map(r=>{
+    const local=r['LOCAL']||'—';
+    const modelo=r['MODELO SUGERIDO']||'—';
+    const just=r['JUSTIFICATIVA']||'';
+    const setor=r['SETOR']||'';
+    const preco=PRICES[modelo]?`R$ ${PRICES[modelo].toLocaleString('pt-BR',{minimumFractionDigits:2})}`:'-';
+    return`<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:5px 8px;font-weight:500;font-size:11px">${local}</td>
+      <td style="padding:5px 8px;font-size:11px;color:#d97706;font-weight:600">${modelo}</td>
+      <td style="padding:5px 8px;font-size:11px;color:var(--text2)">${setor}</td>
+      <td style="padding:5px 8px;font-size:11px;color:var(--text3)">${just}</td>
+      <td style="padding:5px 8px;font-size:11px;text-align:right;font-weight:600">${preco}</td>
+    </tr>`;
+  }).join('');
+  recCard.innerHTML=`<h3>Expansões Recomendadas</h3>
+  <p class="sub">${recList.length} ponto${recList.length!==1?'s':''} recomendado${recList.length!==1?'s':''}${totalRecCusto?' · Investimento estimado R$ '+totalRecCusto.toLocaleString('pt-BR',{minimumFractionDigits:2}):''}</p>
+  ${recList.length
+    ?`<table style="width:100%;border-collapse:collapse;margin-top:8px">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="padding:5px 8px;text-align:left;font-size:9px;color:var(--text3);font-weight:600">LOCAL</th>
+          <th style="padding:5px 8px;text-align:left;font-size:9px;color:var(--text3);font-weight:600">MODELO SUGERIDO</th>
+          <th style="padding:5px 8px;text-align:left;font-size:9px;color:var(--text3);font-weight:600">SETOR/BLOCO</th>
+          <th style="padding:5px 8px;text-align:left;font-size:9px;color:var(--text3);font-weight:600">JUSTIFICATIVA</th>
+          <th style="padding:5px 8px;text-align:right;font-size:9px;color:var(--text3);font-weight:600">PREÇO EST.</th>
+        </tr></thead>
+        <tbody>${recRows}</tbody>
+      </table>`
+    :'<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">Nenhuma expansão cadastrada. Importe o banco XLSX com a aba "Câmeras Recomendadas".</div>'}`;
+}
+
 // ═══════════════ MONITOR ═══════════════
 function renderMonitor(){
   const cams=F().cameras;
@@ -4477,6 +4703,7 @@ function renderCoverage(){
     const ip    =rec['IP DE ACESSO']||rec['IP']||'—';
     const modelo=rec['MODELO']||'—';
     const local =rec['LOCALIZAÇÃO']||rec['LOCAL']||'—';
+    const obs   =rec['Observação']||'';
     const cams  =camMap[nome]||[];
     const total =cams.length;
     const ativas=cams.filter(c=>{ const s=mStatus[c['NOME CANAL']]; return s&&s.fn&&!s.rec; }).length;
@@ -4500,6 +4727,7 @@ function renderCoverage(){
         ${badge}
       </div>
       <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:7px;padding:6px 10px;font-size:11px;font-family:monospace;color:var(--text2)">${ip}</div>
+      ${obs?`<div style="font-size:10px;color:var(--warn);background:var(--warn-bg,#fef9c3);border:1px solid #fde68a;border-radius:6px;padding:4px 8px">⚠ ${obs}</div>`:''}
       <div>
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px">
           <span>${ativas} ativas · ${inats} inativas · ${nmap} não mapeadas</span>
@@ -4804,17 +5032,26 @@ function renderTimeline(){
         return s+vida*(1-c.pct/100);
       },0)/camData.filter(c=>c.pct>0).length).toFixed(1) : '—';
 
-  // Agrupar por ano de troca (próximos 8 anos)
-  const anos=[];
-  for(let y=currentYear;y<=currentYear+7;y++){
-    const camAno=camData.filter(c=>c.trocaYear===y);
-    const custo=camAno.reduce((s,c)=>s+c.preco,0);
-    anos.push({year:y,cams:camAno,custo,urgent:camAno.filter(c=>c.pct>=90).length});
-  }
-  // Também incluir anos passados com câmeras vencidas
-  const vencidas=camData.filter(c=>c.trocaYear&&c.trocaYear<currentYear);
-
-  const maxCnt=Math.max(1,...anos.map(a=>a.cams.length));
+  // Classificar por horizonte gerencial (meses até a data de troca)
+  const _mes = now.getMonth() + 1; // mês atual 1-12
+  const _mesesAte = c => c.trocaYear != null
+    ? (c.trocaYear - currentYear) * 12 - _mes + 1
+    : null;
+  const cats = [
+    { key:'urgente',      label:'Urgente',      sub:'até 12 meses',
+      cls:'urgent',  cor:'var(--nf)',
+      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m<=12; }) },
+    { key:'planejamento', label:'Planejamento',  sub:'12 a 24 meses',
+      cls:'warning', cor:'var(--warn)',
+      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m>12&&m<=24; }) },
+    { key:'longo',        label:'Longo Prazo',   sub:'acima de 24 meses',
+      cls:'normal',  cor:'var(--ok)',
+      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m>24; }) }
+  ];
+  const semDataCnt = camData.filter(c=>_mesesAte(c)==null).length;
+  const maxCat = Math.max(1,...cats.map(c=>c.cams.length));
+  // Câmeras vencidas (subconjunto do Urgente) — para o banner de alerta
+  const vencidas = cats[0].cams.filter(c=>c.trocaYear&&c.trocaYear<currentYear);
 
   // Câmeras críticas ordenadas por urgência
   const critiList=[...camData].filter(c=>c.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,20);
@@ -4856,31 +5093,38 @@ function renderTimeline(){
     <div class="tl-chart-wrap">
       <div class="tl-chart-title">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="3" height="7" rx="1"/><rect x="6" y="4" width="3" height="11" rx="1"/><rect x="11" y="1" width="3" height="14" rx="1"/></svg>
-        Previsão de Substituição por Ano
+        Horizonte de Substituição
         <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:auto">passe o mouse para detalhes</span>
       </div>
-      <div class="tl-bars">
-        ${anos.map(a=>{
-          const h=a.cams.length?Math.max(18,Math.round(a.cams.length/maxCnt*160)):4;
-          const cls=a.year===currentYear||a.urgent>0?'urgent':a.cams.length>3?'warning':'normal';
-          const custoFmt='R$ '+Math.round(a.custo/1000)+'K';
-          const nomes=a.cams.slice(0,5).map(c=>c.name).join('<br>');
-          const mais=a.cams.length>5?`<br>+${a.cams.length-5} mais`:'';
-          return `<div class="tl-bar-col">
+      <div class="tl-bars" style="justify-content:center;gap:24px">
+        ${cats.map(cat=>{
+          const h=cat.cams.length?Math.max(24,Math.round(cat.cams.length/maxCat*160)):4;
+          const custo=cat.cams.reduce((s,c)=>s+c.preco,0);
+          const custoFmt='R$ '+Math.round(custo/1000)+'K';
+          const nomes=cat.cams.slice(0,5).map(c=>c.name).join('<br>');
+          const mais=cat.cams.length>5?`<br>+${cat.cams.length-5} mais`:'';
+          return `<div class="tl-bar-col" style="max-width:160px">
             <div class="tl-bar-wrap">
-              <div class="tl-bar ${cls}" style="height:${h}px">
-                ${a.cams.length>0?`<span class="tl-bar-count">${a.cams.length}</span>`:''}
+              <div class="tl-bar ${cat.cls}" style="height:${h}px;border-radius:8px 8px 4px 4px">
+                ${cat.cams.length>0?`<span class="tl-bar-count" style="font-size:18px">${cat.cams.length}</span>`:''}
                 <div class="tl-tooltip">
-                  <strong>${a.year}</strong> — ${a.cams.length} câmera${a.cams.length!==1?'s':''}<br>
-                  Custo estimado: ${custoFmt}<br>
-                  ${nomes}${mais}
+                  <strong>${cat.label}</strong> (${cat.sub})<br>${cat.cams.length} câmera${cat.cams.length!==1?'s':''}<br>
+                  Custo estimado: ${custoFmt}<br>${nomes}${mais}
                 </div>
               </div>
             </div>
-            <div class="tl-bar-year">${a.year}</div>
-            <div class="tl-bar-cost">${a.custo>0?custoFmt:''}</div>
+            <div class="tl-bar-year" style="font-size:11px;font-weight:700;color:var(--text2)">${cat.label}</div>
+            <div class="tl-bar-cost">${cat.sub}</div>
+            <div class="tl-bar-cost" style="font-size:10px;font-weight:600;color:var(--text2)">${custo>0?custoFmt:''}</div>
           </div>`;
         }).join('')}
+        ${semDataCnt>0?`<div class="tl-bar-col" style="max-width:100px;opacity:.45">
+          <div class="tl-bar-wrap"><div class="tl-bar normal" style="height:${Math.max(8,Math.round(semDataCnt/maxCat*160))}px;background:var(--surface3)">
+            <span class="tl-bar-count">${semDataCnt}</span>
+          </div></div>
+          <div class="tl-bar-year" style="font-size:10px">Sem dados</div>
+          <div class="tl-bar-cost">sem instalação</div>
+        </div>`:''}
       </div>
     </div>
 
@@ -5082,6 +5326,17 @@ function exportCSV(){
   document.getElementById('csv-modal').classList.add('show');
 }
 
+function _camBrand(modelo){
+  if(!modelo) return '—';
+  const u = modelo.toUpperCase();
+  if(u.startsWith('VIP')||u.startsWith('VHD')||u.startsWith('VM')||u.startsWith('NVD')||u.startsWith('MHDX')||u.startsWith('IMHDX')) return 'Intelbras';
+  if(u.startsWith('DS-')||u.startsWith('IDS-')||u.startsWith('HWI-')||u.startsWith('HWT-')||u.startsWith('HWK-')) return 'Hikvision';
+  if(u.startsWith('DH-')||u.startsWith('HAC-')||u.startsWith('IPC-')||u.startsWith('XVR')) return 'Dahua';
+  if(u.startsWith('AXIS')) return 'Axis';
+  if(u.startsWith('BOSCH')) return 'Bosch';
+  return modelo.split('-')[0]||'—';
+}
+
 function doExportCSV(escopo, formato){
   closeModal('csv-modal');
   const now=new Date();
@@ -5098,7 +5353,8 @@ function doExportCSV(escopo, formato){
         'Câmera':            cam.name,
         'Status':            cam.fn?'Ativo':'Inativo',
         'Modelo':            cam.info.modelo||'—',
-        'Fabricante':        (cam.info.modelo||'').split('-')[0]||'—',
+        'Fabricante':        _camBrand(cam.info.modelo),
+        'Criticidade':       cam.info.criticidade||'MÉDIA',
         'Gravador':          cam.info.gravador||'—',
         'IP de Acesso':      cam.info.ip||'—',
         'Canal':             cam.info.canal||'—',
@@ -5191,14 +5447,16 @@ function doExportCSV(escopo, formato){
       'Custo Reposição (R$)':PRICES[r['Modelo']]||0,'Planta':r['Planta'],
     }));
 
-    // Gravadores
+    // Gravadores — conta câmeras do banco completo (independente da planta exportada)
     const camCount={};
-    allRows.forEach(r=>{camCount[r['Gravador']]=(camCount[r['Gravador']]||0)+1;});
+    DB.cameras.forEach(r=>{const g=r['GRAVADOR']||'—';camCount[g]=(camCount[g]||0)+1;});
     const gravRows = DB.recorders.map(g=>({
       'Gravador':g['NOME DO GRAVADOR'],'Modelo':g['MODELO']||'',
+      'Fabricante':_camBrand(g['MODELO']),
       'IP de Acesso':g['IP DE ACESSO']||'','Localização':g['LOCALIZAÇÃO']||'',
-      'Armazenamento':g['Armazenamento']||'',
-      'Câmeras':camCount[g['NOME DO GRAVADOR']]||0,
+      'Tipo':g['TIPO DE GRAVADOR']||'','Armazenamento':g['Armazenamento']||'',
+      'Câmeras (total)':camCount[g['NOME DO GRAVADOR']]||0,
+      'Observação':g['Observação']||'',
     }));
 
     // Monta abas
@@ -5527,6 +5785,9 @@ async function exportExecutivo(selectedFloors, _retry=0){
   const pctOp=total?Math.round(ativas/total*100):0;
   const totalAssets=allCams.reduce((s,c)=>{const fin=CAM_FIN[c.name]||{};return s+(fin.valor||PRICES[c.info?.modelo]||0);},0);
   const custoMnt=allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info?.modelo]||0),0);
+  const inopAlta =allCams.filter(c=>!c.fn&&(c.info?.criticidade||'MÉDIA')==='ALTA').length;
+  const inopMedia=allCams.filter(c=>!c.fn&&(c.info?.criticidade||'MÉDIA')==='MÉDIA').length;
+  const inopBaixa=allCams.filter(c=>!c.fn&&(c.info?.criticidade||'MÉDIA')==='BAIXA').length;
 
   // Zonas de risco
   // Consolidar zonas de todas as plantas selecionadas
@@ -5626,7 +5887,17 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
   <div class="exec-kpis" style="grid-template-columns:repeat(6,1fr)">
     <div class="exec-kpi"><div class="exec-kpi-val">${total}</div><div class="exec-kpi-lbl">Câmeras Instaladas</div></div>
     <div class="exec-kpi ok"><div class="exec-kpi-val">${pctOp}%</div><div class="exec-kpi-lbl">Taxa Operacional</div></div>
-    <div class="exec-kpi ${inativas>0?'nf':'ok'}"><div class="exec-kpi-val">${inativas}</div><div class="exec-kpi-lbl">Inoperantes</div></div>
+    <div class="exec-kpi ${inativas>0?'nf':'ok'}">
+      <div class="exec-kpi-val">${inativas}</div>
+      <div class="exec-kpi-lbl">Inoperantes</div>
+      ${inativas>0?`<div style="margin-top:4px;display:flex;gap:4px;justify-content:center;flex-wrap:wrap">
+        <span style="font-size:6pt;font-weight:800;color:#dc2626">ALTA:&nbsp;${inopAlta}</span>
+        <span style="font-size:6pt;color:#94a3b8">·</span>
+        <span style="font-size:6pt;font-weight:700;color:#d97706">MÉD:&nbsp;${inopMedia}</span>
+        <span style="font-size:6pt;color:#94a3b8">·</span>
+        <span style="font-size:6pt;font-weight:700;color:#16a34a">BAI:&nbsp;${inopBaixa}</span>
+      </div>`:''}
+    </div>
     <div class="exec-kpi ${manut>0?'warn':'ok'}"><div class="exec-kpi-val">${manut}</div><div class="exec-kpi-lbl">Em Manutenção</div></div>
     <div class="exec-kpi blue"><div class="exec-kpi-val">R$${Math.round(totalAssets/1000)}K</div><div class="exec-kpi-lbl">Patrimônio Total</div></div>
     <div class="exec-kpi" style="border-color:#fed7aa;background:#fff7ed"><div class="exec-kpi-val" style="color:#c2410c">${recPlotted.length}</div><div class="exec-kpi-lbl">Expansões Previstas</div></div>
@@ -5682,7 +5953,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:10pt;color:#0f1923;backgr
   <div class="${zonasCriticas.length>0||inativas>0?'summary-box alert':'summary-box'}" style="flex-shrink:0">
     <div class="summary-title">${zonasCriticas.length>0||inativas>0?'⚠ Pontos de Atenção — Ação Requerida':'✅ Situação Operacional Satisfatória'}</div>
     <div class="summary-items">
-      ${inativas>0?`<div class="summary-item"><span>●</span><span>${inativas} câmera${inativas>1?'s':''} inoperante${inativas>1?'s':''} — custo estimado de reparo/substituição: R$ ${custoMnt.toLocaleString('pt-BR')}</span></div>`:''}
+      ${inativas>0?`<div class="summary-item"><span>●</span><span>${inativas} câmera${inativas>1?'s':''} inoperante${inativas>1?'s':''} — custo est.: R$ ${custoMnt.toLocaleString('pt-BR')} &nbsp;·&nbsp; <b style="color:#dc2626">ALTA: ${inopAlta}</b> · <b style="color:#d97706">MÉDIA: ${inopMedia}</b> · <b style="color:#16a34a">BAIXA: ${inopBaixa}</b></span></div>`:''}
       ${manut>0?`<div class="summary-item"><span>●</span><span>${manut} câmera${manut>1?'s':''} em manutenção preventiva necessária</span></div>`:''}
       ${zonasCriticas.map(z=>`<div class="summary-item"><span>⚠</span><span>Zona de risco "${z.name}" (Grau ${z.grau}/5) sem monitoramento — solicitar orçamento para cobertura</span></div>`).join('')}
       ${zonasCriticas.length===0&&inativas===0&&manut===0?`<div class="summary-item"><span>✅</span><span>Todas as câmeras operantes e zonas de risco monitoradas.</span></div>`:''}
@@ -5977,6 +6248,16 @@ async function exportPDF(selectedFloors, _retry=0) {
 
   const totalCost = allCams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info?.modelo]||0),0);
 
+  // Matriz de criticidade (câmeras das plantas selecionadas)
+  const _critRow=crit=>({
+    crit,
+    ativas:  allCams.filter(c=> c.fn&&(c.info?.criticidade||'MÉDIA')===crit).length,
+    inativas:allCams.filter(c=>!c.fn&&(c.info?.criticidade||'MÉDIA')===crit).length,
+    get total(){return this.ativas+this.inativas;},
+    get pctInop(){return this.total?Math.round(this.inativas/this.total*100):0;}
+  });
+  const critMatriz=[_critRow('ALTA'),_critRow('MÉDIA'),_critRow('BAIXA')];
+
   // Planta em resolução original — sempre inclui recomendadas plotadas (laranja)
   const showRec = true;
   const plantImgSrc = capturePlantImg(f, showRec);
@@ -6021,18 +6302,35 @@ async function exportPDF(selectedFloors, _retry=0) {
   },0);
 
   // ── Cobertura por gravador/DVR (das plantas selecionadas) ──
+  const _recBrand = m => {
+    if(!m) return '';
+    const u = m.toUpperCase();
+    if(u.includes('NVD')||u.includes('MHDX')||u.includes('IMHDX')||u.includes('NVR 1')||u.includes('DVR 1')) return 'Intelbras';
+    if(u.startsWith('DS-')||u.includes('HIKVISION')) return 'Hikvision';
+    if(u.includes('DAHUA')||u.startsWith('NVR4')||u.startsWith('XVR')) return 'Dahua';
+    if(u.includes('AXIS')) return 'Axis';
+    return '';
+  };
   const byRec = {};
   allCams.forEach(c=>{
     const g = c.info?.gravador || 'Sem gravador';
-    if(!byRec[g]) byRec[g]={total:0, ok:0, nf:0};
+    if(!byRec[g]) {
+      const recData = (DB.recorders||[]).find(r=>r['NOME DO GRAVADOR']===g)||{};
+      const modelo = recData['MODELO']||'';
+      byRec[g]={total:0, ok:0, nf:0, modelo, marca:_recBrand(modelo)};
+    }
     byRec[g].total++;
     if(c.fn) byRec[g].ok++; else byRec[g].nf++;
   });
   const recorderRows = Object.entries(byRec).sort((a,b)=>b[1].total-a[1].total).map(([g,d])=>{
     const pct = d.total ? Math.round(d.ok/d.total*100) : 0;
     const barColor = pct>=80?'#16a34a':pct>=50?'#d97706':'#dc2626';
+    const labelPrimary = d.marca ? `${d.marca} ${d.modelo}` : (d.modelo || g);
+    const labelSec     = d.modelo ? g : '';
     return `<tr>
-      <td style="font-size:8.5pt">${g}</td>
+      <td style="font-size:8.5pt">
+        <div style="font-weight:700">${labelPrimary}</div>
+        ${labelSec?`<div style="font-size:7.5pt;color:#64748b;margin-top:1px">${labelSec}</div>`:''}</td>
       <td style="text-align:center;font-size:8.5pt">${d.total}</td>
       <td style="text-align:center;font-size:8.5pt;color:#16a34a;font-weight:700">${d.ok}</td>
       <td style="text-align:center;font-size:8.5pt;color:#dc2626;font-weight:700">${d.nf}</td>
@@ -6056,19 +6354,32 @@ async function exportPDF(selectedFloors, _retry=0) {
     const pctUsed = Math.min(100, Math.round(age/life*100));
     return {name:c.name, modelo:c.info?.modelo||'—', install, trocaYear, pctUsed};
   });
-  // Agrupar por ano de troca
-  const byYear = {};
-  camLife.forEach(c=>{ byYear[c.trocaYear]=(byYear[c.trocaYear]||0)+1; });
-  const years = Object.keys(byYear).map(Number).sort((a,b)=>a-b);
-  const maxYearCount = Math.max(1, ...Object.values(byYear));
-  const lifeBars = years.map(y=>{
-    const n = byYear[y];
-    const vencido = y <= currentYear;
-    const color = vencido ? '#dc2626' : (y <= currentYear+1 ? '#d97706' : '#159b77');
-    return `<div class="bar-row">
-      <div class="bar-lbl" style="width:60px">${y}${vencido?' ⚠':''}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(n/maxYearCount*100)}%;background:${color}"></div></div>
-      <div class="bar-num">${n}</div>
+  // Agrupar por categoria gerencial (Urgente / Planejamento / Longo Prazo)
+  const _relMes = _nowDate.getMonth() + 1;
+  const _mUntil = y => (y - currentYear) * 12 - _relMes + 1;
+  const lifeCats = [
+    { label:'Urgente',      sub:'até 12 meses',     color:'#dc2626', bg:'#fef2f2',
+      items: camLife.filter(c=>_mUntil(c.trocaYear)<=12) },
+    { label:'Planejamento', sub:'12 a 24 meses',     color:'#d97706', bg:'#fffbeb',
+      items: camLife.filter(c=>{ const m=_mUntil(c.trocaYear); return m>12&&m<=24; }) },
+    { label:'Longo Prazo',  sub:'acima de 24 meses', color:'#159b77', bg:'#f0fdf4',
+      items: camLife.filter(c=>_mUntil(c.trocaYear)>24) }
+  ];
+  const _maxLifeCat = Math.max(1,...lifeCats.map(c=>c.items.length));
+  const lifeBars = lifeCats.map(cat=>{
+    const n = cat.items.length;
+    const pct = Math.round(n/_maxLifeCat*100);
+    return `<div class="bar-row" style="margin-bottom:10px;align-items:center">
+      <div class="bar-lbl" style="width:90px;font-weight:700;color:${cat.color};font-size:8pt">${cat.label}</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+        <div class="bar-track" style="height:16px;border-radius:4px">
+          <div class="bar-fill" style="width:${pct}%;background:${cat.color};height:16px;border-radius:4px;display:flex;align-items:center;padding-left:6px">
+            ${n>0?`<span style="color:#fff;font-size:7pt;font-weight:700">${n}</span>`:''}
+          </div>
+        </div>
+        <div style="font-size:7pt;color:#94a3b8">${cat.sub}</div>
+      </div>
+      <div style="background:${cat.bg};color:${cat.color};font-weight:700;padding:2px 8px;border-radius:4px;min-width:28px;text-align:center;font-size:8pt;margin-left:8px">${n}</div>
     </div>`;
   }).join('');
   // Câmeras mais críticas (maior % de vida consumida)
@@ -6243,6 +6554,31 @@ tfoot td{background:#f8f9fb;font-weight:700;padding:7px 8px}
       </div>`:''}
     </div>`;
   })()}
+
+  <h2 style="margin-top:6px">Matriz de Criticidade</h2>
+  <p class="sec-intro">Distribuição das câmeras das plantas selecionadas por nível de criticidade operacional.</p>
+  <table>
+    <thead><tr>
+      <th>Criticidade</th>
+      <th style="text-align:center">Ativas</th>
+      <th style="text-align:center">Inativas</th>
+      <th style="text-align:center">Total</th>
+      <th style="text-align:center">% Inoperância</th>
+    </tr></thead>
+    <tbody>${critMatriz.map(r=>{
+      const cor=r.crit==='ALTA'?'#dc2626':r.crit==='MÉDIA'?'#d97706':'#16a34a';
+      const bg=r.crit==='ALTA'&&r.inativas>0?'background:#fef2f2':'';
+      const badgeCor=r.pctInop>=50?'#dc2626':r.pctInop>=20?'#d97706':'#16a34a';
+      const badge=r.pctInop>=50?'Crítico':r.pctInop>=20?'Atenção':'OK';
+      return`<tr${bg?` style="${bg}"`:''}>
+        <td style="font-weight:700;color:${cor}">● ${r.crit}</td>
+        <td style="text-align:center;font-weight:600;color:#16a34a">${r.ativas}</td>
+        <td style="text-align:center;font-weight:${r.inativas>0?'700':'400'};color:${r.inativas>0?'#dc2626':'#64748b'}">${r.inativas}</td>
+        <td style="text-align:center;font-weight:700">${r.total}</td>
+        <td style="text-align:center"><span style="font-size:7.5pt;font-weight:700;color:${badgeCor};background:${badgeCor}18;padding:1px 8px;border-radius:8px">${r.pctInop}% — ${badge}</span></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>
 </div>
 
 ${selectedFloors.map(fl=>{
@@ -6277,7 +6613,7 @@ ${Object.keys(byRec).length > 0 ? `
   <p class="sec-intro">Distribuição das câmeras mapeadas por gravador e taxa de operação de cada um.</p>
   <table>
     <thead><tr>
-      <th>Gravador / DVR</th>
+      <th>Marca / Modelo</th>
       <th style="text-align:center">Câmeras</th>
       <th style="text-align:center">Ativas</th>
       <th style="text-align:center">Inativas</th>
@@ -6290,10 +6626,10 @@ ${Object.keys(byRec).length > 0 ? `
 
 ${camLife.length > 0 ? `
 <div class="table-pg section-break">
-  <h2>Vida Útil & Cronograma de Troca</h2>
-  <p class="sec-intro">Previsão de substituição com base no ano de instalação e vida útil de cada modelo. Câmeras com prazo vencido (⚠) ou próximas do fim devem ser priorizadas.</p>
+  <h2>Vida Útil & Horizonte de Substituição</h2>
+  <p class="sec-intro">Distribuição do parque por horizonte gerencial de substituição, com base no ano de instalação e vida útil de cada modelo.</p>
   <div class="chart-box" style="margin-bottom:14px">
-    <div class="chart-title">Substituições previstas por ano</div>
+    <div class="chart-title">Câmeras por horizonte de substituição</div>
     ${lifeBars||'<div style="color:#94a3b8;font-size:8pt">Sem dados de instalação</div>'}
   </div>
   <h2 style="margin-top:4px">Câmeras por Prioridade de Renovação</h2>
@@ -6366,6 +6702,214 @@ ${String.fromCharCode(60)+'script>'}window.onload=function(){if(window.opener)wi
   if(saved) toast('Relatório Técnico aberto — selecione "Salvar como PDF" no diálogo');
 }
 
+// ═══════════════ RELATÓRIO DE GRAVADORES ═══════════════
+async function exportGravadores(){
+  if(!DB.recorders||!DB.recorders.length){toast('Nenhum gravador cadastrado. Importe o banco XLSX primeiro.');return;}
+
+  const _nowDate=new Date();
+  const now=_nowDate.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const _dateStr=_nowDate.toISOString().slice(0,10).replace(/-/g,'');
+
+  // ── Inferir marca a partir do modelo (reutiliza lógica de _recBrand) ──
+  const _brand=m=>{
+    if(!m)return'—';
+    const u=m.toUpperCase();
+    if(u.includes('NVD')||u.includes('MHDX')||u.includes('IMHDX')||u.startsWith('NVR 1')||u.startsWith('DVR 1'))return'Intelbras';
+    if(u.startsWith('DS-')||u.includes('HIKVISION'))return'Hikvision';
+    if(u.includes('DAHUA')||u.startsWith('NVR4')||u.startsWith('XVR'))return'Dahua';
+    if(u.includes('AXIS'))return'Axis';
+    if(u.includes('BOSCH'))return'Bosch';
+    return m.split(/[-\s]/)[0]||'—';
+  };
+
+  // ── Contagem de câmeras por gravador (banco completo) ──
+  const camCount={};    // total
+  const camOkCount={};  // ativas
+  DB.cameras.forEach(c=>{
+    const g=c['GRAVADOR']||'—';
+    camCount[g]=(camCount[g]||0)+1;
+    if(isFn(c['NOME CANAL']||''))camOkCount[g]=(camOkCount[g]||0)+1;
+  });
+
+  // ── Dados por gravador ──
+  const gravData=DB.recorders.map(g=>{
+    const nome=g['NOME DO GRAVADOR']||'—';
+    const modelo=g['MODELO']||'—';
+    const marca=_brand(modelo);
+    const tipo=g['TIPO DE GRAVADOR']||'—';
+    const ip=g['IP DE ACESSO']||'—';
+    const armazen=g['Armazenamento']||g['ARMAZENAMENTO']||'—';
+    const local=g['LOCALIZAÇÃO']||'—';
+    const obs=g['Observação']||g['OBSERVAÇÃO']||'';
+    const total=camCount[nome]||0;
+    const ativas=camOkCount[nome]||0;
+    const inativas=total-ativas;
+    const taxaOp=total?Math.round(ativas/total*100):0;
+    return{nome,modelo,marca,tipo,ip,armazen,local,obs,total,ativas,inativas,taxaOp};
+  });
+
+  // Totais globais
+  const totCams=gravData.reduce((s,g)=>s+g.total,0);
+  const totAtivas=gravData.reduce((s,g)=>s+g.ativas,0);
+  const totInativas=gravData.reduce((s,g)=>s+g.inativas,0);
+  const taxaGlobal=totCams?Math.round(totAtivas/totCams*100):0;
+
+  // ── Ranking: maior incidência de falhas (mais inativas → pior) ──
+  const ranking=[...gravData].filter(g=>g.total>0).sort((a,b)=>b.inativas-a.inativas||a.taxaOp-b.taxaOp);
+
+  // ── Cartão de cada gravador ──
+  const gravCards=gravData.map(g=>{
+    const taxaCor=g.taxaOp>=80?'#16a34a':g.taxaOp>=50?'#d97706':'#dc2626';
+    const taxaBg =g.taxaOp>=80?'#f0fdf4':g.taxaOp>=50?'#fffbeb':'#fef2f2';
+    const infoRows=[
+      ['Marca',     g.marca],
+      ['Modelo',    g.modelo],
+      ['Tipo',      g.tipo],
+      ['IP de Acesso', g.ip],
+      ['Armazenamento', g.armazen],
+      ['Localização',  g.local],
+    ].map(([l,v])=>`<tr>
+      <td style="padding:5px 8px;font-size:8pt;color:#64748b;font-weight:600;white-space:nowrap;width:38%">${l}</td>
+      <td style="padding:5px 8px;font-size:8.5pt;color:#1a1a1a;font-weight:500">${v}</td>
+    </tr>`).join('');
+    const obsHtml=g.obs?`<div style="margin-top:8px;padding:7px 10px;background:#f8f9fb;border-left:3px solid #d1d5db;border-radius:0 5px 5px 0;font-size:7.5pt;color:#64748b"><strong>Obs.:</strong> ${g.obs}</div>`:'';
+    return`<div style="border:1px solid #e2e8f0;border-radius:10px;padding:14px 15px;margin-bottom:14px;break-inside:avoid;page-break-inside:avoid">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+    <div>
+      <div style="font-size:11pt;font-weight:800;color:#0f1923">${g.nome}</div>
+      <div style="font-size:8pt;color:#64748b;margin-top:2px">${g.marca!=='—'?g.marca+' ':''}${g.modelo}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <div style="text-align:center;background:#f8f9fb;border:1px solid #e2e8f0;border-radius:7px;padding:6px 10px">
+        <div style="font-size:14pt;font-weight:800;color:#0f1923">${g.total}</div>
+        <div style="font-size:6.5pt;color:#64748b">Total</div>
+      </div>
+      <div style="text-align:center;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:6px 10px">
+        <div style="font-size:14pt;font-weight:800;color:#16a34a">${g.ativas}</div>
+        <div style="font-size:6.5pt;color:#16a34a">Ativas</div>
+      </div>
+      <div style="text-align:center;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;padding:6px 10px">
+        <div style="font-size:14pt;font-weight:800;color:#dc2626">${g.inativas}</div>
+        <div style="font-size:6.5pt;color:#dc2626">Inativas</div>
+      </div>
+      <div style="text-align:center;background:${taxaBg};border:1px solid ${taxaCor}33;border-radius:7px;padding:6px 10px">
+        <div style="font-size:14pt;font-weight:800;color:${taxaCor}">${g.taxaOp}%</div>
+        <div style="font-size:6.5pt;color:${taxaCor}">Taxa Op.</div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <div style="flex:1;background:#e2e8f0;border-radius:4px;height:8px;overflow:hidden">
+      <div style="width:${g.taxaOp}%;height:100%;background:${taxaCor};border-radius:4px"></div>
+    </div>
+    <span style="font-size:7.5pt;font-weight:700;color:${taxaCor};min-width:32px;text-align:right">${g.taxaOp}%</span>
+  </div>
+  <table style="width:100%;border-collapse:collapse;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden">
+    ${infoRows}
+  </table>
+  ${obsHtml}
+</div>`;
+  }).join('');
+
+  // ── Ranking de falhas ──
+  const rankingRows=ranking.map((g,i)=>{
+    const taxaCor=g.taxaOp>=80?'#16a34a':g.taxaOp>=50?'#d97706':'#dc2626';
+    const medalha=i===0?'🔴':i===1?'🟠':i===2?'🟡':'';
+    const nfPct=g.total?Math.round(g.inativas/g.total*100):0;
+    return`<tr style="border-bottom:1px solid #f0f0f0">
+      <td style="padding:6px 8px;font-size:8pt;text-align:center;color:#94a3b8;font-weight:700">${i+1}${medalha?'&nbsp;'+medalha:''}</td>
+      <td style="padding:6px 8px;font-size:8.5pt;font-weight:600">${g.nome}</td>
+      <td style="padding:6px 8px;font-size:8pt;color:#64748b">${g.marca!=='—'?g.marca+' ':''} ${g.modelo}</td>
+      <td style="padding:6px 8px;font-size:8.5pt;text-align:center">${g.total}</td>
+      <td style="padding:6px 8px;font-size:8.5pt;text-align:center;color:#dc2626;font-weight:700">${g.inativas}</td>
+      <td style="padding:6px 8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;background:#e2e8f0;border-radius:4px;height:10px;overflow:hidden">
+            <div style="width:${nfPct}%;height:100%;background:#dc2626;border-radius:4px"></div>
+          </div>
+          <span style="font-size:7.5pt;font-weight:700;color:#dc2626;min-width:28px;text-align:right">${nfPct}%</span>
+        </div>
+      </td>
+      <td style="padding:6px 8px;font-size:8.5pt;text-align:center;font-weight:700;color:${taxaCor}">${g.taxaOp}%</td>
+    </tr>`;
+  }).join('');
+
+  const reportHtml=`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório de Gravadores CFTV — ${_dateStr}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+@page{size:A4;margin:0}
+html,body{width:210mm;font-family:Arial,sans-serif;font-size:10pt;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:0;pointer-events:none}
+.bg img{width:210mm;height:297mm;display:block;object-fit:fill}
+.wrap{position:relative;z-index:1;padding:38mm 13mm 28mm 13mm}
+.section{position:relative;z-index:1;padding:38mm 13mm 28mm 13mm;break-before:page;page-break-before:always}
+h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
+.sub{font-size:8.5pt;color:#5a6a7a;margin-bottom:10px;line-height:1.5}
+.rule{height:2px;background:linear-gradient(90deg,#159b77,#0e7a5e 55%,transparent);margin-bottom:16px;border-radius:1px}
+h2{font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #d1fae5}
+.kpis{display:flex;gap:6px;margin-bottom:18px}
+.kpi{flex:1;background:#f8f9fb;border:1px solid #e2e8f0;border-radius:7px;padding:8px 9px}
+.kv{font-size:15pt;font-weight:800;line-height:1;color:#0f1923}
+.kl{font-size:6.5pt;color:#64748b;margin-top:3px}
+.kpi.ok .kv{color:#16a34a}.kpi.nf .kv{color:#dc2626}.kpi.wn .kv{color:#d97706}
+table{width:100%;border-collapse:collapse}
+thead th{background:#f1f5f9;padding:6px 8px;text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="bg"><img src="${TIMBRADO_B64}" alt=""></div>
+
+<div class="wrap">
+  <h1>Relatório de Gravadores CFTV</h1>
+  <div class="sub">Gerado em: ${now} &nbsp;·&nbsp; IBMP CFTV Control · by Luan Hachiguti</div>
+  <div class="rule"></div>
+
+  <h2>Resumo do Parque de Gravadores</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="kv">${DB.recorders.length}</div><div class="kl">Gravadores cadastrados</div></div>
+    <div class="kpi"><div class="kv">${totCams}</div><div class="kl">Câmeras vinculadas</div></div>
+    <div class="kpi ok"><div class="kv">${totAtivas}</div><div class="kl">Câmeras ativas</div></div>
+    <div class="kpi nf"><div class="kv">${totInativas}</div><div class="kl">Câmeras inativas</div></div>
+    <div class="kpi ${taxaGlobal>=80?'ok':taxaGlobal>=50?'wn':'nf'}"><div class="kv">${taxaGlobal}%</div><div class="kl">Taxa operacional global</div></div>
+  </div>
+
+  <h2 style="margin-top:4px">Ranking — Maior Incidência de Falhas</h2>
+  <p style="font-size:8pt;color:#64748b;margin-bottom:8px">Ordenado do gravador com mais câmeras inativas para o de melhor desempenho</p>
+  <table>
+    <thead><tr>
+      <th style="width:36px;text-align:center">#</th>
+      <th>Gravador</th>
+      <th>Marca / Modelo</th>
+      <th style="text-align:center;width:52px">Total</th>
+      <th style="text-align:center;width:52px">NF</th>
+      <th style="width:130px">Falhas %</th>
+      <th style="text-align:center;width:60px">Taxa Op.</th>
+    </tr></thead>
+    <tbody>${rankingRows||'<tr><td colspan="7" style="padding:14px;text-align:center;color:#64748b">Nenhum gravador com câmeras vinculadas</td></tr>'}</tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="bg"><img src="${TIMBRADO_B64}" alt=""></div>
+  <h2>Detalhamento por Gravador</h2>
+  <p style="font-size:8pt;color:#64748b;margin-bottom:12px">${gravData.length} gravador${gravData.length!==1?'es':''} · Câmeras: total, ativas, inativas e taxa operacional</p>
+  ${gravCards}
+</div>
+
+${String.fromCharCode(60)+'script>'}window.onload=function(){if(window.opener)window.opener.postMessage('ready-to-print',location.origin||'*');}${String.fromCharCode(60)+'/script>'}
+</body>
+</html>`;
+
+  const blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
+  const saved=await saveFileAs(blob,`IBMP_CFTV_Relatorio_Gravadores_${_dateStr}.html`);
+  if(saved)toast('Relatório de Gravadores aberto — selecione "Salvar como PDF" no diálogo');
+}
+
 // ═══════════════ XLSX IMPORT ═══════════════
 function importInventory(e){
   const file=e.target.files[0];if(!file)return;
@@ -6419,6 +6963,7 @@ function importInventory(e){
           'SERIAL':             serial!=='nan'?serial:'',
           'ATIVO':              ativo!=='nan'?ativo:'',
           'STATUS ATIVO':       statusAtivo!=='nan'?statusAtivo:'',
+          'CRITICIDADE':        String(r['CRITICIDADE']||r['Criticidade']||r['PRIORIDADE']||'').trim()||'MÉDIA',
         };
       }).filter(r=>r['NOME CANAL']);
 
@@ -6434,6 +6979,7 @@ function importInventory(e){
           'IMAGENS':          String(r['IMAGENS']||'').trim(),
           'TIPO DE GRAVADOR': String(r['TIPO DE GRAVADOR']||'').trim(),
           'Armazenamento':    String(r['Armazenamento']||'').trim(),
+          'Observação':       String(r['Observação']||r['OBSERVAÇÃO']||r['Obs']||r['OBS']||'').trim(),
         })).filter(r=>r['NOME DO GRAVADOR']);
       }
 
@@ -6537,6 +7083,8 @@ function loadLocalInventory(){
     if(d.installYear)Object.assign(INSTALL_YEAR,d.installYear);
     if(d.camFin)Object.assign(CAM_FIN,d.camFin);
     if(d.camObs)Object.assign(CAM_OBS,d.camObs);
+    // Garante campo CRITICIDADE em bancos antigos sem a coluna
+    DB.cameras.forEach(c=>{ if(!c['CRITICIDADE']) c['CRITICIDADE']='MÉDIA'; });
     return !!(d.cameras?.length);
   }catch(err){console.warn('Erro ao carregar localStorage:',err);}
   return false;
@@ -6821,8 +7369,8 @@ function fitCanvas(){
 }
 
 // ── Navegação entre views (setas + pills)
-const VIEW_ORDER = ['dash','budget','coverage','timeline'];
-const VIEW_LABELS = { dash:'Dashboard', budget:'Orçamento', coverage:'Gravadores', timeline:'Timeline' };
+const VIEW_ORDER = ['dash','manut','budget','coverage','timeline'];
+const VIEW_LABELS = { dash:'Dashboard', manut:'Manutenção', budget:'Orçamento', coverage:'Gravadores', timeline:'Timeline' };
 
 function buildViewNav(currentMode){
   VIEW_ORDER.forEach(v=>{
