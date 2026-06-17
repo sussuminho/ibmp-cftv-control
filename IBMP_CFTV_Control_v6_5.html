@@ -2092,9 +2092,11 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <!-- View overlays -->
     <div class="view-overlay" id="view-dash">
       <div class="view-nav" id="vnav-dash"></div>
+      <div id="dash-situacao"></div>
       <div id="dash-grid"></div>
       <div class="dash-row"><div class="chart-card" id="donut-card"></div><div class="chart-card" id="bar-card"></div></div>
       <div class="chart-card" id="cov-table-card"></div>
+      <div class="chart-card" id="dash-plants-card"></div>
     </div>
 
     <!-- Maintenance Dashboard view -->
@@ -2215,18 +2217,31 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <div id="rp-idle">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:4px">Planta ativa</div>
       <div class="rp-idle-floor" id="rpi-floor">—</div>
-      <div class="rp-idle-grid">
-        <div class="rp-idle-kpi total"><div class="kv" id="rpi-total">0</div><div class="kl">Mapeadas</div></div>
-        <div class="rp-idle-kpi ok"><div class="kv" id="rpi-ok">0</div><div class="kl">Ativas</div></div>
-        <div class="rp-idle-kpi nf"><div class="kv" id="rpi-nf">0</div><div class="kl">Inativas</div></div>
-        <div class="rp-idle-kpi cost"><div class="kv" id="rpi-cost">—</div><div class="kl">Custo NF</div></div>
-      </div>
-      <div>
-        <div class="rp-idle-bar-lbl">
-          <span>Cobertura do banco</span>
-          <span id="rpi-pct" style="color:var(--g);font-weight:700">0%</span>
+      <div id="rpi-no-cams" style="display:none;font-size:12px;color:var(--text3);text-align:center;padding:12px 0 4px">Nenhuma câmera mapeada nesta planta.</div>
+      <div id="rpi-main">
+        <div class="rp-idle-grid">
+          <div class="rp-idle-kpi total"><div class="kv" id="rpi-total">0</div><div class="kl">Mapeadas</div></div>
+          <div class="rp-idle-kpi ok"><div class="kv" id="rpi-ok">0</div><div class="kl">Ativas</div></div>
+          <div class="rp-idle-kpi nf"><div class="kv" id="rpi-nf">0</div><div class="kl">Inativas</div></div>
+          <div class="rp-idle-kpi cost"><div class="kv" id="rpi-cost">—</div><div class="kl">Substituição est.</div></div>
         </div>
-        <div class="rp-idle-bar-track"><div class="rp-idle-bar-fill" id="rpi-bar" style="width:0%"></div></div>
+        <div id="rpi-alta-row" style="display:none;margin-bottom:8px">
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;background:#dc2626;color:#fff;border-radius:5px;padding:3px 8px">⚠ <span id="rpi-alta-cnt">0</span> ALTA inativa</span>
+        </div>
+        <div style="margin-bottom:8px">
+          <div class="rp-idle-bar-lbl">
+            <span>Taxa operacional</span>
+            <span id="rpi-taxa-pct" style="font-weight:700">0%</span>
+          </div>
+          <div class="rp-idle-bar-track"><div class="rp-idle-bar-fill" id="rpi-taxa-bar" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div class="rp-idle-bar-lbl">
+            <span>Cobertura do banco</span>
+            <span id="rpi-pct" style="color:var(--g);font-weight:700">0%</span>
+          </div>
+          <div class="rp-idle-bar-track"><div class="rp-idle-bar-fill" id="rpi-bar" style="width:0%"></div></div>
+        </div>
       </div>
       <div class="rp-idle-hint">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 1l.5 4.5L12 8l-3.5 2.5L8 15l-.5-4.5L4 8l3.5-2.5z"/></svg>
@@ -4304,15 +4319,35 @@ function updateRpIdle(){
   const ok=cams.filter(c=>c.fn).length;
   const nf=cams.filter(c=>!c.fn).length;
   const total=cams.length;
+  const altaInativas=cams.filter(c=>!c.fn&&c.info.criticidade==='ALTA').length;
   const cost=cams.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
   const pct=DB.cameras.length?Math.round(total/DB.cameras.length*100):0;
+  const taxa=total>0?Math.round(ok/total*100):0;
+  const taxaColor=taxa>=90?'var(--ok)':taxa>=70?'var(--warn)':'var(--nf)';
   document.getElementById('rpi-floor').textContent=f.name;
+  const noCams=document.getElementById('rpi-no-cams');
+  const main=document.getElementById('rpi-main');
+  if(total===0){
+    if(noCams)noCams.style.display='';
+    if(main)main.style.display='none';
+    return;
+  }
+  if(noCams)noCams.style.display='none';
+  if(main)main.style.display='';
   document.getElementById('rpi-total').textContent=total;
   document.getElementById('rpi-ok').textContent=ok;
   document.getElementById('rpi-nf').textContent=nf;
   document.getElementById('rpi-cost').textContent=cost>0?'R$ '+cost.toLocaleString('pt-BR',{minimumFractionDigits:2}):'—';
   document.getElementById('rpi-pct').textContent=pct+'%';
   const bar=document.getElementById('rpi-bar');if(bar)bar.style.width=pct+'%';
+  const taxaBar=document.getElementById('rpi-taxa-bar');
+  const taxaPct=document.getElementById('rpi-taxa-pct');
+  if(taxaBar){taxaBar.style.width=taxa+'%';taxaBar.style.background=taxaColor;}
+  if(taxaPct){taxaPct.textContent=taxa+'%';taxaPct.style.color=taxaColor;}
+  const altaRow=document.getElementById('rpi-alta-row');
+  const altaCnt=document.getElementById('rpi-alta-cnt');
+  if(altaRow)altaRow.style.display=altaInativas>0?'':'none';
+  if(altaCnt)altaCnt.textContent=altaInativas;
 }
 
 // ═══════════════ DASHBOARD ═══════════════
@@ -4324,17 +4359,57 @@ function renderDash(){
   const recCams=all.filter(c=>c.rec);
   const ok=regular.filter(c=>c.fn).length,nf=regular.filter(c=>!c.fn).length,total=regular.length;
   const totalCost=regular.filter(c=>!c.fn).reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
-  const plotted=total,pct=DB.cameras.length?Math.round(plotted/DB.cameras.length*100):0;
+  const taxa=total>0?Math.round(ok/total*100):0;
+  const altaInativas=regular.filter(c=>!c.fn&&c.info.criticidade==='ALTA').length;
+  const taxaStatus=(taxa>=90&&altaInativas===0)?'OPERACIONAL':(altaInativas>0||taxa<70)?'CRÍTICO':'ATENÇÃO';
+  const taxaColor=taxaStatus==='OPERACIONAL'?'var(--ok)':taxaStatus==='ATENÇÃO'?'var(--warn)':'var(--nf)';
+  const taxaBg=taxaStatus==='OPERACIONAL'?'var(--ok-bg)':taxaStatus==='ATENÇÃO'?'var(--warn-bg)':'var(--nf-bg)';
+
+  // ── Situação Atual ──
+  const _now=new Date();const _cy=_now.getFullYear();const _cm=_now.getMonth()+1;
+  const subst12Cnt=DB.cameras.filter(c=>{
+    const nome=c['NOME CANAL']||'';
+    const fin=CAM_FIN[nome]||{};
+    const ano=INSTALL_YEAR[nome];
+    const vida=fin.vidaUtil||LIFESPAN[c['MODELO CÂMERA']||'']||0;
+    if(!ano||!vida)return false;
+    return(ano+vida-_cy)*12-_cm+1<=12;
+  }).length;
+  const _s=n=>n===1?'':'s';
+  let saFrase='';
+  if(!DB.cameras.length||!total){
+    saFrase=!DB.cameras.length
+      ?'Nenhum inventário carregado. Importe o banco XLSX para ativar os indicadores.'
+      :'Nenhuma câmera mapeada no Editor. Abra uma planta e adicione câmeras.';
+  } else if(taxaStatus==='OPERACIONAL'){
+    saFrase=subst12Cnt>0
+      ?`Todas as câmeras estão ativas. ${subst12Cnt} substituição${_s(subst12Cnt)} urgente${_s(subst12Cnt)} prevista${_s(subst12Cnt)} nos próximos 12 meses.`
+      :`Todas as ${total} câmeras mapeadas estão ativas.`;
+  } else if(taxaStatus==='CRÍTICO'){
+    saFrase=`${altaInativas} câmera${_s(altaInativas)} de criticidade ALTA inoperante${_s(altaInativas)}. ${nf} inativa${_s(nf)} no total (${taxa}% operacional).`
+      +(subst12Cnt>0?` ${subst12Cnt} substituição${_s(subst12Cnt)} urgente${_s(subst12Cnt)} prevista${_s(subst12Cnt)}.`:'');
+  } else {
+    saFrase=`Sistema a ${taxa}% da capacidade — ${nf} câmera${_s(nf)} inativa${_s(nf)}.`
+      +(subst12Cnt>0?` ${subst12Cnt} substituição${_s(subst12Cnt)} urgente${_s(subst12Cnt)} prevista${_s(subst12Cnt)}.`:'');
+  }
+  const saEl=document.getElementById('dash-situacao');
+  if(saEl)saEl.innerHTML=`<div style="display:flex;align-items:flex-start;gap:10px;border-left:3px solid ${taxaColor};background:${taxaBg};border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;line-height:1.5"><span style="flex-shrink:0;font-size:11px;font-weight:700;color:${taxaColor};border:1.5px solid ${taxaColor};border-radius:5px;padding:2px 8px;margin-top:1px">● ${taxaStatus}</span><span style="color:var(--text2)">${saFrase}</span></div>`;
 
   // KPI cards
   const grid=document.getElementById('dash-grid');grid.innerHTML='';
+
+  // Hero: Taxa Operacional
+  const heroCard=document.createElement('div');
+  heroCard.className='kpi-card';
+  heroCard.style.cssText=`border:1.5px solid ${taxaColor};background:${taxaBg}`;
+  heroCard.innerHTML=`<div class="kpi-icon" style="background:${taxaBg}"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="${taxaColor}" stroke-width="1.8"><path d="M3.5 15.5a9 9 0 1 1 15 0"/><path d="M11 11.5L7.5 8"/><circle cx="11" cy="12" r="1.5" fill="${taxaColor}" stroke="none"/></svg></div><div><div style="font-size:30px;font-weight:800;line-height:1;color:${taxaColor}">${taxa}%</div><div class="kpi-lbl">Taxa Operacional</div><div style="margin-top:5px;font-size:11px;font-weight:700;color:${taxaColor}">● ${taxaStatus}</div></div>`;
+  grid.appendChild(heroCard);
+
   const kpis=[
     {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--ok)" stroke-width="1.8"><rect x="2" y="5" width="14" height="10" rx="2"/><circle cx="9" cy="10" r="2.5"/><path d="M16 8l4-2v6l-4-2"/></svg>`,cls:'green',val:total,lbl:'Câmeras mapeadas'},
-    {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--ok)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>`,cls:'green',val:ok,lbl:'Câmeras Ativas'},
-    {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--nf)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M8 14l6-6M8 8l6 6"/></svg>`,cls:'red',val:nf,lbl:'Câmeras Inativas'},
-    {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--warn)" stroke-width="1.8"><path d="M11 2v12M7 6l4-4 4 4M4 18h14a1 1 0 000-2H4a1 1 0 000 2z"/></svg>`,cls:'warn',val:'R$ '+totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2}),lbl:'Custo estimado NF'},
-    {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--b)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M11 7v4l3 3"/></svg>`,cls:'blue',val:`${pct}%`,lbl:'% do banco mapeado'},
-    {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--text2)" stroke-width="1.8"><rect x="2" y="2" width="8" height="8" rx="1.5"/><rect x="12" y="2" width="8" height="8" rx="1.5"/><rect x="2" y="12" width="8" height="8" rx="1.5"/><rect x="12" y="12" width="8" height="8" rx="1.5"/></svg>`,cls:'blue',val:floors.length,lbl:'Plantas carregadas'},
+    {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--ok)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>`,cls:'green',val:ok,lbl:'Ativas'},
+    {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--nf)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M8 14l6-6M8 8l6 6"/></svg>`,cls:'red',val:nf,lbl:'Inativas',alta:altaInativas},
+    {icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--warn)" stroke-width="1.8"><path d="M11 2v12M7 6l4-4 4 4M4 18h14a1 1 0 000-2H4a1 1 0 000 2z"/></svg>`,cls:'warn',val:'R$ '+totalCost.toLocaleString('pt-BR',{minimumFractionDigits:2}),lbl:'Substituição estimada'},
   ];
   if(recCams.length){
     kpis.push({icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#ea580c" stroke-width="1.8"><polygon points="11,2 13.5,8 20,8.5 15.2,13 16.9,19.5 11,16.3 5.1,19.5 6.8,13 2,8.5 8.5,8"/></svg>`,cls:'warn',val:recCams.length,lbl:'Câmeras Recomendadas',rec:true});
@@ -4342,7 +4417,8 @@ function renderDash(){
   kpis.forEach(k=>{
     const d=document.createElement('div');d.className='kpi-card';
     if(k.rec)d.style.cssText='border:1.5px solid #ea580c;background:rgba(234,88,12,.06)';
-    d.innerHTML=`<div class="kpi-icon ${k.cls}">${k.icon}</div><div><div class="kpi-val"${k.rec?' style="color:#ea580c"':''}>${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`;
+    const badgeHtml=k.alta>0?`<span style="display:inline-block;margin-top:5px;background:#dc2626;color:#fff;font-size:10px;font-weight:700;border-radius:4px;padding:1px 6px">⚠ ${k.alta} ALTA</span>`:'';
+    d.innerHTML=`<div class="kpi-icon ${k.cls}">${k.icon}</div><div><div class="kpi-val"${k.rec?' style="color:#ea580c"':''}>${k.val}</div><div class="kpi-lbl">${k.lbl}</div>${badgeHtml}</div>`;
     grid.appendChild(d);
   });
 
@@ -4390,18 +4466,27 @@ function renderDash(){
     ctx.fillText('mapeadas',cx,cy+13);
   },50);
 
-  // Bar chart — NF por gravador/bloco (excluir recomendadas)
+  // Operacional por Planta (dados globais de floors[])
   const bc=document.getElementById('bar-card');
-  const byRec={};
-  F().cameras.filter(c=>!c.rec&&!c.fn).forEach(c=>{const k=c.info.gravador||'N/D';byRec[k]=(byRec[k]||0)+1;});
-  const recEntries=Object.entries(byRec).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const maxV=recEntries.length?recEntries[0][1]:1;
-  bc.innerHTML=`<h3>NF por Gravador</h3><p class="sub">Câmeras não funcionais agrupadas por gravador</p>
-  <div class="bar-chart">${recEntries.length?recEntries.map(([k,v])=>`
-    <div class="bar-row">
-      <div class="bar-lbl" title="${k}">${k.replace('DVR-BLOC','B').replace('DVR-','')}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${v/maxV*100}%;background:var(--nf)"><span class="bar-fill-val">${v}</span></div></div>
-    </div>`).join(''):'<div style="color:var(--text3);font-size:13px;padding:20px 0">Nenhuma câmera inativa mapeada 🎉</div>'}</div>`;
+  const plantData=floors.map((f,idx)=>{
+    const reg=f.cameras.filter(c=>!c.rec);
+    const ptotal=reg.length,pok=reg.filter(c=>c.fn).length,pnf=reg.filter(c=>!c.fn).length;
+    const palta=reg.filter(c=>!c.fn&&c.info.criticidade==='ALTA').length;
+    const ptaxa=ptotal>0?Math.round(pok/ptotal*100):0;
+    return{name:f.name,idx,ptotal,pok,pnf,palta,ptaxa};
+  }).filter(p=>p.ptotal>0).sort((a,b)=>b.ptaxa-a.ptaxa);
+  bc.innerHTML=`<h3>Operacional por Planta</h3><p class="sub">Taxa de câmeras ativas — melhor → pior</p>
+  <div class="bar-chart">${plantData.length?plantData.map(p=>{
+    const pColor=p.ptaxa>=90?'var(--ok)':p.ptaxa>=70?'var(--warn)':'var(--nf)';
+    const badge=p.palta>0?`<span style="flex-shrink:0;font-size:9px;font-weight:700;background:#dc2626;color:#fff;border-radius:3px;padding:1px 5px">⚠ ${p.palta} ALTA</span>`:'';
+    return`<div class="bar-row" style="cursor:pointer;border-radius:6px;padding:3px 4px;transition:background .15s" onmouseenter="this.style.background='var(--surface3)'" onmouseleave="this.style.background=''" onclick="switchFloor(${p.idx});setMode('editor')">
+      <div class="bar-lbl" style="text-align:left" title="${p.name}">${p.name}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${p.ptaxa}%;background:${pColor}"></div></div>
+      <span style="flex-shrink:0;width:34px;text-align:right;font-size:11px;font-weight:700;color:${pColor}">${p.ptaxa}%</span>
+      <span style="flex-shrink:0;font-size:10px;color:var(--text3);white-space:nowrap">${p.ptotal} cam${p.pnf>0?' · '+p.pnf+' inativa'+(p.pnf!==1?'s':''):''}</span>
+      ${badge}
+    </div>`;
+  }).join(''):'<div style="color:var(--text3);font-size:13px;padding:20px 0">Nenhuma câmera mapeada nas plantas.</div>'}</div>`;
 
   // Coverage table (excluir recomendadas das contagens)
   const ct=document.getElementById('cov-table-card');
@@ -4423,6 +4508,33 @@ function renderDash(){
           <span class="cov-pct" style="color:${color}">${pct2}%</span>
         </div></td></tr>`;
     }).join('')}</tbody></table>`;
+
+  // Plant Cards — um card por planta com câmeras mapeadas
+  const pc=document.getElementById('dash-plants-card');
+  const pcHtml=plantData.map(p=>{
+    const pStatus=p.ptaxa<50?'CRÍTICO':(p.ptaxa<80||p.palta>0)?'ATENÇÃO':'OPERACIONAL';
+    const pColor=pStatus==='OPERACIONAL'?'var(--ok)':pStatus==='ATENÇÃO'?'var(--warn)':'var(--nf)';
+    const pBorder=pStatus==='OPERACIONAL'?'var(--border)':pColor;
+    const badge=p.palta>0?`<span style="font-size:9px;font-weight:700;background:#dc2626;color:#fff;border-radius:3px;padding:1px 5px;flex-shrink:0">⚠ ${p.palta} ALTA</span>`:'';
+    return`<div onclick="switchFloor(${p.idx});setMode('editor')" style="background:var(--surface);border:1.5px solid ${pBorder};border-radius:12px;padding:12px 14px;cursor:pointer;transition:box-shadow .15s,transform .15s" onmouseenter="this.style.boxShadow='0 4px 16px rgba(0,0,0,.12)';this.style.transform='translateY(-1px)'" onmouseleave="this.style.boxShadow='';this.style.transform=''">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</span>
+        <span style="font-size:9px;font-weight:700;color:${pColor};border:1.5px solid ${pColor};border-radius:4px;padding:1px 5px;flex-shrink:0">● ${pStatus}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="flex:1;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="height:100%;width:${p.ptaxa}%;background:${pColor};border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)"></div></div>
+        <span style="font-size:11px;font-weight:700;color:${pColor};width:34px;text-align:right;flex-shrink:0">${p.ptaxa}%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);flex-wrap:wrap">
+        <span>${p.ptotal} cam</span>
+        <span style="color:var(--ok);font-weight:600">${p.pok} ativa${p.pok!==1?'s':''}</span>
+        ${p.pnf>0?`<span style="color:var(--nf);font-weight:600">${p.pnf} inativa${p.pnf!==1?'s':''}</span>`:''}
+        ${badge}
+      </div>
+    </div>`;
+  }).join('');
+  pc.innerHTML=`<h3>Plantas</h3><p class="sub">Clique em um card para abrir no Editor</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px">${pcHtml||'<div style="color:var(--text3);font-size:13px">Nenhuma câmera mapeada nas plantas.</div>'}</div>`;
 }
 
 // ═══════════════ MAINTENANCE DASHBOARD ═══════════════
