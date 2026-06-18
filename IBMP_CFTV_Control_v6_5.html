@@ -1876,6 +1876,23 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <div class="mob-kpi mob-kpi-nf" onclick="mobSetFilter('nf')" style="cursor:pointer"><div class="mob-kpi-val" id="mkpi-nf">—</div><div class="mob-kpi-lbl">Inativas</div></div>
     <div class="mob-kpi mob-kpi-db" style="cursor:default"><div class="mob-kpi-val" id="mkpi-db">—</div><div class="mob-kpi-lbl">No banco</div></div>
   </div>
+  <div id="mob-status-bar" style="display:none;padding:0 14px 10px;flex-shrink:0">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)">Status geral</span>
+        <span id="mob-status-badge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">—</span>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px">
+          <span>Taxa operacional</span>
+          <span id="mob-taxa-pct" style="font-weight:700">—</span>
+        </div>
+        <div style="background:var(--surface3);border-radius:4px;height:6px;overflow:hidden">
+          <div id="mob-taxa-fill" style="height:100%;border-radius:4px;width:0%;transition:width .4s"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div id="mob-search-wrap">
     <div id="mob-search-row">
       <input id="mob-search" type="text" placeholder="Buscar câmera, setor, IP…" oninput="mobSearch(this.value)" autocomplete="off">
@@ -1883,8 +1900,8 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     </div>
     <div id="mob-filters">
       <button class="mob-filter on" id="mf-all" onclick="mobSetFilter('all')">Todas</button>
-      <button class="mob-filter" id="mf-nf" onclick="mobSetFilter('nf')">● Inativas</button>
       <button class="mob-filter" id="mf-ok" onclick="mobSetFilter('ok')">● Operantes</button>
+      <button class="mob-filter" id="mf-nf" onclick="mobSetFilter('nf')">● Inativas</button>
     </div>
   </div>
   <div id="mob-list"><div class="mob-list-empty">Carregando…</div></div>
@@ -2126,7 +2143,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       <div class="view-nav" id="vnav-budget"></div>
       <div class="bgt-header">
         <h2>Orçamento de Manutenção</h2>
-        <div class="bgt-total-card"><div class="bgt-total-lbl">Total estimado (câmeras Inativas)</div><div class="bgt-total-val" id="bgt-total">R$ 0,00</div></div>
+        <div class="bgt-total-card"><div class="bgt-total-lbl">Câmeras Inativas — esta planta</div><div class="bgt-total-val" id="bgt-total">R$ 0,00</div></div>
       </div>
       <div class="bgt-table-wrap">
         <div class="bgt-row hdr" id="bgt-header"><span>Câmera</span><span>Modelo</span><span>Localização</span><span>Equipamento</span><span style="color:#6366f1">Mão de Obra</span><span style="text-align:right">Total</span></div>
@@ -2137,7 +2154,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <div class="view-overlay" id="view-coverage">
       <div class="view-nav" id="vnav-coverage"></div>
       <div class="cov-header"><h2>Gravadores</h2></div>
-      <div id="rec-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:0 20px 20px;overflow-y:auto;flex:1"></div>
+      <div id="rec-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px;padding:0 20px 20px;overflow-y:auto;flex:1"></div>
     </div>
 
     <!-- Timeline view -->
@@ -4583,20 +4600,30 @@ function renderManut(){
   // ── KPI cards ──
   grid.innerHTML='';
   const kpis=[
-    {cls:'red',val:inop.length,lbl:'Câmeras Inoperantes',
+    {cls:'red',val:inop.length,lbl:'Câmeras Inoperantes',target:'manut-inop-card',
      icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--nf)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M8 14l6-6M8 8l6 6"/></svg>`},
-    {cls:'red',val:inopAlta.length,lbl:'Inoperantes Crit. ALTA',
+    {cls:'red',val:inopAlta.length,lbl:'Inoperantes Crit. ALTA',target:'manut-inop-card',
      icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#dc2626" stroke-width="1.8"><path d="M11 3L2 19h18L11 3z"/><path d="M11 9v4"/><path d="M11 15.5v.5"/></svg>`,
      xstyle:'border:1.5px solid #dc2626;background:rgba(220,38,38,.04)'},
-    {cls:'warn',val:recList.length,lbl:'Expansões Recomendadas',
+    {cls:'warn',val:recList.length,lbl:'Expansões Recomendadas',target:'manut-rec-card',
      icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#ea580c" stroke-width="1.8"><polygon points="11,2 13.5,8 20,8.5 15.2,13 16.9,19.5 11,16.3 5.1,19.5 6.8,13 2,8.5 8.5,8"/></svg>`},
-    {cls:'warn',val:subst12.length,lbl:'Substituições em até 12 meses',
+    {cls:'warn',val:subst12.length,lbl:'Substituições em até 12 meses',target:'manut-subst-card',
      icon:`<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--warn)" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M11 7v4l3 3"/></svg>`},
   ];
   kpis.forEach(k=>{
     const d=document.createElement('div');d.className='kpi-card';
-    if(k.xstyle)d.style.cssText=k.xstyle;
+    d.style.cursor='pointer';
+    d.title='Ver detalhes';
+    if(k.xstyle)d.style.cssText+=';'+k.xstyle;
     d.innerHTML=`<div class="kpi-icon ${k.cls}">${k.icon}</div><div><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`;
+    d.onclick=()=>{
+      const t=document.getElementById(k.target);
+      if(!t)return;
+      t.scrollIntoView({behavior:'smooth',block:'start'});
+      t.style.outline='2px solid var(--g)';
+      t.style.borderRadius='14px';
+      setTimeout(()=>{t.style.outline='';t.style.borderRadius='';},1400);
+    };
     grid.appendChild(d);
   });
 
@@ -4657,7 +4684,8 @@ function renderManut(){
     const local=r['LOCAL']||'—';
     const modelo=r['MODELO SUGERIDO']||'—';
     const just=r['JUSTIFICATIVA']||'';
-    const setor=r['SETOR']||'';
+    const plotFloor=floors.find(fl=>fl.cameras.some(c=>c.rec&&c.name===r['LOCAL']));
+    const setor=r['SETOR']||(plotFloor?plotFloor.name:'');
     const preco=PRICES[modelo]?`R$ ${PRICES[modelo].toLocaleString('pt-BR',{minimumFractionDigits:2})}`:'-';
     return`<tr style="border-bottom:1px solid var(--border)">
       <td style="padding:5px 8px;font-weight:500;font-size:11px">${local}</td>
@@ -4752,8 +4780,8 @@ function renderBudget(){
   const totalEl=document.getElementById('bgt-total');
   if(totalEl){
     totalEl.innerHTML=`
-      <span style="font-size:11px;color:var(--text3)">Equip.: R$ ${totalProd.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
-      <span style="font-size:11px;color:#6366f1">M.O.: R$ ${totalLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+      <span style="font-size:11px;color:var(--text3)">Equipamento: R$ ${totalProd.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+      <span style="font-size:11px;color:#6366f1">Mão de Obra: R$ ${totalLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
       <span style="font-weight:800;font-size:14px">Total: R$ ${(totalProd+totalLabor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>`;
     totalEl.style.cssText='display:flex;align-items:center;gap:16px;justify-content:flex-end';
   }
@@ -4761,6 +4789,8 @@ function renderBudget(){
   // ── Seção de câmeras recomendadas — apenas as PLOTADAS nesta planta ──
   const existing=document.getElementById('bgt-rec-wrap');
   if(existing)existing.remove();
+  const existingGrand=document.getElementById('bgt-grand-wrap');
+  if(existingGrand)existingGrand.remove();
 
   const recPlotted=F().cameras.filter(c=>c.rec);
   if(recPlotted.length){
@@ -4787,15 +4817,31 @@ function renderBudget(){
     wrap.style.cssText='margin-top:16px';
     wrap.innerHTML=`
       <div style="padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#ea580c;display:flex;align-items:center;justify-content:space-between;border-top:2px dashed rgba(234,88,12,.3);margin-top:4px">
-        <span>CAMERAS RECOMENDADAS — ${F().name} (${recPlotted.length})</span>
+        <span>Câmeras Recomendadas — ${F().name} (${recPlotted.length})</span>
         <span style="display:flex;gap:12px">
-          <span style="font-weight:400;color:var(--text3)">Equip.: R$ ${recTotalProd.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
-          <span style="font-weight:400;color:#6366f1">M.O.: R$ ${recTotalLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
-          <span>Total: R$ ${(recTotalProd+recTotalLabor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+          <span style="font-weight:400;color:var(--text3)">Equipamento: R$ ${recTotalProd.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+          <span style="font-weight:400;color:#6366f1">Mão de Obra: R$ ${recTotalLabor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+          <span>Subtotal: R$ ${(recTotalProd+recTotalLabor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
         </span>
       </div>
       ${recRows}`;
     rows.parentElement.appendChild(wrap);
+
+    // ── Total Geral (NF + Recomendadas) ──
+    const grandProd=totalProd+recTotalProd;
+    const grandLabor=totalLabor+recTotalLabor;
+    const grandTotal=grandProd+grandLabor;
+    const grandWrap=document.createElement('div');
+    grandWrap.id='bgt-grand-wrap';
+    grandWrap.style.cssText='margin-top:12px;background:var(--surface);border:2px solid var(--g);border-radius:12px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px';
+    grandWrap.innerHTML=`
+      <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g)">Total Geral</span>
+      <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+        <span style="font-size:12px;color:var(--text3)">Câm. Inativas: <b>R$ ${(totalProd+totalLabor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</b></span>
+        <span style="font-size:12px;color:#ea580c">Recomendadas: <b>R$ ${(recTotalProd+recTotalLabor).toLocaleString('pt-BR',{minimumFractionDigits:2})}</b></span>
+        <span style="font-size:18px;font-weight:800;color:var(--g)">R$ ${grandTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span>
+      </div>`;
+    rows.parentElement.appendChild(grandWrap);
   }
 }
 
@@ -7405,6 +7451,31 @@ function mobRender(){
   document.getElementById('mkpi-ok').textContent    = okCnt;
   document.getElementById('mkpi-nf').textContent    = nfCnt;
   document.getElementById('mkpi-db').textContent    = dbCnt || '0';
+
+  // Status bar
+  const sbEl = document.getElementById('mob-status-bar');
+  if(sbEl && mapped > 0){
+    const totalReal = allCams.filter(c=>!c.rec).length;
+    const taxa = totalReal > 0 ? Math.round(okCnt / totalReal * 100) : 0;
+    const altaInativas = DB.cameras.filter(c=>{
+      const s = allCams.find(fc=>fc.name===c['NOME CANAL']);
+      return s && !s.fn && (c['CRITICIDADE']||'MÉDIA')==='ALTA';
+    }).length;
+    const status = (altaInativas > 0 || taxa < 70) ? 'CRÍTICO' : taxa >= 90 ? 'OPERACIONAL' : 'ATENÇÃO';
+    const statusColor = status==='CRÍTICO'?'#dc2626':status==='ATENÇÃO'?'#d97706':'#16a34a';
+    const statusBg    = status==='CRÍTICO'?'rgba(220,38,38,.12)':status==='ATENÇÃO'?'rgba(217,119,6,.12)':'rgba(22,163,74,.12)';
+    const taxaColor   = taxa>=90?'#16a34a':taxa>=70?'#d97706':'#dc2626';
+    const badge = document.getElementById('mob-status-badge');
+    const pctEl = document.getElementById('mob-taxa-pct');
+    const fill  = document.getElementById('mob-taxa-fill');
+    if(badge){ badge.textContent=status; badge.style.cssText=`font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${statusBg};color:${statusColor};border:1px solid ${statusColor}40`; }
+    if(pctEl){ pctEl.textContent=taxa+'%'; pctEl.style.color=taxaColor; }
+    if(fill)  fill.style.cssText=`height:100%;border-radius:4px;width:${taxa}%;background:${taxaColor};transition:width .4s`;
+    sbEl.style.display = '';
+  } else if(sbEl){
+    sbEl.style.display = 'none';
+  }
+
   mobBuildList();
 }
 
@@ -7802,6 +7873,7 @@ function mobSetView(v){
   closeMobViews();
   const mobView = document.getElementById('mob-view');
   const kpis    = document.getElementById('mob-kpis');
+  const statusBar = document.getElementById('mob-status-bar');
   const search  = document.getElementById('mob-search-wrap');
   const list    = document.getElementById('mob-list');
 
@@ -7814,9 +7886,9 @@ function mobSetView(v){
   }
 
   if(v === 'list'){
-    if(kpis)   kpis.style.display   = '';
-    if(search) search.style.display = '';
-    if(list)   list.style.display   = '';
+    if(kpis)      kpis.style.display      = '';
+    if(search)    search.style.display    = '';
+    if(list)      list.style.display      = '';
     ov.style.display = 'none';
     const footer = document.getElementById('mob-contact-footer');
     if(footer) footer.style.display = '';
@@ -7824,9 +7896,10 @@ function mobSetView(v){
     return;
   }
 
-  if(kpis)   kpis.style.display   = 'none';
-  if(search) search.style.display = 'none';
-  if(list)   list.style.display   = 'none';
+  if(kpis)      kpis.style.display      = 'none';
+  if(statusBar) statusBar.style.display = 'none';
+  if(search)    search.style.display    = 'none';
+  if(list)      list.style.display      = 'none';
   const footer2 = document.getElementById('mob-contact-footer');
   if(footer2) footer2.style.display = 'none';
   ov.style.display = 'block';
