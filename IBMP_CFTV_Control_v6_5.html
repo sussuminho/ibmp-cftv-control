@@ -7433,8 +7433,7 @@ function mobRender(){
   const searchEl = document.getElementById('mob-search-wrap');
   const footer = document.getElementById('mob-contact-footer');
   const ov = document.getElementById('mob-overlay');
-  if(listEl && listEl.style.display === 'none'){
-    // Estava numa overlay — restaura lista
+  if(listEl && listEl.style.display === 'none' && !(ov && ov.style.display !== 'none')){
     if(listEl)   listEl.style.display   = '';
     if(kpisEl)   kpisEl.style.display   = '';
     if(searchEl) searchEl.style.display = '';
@@ -7851,33 +7850,36 @@ function closeMobReports(){
 
 // Switch between mobile views (list vs overlays)
 function mobNavPills(active){
-  const views=[
-    {v:'dash',     label:'Dashboard'},
-    {v:'list',     label:'Lista de câmeras'},
-    {v:'manut',    label:'Manutenção'},
-    {v:'budget',   label:'Orçamento'},
-    {v:'rec',      label:'Recomendadas'},
-    {v:'timeline', label:'Timeline'},
-    {v:'coverage', label:'Gravadores'},
-  ];
-  const cur=views.find(i=>i.v===active)||{label:'Menu'};
+  const ORDER=['dash','list','manut','budget','rec','timeline','coverage'];
+  const LABELS={dash:'Dashboard',list:'Lista de câmeras',manut:'Manutenção',budget:'Orçamento',rec:'Recomendadas',timeline:'Timeline',coverage:'Gravadores'};
+  const i=ORDER.indexOf(active);
+  const prev=ORDER[(i-1+ORDER.length)%ORDER.length];
+  const next=ORDER[(i+1)%ORDER.length];
+  const cur=LABELS[active]||'Menu';
   const pid='mob-nav-panel';
-  const items=views.map(it=>{
-    const on=it.v===active;
-    return `<div onclick="document.getElementById('${pid}').style.display='none';mobSetView('${it.v}')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;cursor:pointer;background:${on?'var(--g-light)':'transparent'};border-bottom:1px solid var(--border);-webkit-tap-highlight-color:transparent">
-      <span style="font-size:13px;font-weight:${on?'700':'400'};color:${on?'var(--g3)':'var(--text)'}">${it.label}</span>
-      ${on?'<span style="font-size:12px;color:var(--g);font-weight:700">✓</span>':''}
+  const bid='mob-nav-backdrop';
+  const btnS='flex-shrink:0;width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:20px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;line-height:1;padding:0';
+  const items=ORDER.map(v=>{
+    const on=v===active;
+    return `<div onclick="document.getElementById('${pid}').style.display='none';document.getElementById('${bid}').style.display='none';mobSetView('${v}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;background:${on?'var(--g-light)':'transparent'};border-bottom:1px solid var(--border);-webkit-tap-highlight-color:transparent">
+      <span style="font-size:13px;font-weight:${on?'700':'400'};color:${on?'var(--g3)':'var(--text)'}">${LABELS[v]}</span>
+      ${on?`<span style="font-size:12px;color:var(--g)">✓</span>`:''}
     </div>`;
   }).join('');
-  return `<div style="margin-bottom:14px">
-    <div onclick="const p=document.getElementById('${pid}');p.style.display=p.style.display!=='block'?'block':'none'" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none">
-      <span style="font-size:13px;font-weight:600;color:var(--text)">${cur.label}</span>
-      <span style="font-size:10px;color:var(--text3)">▼</span>
+  return `<div id="${bid}" onclick="document.getElementById('${pid}').style.display='none';this.style.display='none'" style="display:none;position:fixed;inset:0;z-index:9998;-webkit-tap-highlight-color:transparent"></div>
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:14px">
+  <button onclick="mobSetView('${prev}')" style="${btnS}">&#8249;</button>
+  <div style="flex:1;min-width:0">
+    <div onclick="const p=document.getElementById('${pid}');const b=document.getElementById('${bid}');const r=this.getBoundingClientRect();p.style.top=(r.bottom+4)+'px';p.style.left='8px';p.style.right='8px';const open=p.style.display!=='block';p.style.display=open?'block':'none';b.style.display=open?'block':'none'" style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none">
+      <span style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cur}</span>
+      <span style="font-size:10px;color:var(--text3);flex-shrink:0;margin-left:6px">&#9660;</span>
     </div>
-    <div id="${pid}" style="display:none;border:1px solid var(--border);border-radius:10px;margin-top:4px;overflow:hidden">
+    <div id="${pid}" style="display:none;position:fixed;left:8px;right:8px;z-index:9999;background:var(--bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.22);overflow:hidden;max-height:70vh;overflow-y:auto">
       ${items}
     </div>
-  </div>`;
+  </div>
+  <button onclick="mobSetView('${next}')" style="${btnS}">&#8250;</button>
+</div>`;
 }
 
 
@@ -7899,13 +7901,33 @@ function mobSetView(v){
   }
 
   if(v === 'list'){
-    if(kpis)      kpis.style.display      = '';
-    if(search)    search.style.display    = '';
-    if(list)      list.style.display      = '';
-    ov.style.display = 'none';
-    const footer = document.getElementById('mob-contact-footer');
-    if(footer) footer.style.display = '';
-    mobRender();
+    if(kpis)      kpis.style.display      = 'none';
+    if(statusBar) statusBar.style.display = 'none';
+    if(search)    search.style.display    = 'none';
+    if(list)      list.style.display      = 'none';
+    const footer2 = document.getElementById('mob-contact-footer');
+    if(footer2) footer2.style.display = 'none';
+    ov.style.display = 'block';
+    let cams = DB.cameras.map(c=>{const nome=c['NOME CANAL'];const info=lookup(nome);const fn=isFn(nome);return{nome,info,fn};});
+    let listHtml='';
+    if(!cams.length){
+      listHtml=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 16px;text-align:center;color:var(--text3);font-size:13px">Nenhuma câmera no banco de dados.<br><span style="font-size:11px;margin-top:4px;display:block">Configure em Admin no desktop.</span></div>`;
+    } else {
+      const nfs=cams.filter(c=>!c.fn);
+      const oks=cams.filter(c=>c.fn);
+      if(nfs.length){
+        listHtml+=`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--nf);padding:8px 0 4px">Inativas (${nfs.length})</div>`;
+        nfs.forEach(c=>{listHtml+=mobItemHTML(c);});
+      }
+      const bySetor={};
+      oks.forEach(c=>{const s=(c.info&&c.info.setor)||'Sem setor';if(!bySetor[s])bySetor[s]=[];bySetor[s].push(c);});
+      Object.keys(bySetor).sort().forEach(s=>{
+        listHtml+=`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 4px">${s} (${bySetor[s].length})</div>`;
+        bySetor[s].forEach(c=>{listHtml+=mobItemHTML(c);});
+      });
+    }
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}${listHtml}</div>`;
+    ov.scrollTop=0;
     return;
   }
 
