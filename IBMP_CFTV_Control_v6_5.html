@@ -1907,6 +1907,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       <button class="mob-filter on" id="mf-all" onclick="mobSetFilter('all')">Todas</button>
       <button class="mob-filter" id="mf-ok" onclick="mobSetFilter('ok')">● Operantes</button>
       <button class="mob-filter" id="mf-nf" onclick="mobSetFilter('nf')">● Inativas</button>
+      <button class="mob-filter" id="mf-alta" onclick="mobSetFilter('alta')" style="color:#dc2626">⚠ ALTA</button>
     </div>
   </div>
   <div id="mob-list"><div class="mob-list-empty">Carregando…</div></div>
@@ -2114,6 +2115,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <!-- View overlays -->
     <div class="view-overlay" id="view-dash">
       <div class="view-nav" id="vnav-dash"></div>
+      <div id="dash-atencao"></div>
       <div id="dash-situacao"></div>
       <div id="dash-grid"></div>
       <div class="dash-row"><div class="chart-card" id="donut-card"></div><div class="chart-card" id="bar-card"></div></div>
@@ -2146,6 +2148,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
 
     <div class="view-overlay" id="view-budget">
       <div class="view-nav" id="vnav-budget"></div>
+      <div id="bgt-global-card" style="margin:0 20px 16px;border-radius:14px;border:2px solid var(--g);background:var(--surface);overflow:hidden"></div>
       <div class="bgt-header">
         <h2>Orçamento de Manutenção</h2>
         <div class="bgt-total-card"><div class="bgt-total-lbl">Câmeras Inativas — esta planta</div><div class="bgt-total-val" id="bgt-total">R$ 0,00</div></div>
@@ -4417,6 +4420,28 @@ function renderDash(){
   const saEl=document.getElementById('dash-situacao');
   if(saEl)saEl.innerHTML=`<div style="display:flex;align-items:flex-start;gap:10px;border-left:3px solid ${taxaColor};background:${taxaBg};border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;line-height:1.5"><span style="flex-shrink:0;font-size:11px;font-weight:700;color:${taxaColor};border:1.5px solid ${taxaColor};border-radius:5px;padding:2px 8px;margin-top:1px">● ${taxaStatus}</span><span style="color:var(--text2)">${saFrase}</span></div>`;
 
+  // ── Bloco "O que precisa da sua atenção" ──
+  const atEl=document.getElementById('dash-atencao');
+  if(atEl&&(DB.cameras.length||total)){
+    const _recNaoImpl=Math.max(0,DB.recommended.length-recCams.length);
+    const _nfCams=regular.filter(c=>!c.fn);
+    const _gNFCost=_nfCams.reduce((s,c)=>s+(PRICES[c.info.modelo]||0)+(LABOR[c.info.modelo]||0),0);
+    const _gRecCost=recCams.reduce((s,c)=>{const rd=DB.recommended.find(r=>r['LOCAL']===c.name)||{};const m=rd['MODELO SUGERIDO']||'VIP-3220-D';return s+(PRICES[m]||0)+(LABOR[m]||0);},0);
+    const _investTotal=_gNFCost+_gRecCost;
+    const _items=[];
+    if(altaInativas>0) _items.push(`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><span style="font-size:16px">🔴</span><span style="flex:1;font-size:13px;color:var(--text)"><b style="color:#dc2626">${altaInativas}</b> câmera${altaInativas!==1?'s':''} de criticidade ALTA inoperante${altaInativas!==1?'s':''}</span><button onclick="setMode('manut')" style="font-size:10px;font-weight:600;color:var(--g);background:transparent;border:1px solid var(--g);border-radius:6px;padding:2px 8px;cursor:pointer">Ver</button></div>`);
+    if(subst12Cnt>0) _items.push(`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><span style="font-size:16px">🟠</span><span style="flex:1;font-size:13px;color:var(--text)"><b style="color:#d97706">${subst12Cnt}</b> câmera${subst12Cnt!==1?'s':''} com substituição prevista em até 12 meses</span><button onclick="setMode('timeline')" style="font-size:10px;font-weight:600;color:var(--g);background:transparent;border:1px solid var(--g);border-radius:6px;padding:2px 8px;cursor:pointer">Ver</button></div>`);
+    if(_recNaoImpl>0) _items.push(`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><span style="font-size:16px">🟡</span><span style="flex:1;font-size:13px;color:var(--text)"><b style="color:#d97706">${_recNaoImpl}</b> recomendação${_recNaoImpl!==1?'ões':''} ainda não implantada${_recNaoImpl!==1?'s':''}</span><button onclick="setMode('manut')" style="font-size:10px;font-weight:600;color:var(--g);background:transparent;border:1px solid var(--g);border-radius:6px;padding:2px 8px;cursor:pointer">Ver</button></div>`);
+    if(_investTotal>0) _items.push(`<div style="display:flex;align-items:center;gap:10px;padding:9px 0"><span style="font-size:16px">💰</span><span style="flex:1;font-size:13px;color:var(--text)">Investimento estimado para regularização: <b style="color:var(--g3)">R$ ${_investTotal.toLocaleString('pt-BR',{minimumFractionDigits:2})}</b></span><button onclick="setMode('budget')" style="font-size:10px;font-weight:600;color:var(--g);background:transparent;border:1px solid var(--g);border-radius:6px;padding:2px 8px;cursor:pointer">Ver</button></div>`);
+    if(_items.length){
+      atEl.innerHTML=`<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:6px 16px 2px;margin-bottom:14px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);padding:8px 0 4px">O que precisa da sua atenção</div>${_items.join('')}</div>`;
+    } else {
+      atEl.innerHTML='';
+    }
+  } else if(atEl){
+    atEl.innerHTML='';
+  }
+
   // KPI cards
   const grid=document.getElementById('dash-grid');grid.innerHTML='';
 
@@ -4755,6 +4780,53 @@ function renderMonitor(){
 
 // ═══════════════ BUDGET ═══════════════
 function renderBudget(){
+  // ── Card Global — todas as plantas ──
+  const _gc=document.getElementById('bgt-global-card');
+  if(_gc){
+    const _allCams=floors.flatMap(f=>f.cameras);
+    const _allNF=_allCams.filter(c=>!c.rec&&!c.fn);
+    const _allRec=_allCams.filter(c=>c.rec);
+    let _gNFProd=0,_gNFLabor=0;
+    _allNF.forEach(c=>{_gNFProd+=PRICES[c.info.modelo]||0;_gNFLabor+=LABOR[c.info.modelo]||0;});
+    let _gRecProd=0,_gRecLabor=0;
+    _allRec.forEach(c=>{const rd=DB.recommended.find(r=>r['LOCAL']===c.name)||{};const m=rd['MODELO SUGERIDO']||c._modelo||'VIP-3220-D';_gRecProd+=PRICES[m]||0;_gRecLabor+=LABOR[m]||0;});
+    const _gTotal=(_gNFProd+_gNFLabor)+(_gRecProd+_gRecLabor);
+    const _fmt=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2});
+    if(!_allNF.length&&!_allRec.length){
+      _gc.style.display='none';
+    } else {
+      _gc.style.display='';
+      const _recRow=_allRec.length?`
+        <div style="padding:14px 20px;border-top:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#ea580c;margin-bottom:8px">Câmeras Recomendadas (${_allRec.length} plotadas)</div>
+          <div style="display:flex;gap:24px;flex-wrap:wrap">
+            <div style="font-size:11px;color:var(--text3)">Equipamento: <b style="color:var(--text)">${_fmt(_gRecProd)}</b></div>
+            <div style="font-size:11px;color:#6366f1">Mão de Obra: <b>${_fmt(_gRecLabor)}</b></div>
+            <div style="font-size:12px;font-weight:700;color:#ea580c">Subtotal: ${_fmt(_gRecProd+_gRecLabor)}</div>
+          </div>
+        </div>`:'';
+      _gc.innerHTML=`
+        <div style="background:var(--g-light);padding:14px 20px;border-bottom:1px solid var(--g)30">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-size:13px;font-weight:800;color:var(--g3)">Investimento Total para Regularização</div>
+              <div style="font-size:11px;color:var(--g);margin-top:1px">Todas as plantas combinadas</div>
+            </div>
+            <div style="font-size:26px;font-weight:900;color:var(--g3)">${_fmt(_gTotal)}</div>
+          </div>
+        </div>
+        <div style="padding:14px 20px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--nf);margin-bottom:8px">Câmeras Inativas (${_allNF.length})</div>
+          <div style="display:flex;gap:24px;flex-wrap:wrap">
+            <div style="font-size:11px;color:var(--text3)">Equipamento: <b style="color:var(--text)">${_fmt(_gNFProd)}</b></div>
+            <div style="font-size:11px;color:#6366f1">Mão de Obra: <b>${_fmt(_gNFLabor)}</b></div>
+            <div style="font-size:12px;font-weight:700;color:var(--nf)">Subtotal: ${_fmt(_gNFProd+_gNFLabor)}</div>
+          </div>
+        </div>
+        ${_recRow}`;
+    }
+  }
+
   // Câmeras NF desta planta (excluir recomendadas)
   const nf=F().cameras.filter(c=>!c.rec&&!c.fn);
 
@@ -7526,8 +7598,9 @@ function mobBuildList(){
     return;
   }
 
-  if(_mf==='nf') cams = cams.filter(c=>!c.fn);
-  if(_mf==='ok') cams = cams.filter(c=> c.fn);
+  if(_mf==='nf')   cams = cams.filter(c=>!c.fn);
+  if(_mf==='ok')   cams = cams.filter(c=> c.fn);
+  if(_mf==='alta') cams = cams.filter(c=>{const dc=DB.cameras.find(d=>d['NOME CANAL']===c.nome)||{};return (dc['CRITICIDADE']||'MÉDIA')==='ALTA';});
 
   if(_mq){
     const q=_mq.toLowerCase();
@@ -8018,6 +8091,21 @@ function mobSetView(v){
         <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:${barC}">${fTaxa}%</div><div style="font-size:10px;color:var(--text3)">${fNf} inativa${fNf!==1?'s':''}${fAlta>0?' · ⚠'+fAlta:''}</div></div>
       </div>`;
     }).join('');
+    // Bloco atenção mobile
+    const _subst12Mob=DB.cameras.filter(c=>{
+      const nome=c['NOME CANAL'];const fin=CAM_FIN[nome]||{};const modelo=c['MODELO CÂMERA']||'';
+      const vida=fin.vidaUtil||LIFESPAN[modelo]||6;let ds=fin.dataInstalacao||null;
+      if(!ds&&INSTALL_YEAR[nome])ds=INSTALL_YEAR[nome]+'-01';if(!ds)return false;
+      const inst=new Date(ds);const fim=new Date(inst);fim.setFullYear(fim.getFullYear()+vida);
+      const m=(fim-new Date())/(1000*60*60*24*30.44);return m<=12&&m>0;
+    }).length;
+    const _recNaoImplMob=Math.max(0,DB.recommended.length-all.filter(c=>c.rec).length);
+    const _mobAtItems=[];
+    if(altaInativas>0) _mobAtItems.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)"><span>🔴</span><span style="flex:1;font-size:12px"><b style="color:#fca5a5">${altaInativas}</b> câmera${altaInativas!==1?'s':''} ALTA inoperante${altaInativas!==1?'s':''}</span><button onclick="mobSetFilter('alta');mobSetView('list')" style="font-size:10px;font-weight:600;color:#fca5a5;background:rgba(220,38,38,.25);border:none;border-radius:5px;padding:2px 7px;font-family:inherit;cursor:pointer">Ver</button></div>`);
+    if(_subst12Mob>0) _mobAtItems.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)"><span>🟠</span><span style="flex:1;font-size:12px"><b style="color:#fcd34d">${_subst12Mob}</b> câmera${_subst12Mob!==1?'s':''} com substituição em até 12 meses</span><button onclick="mobSetView('timeline')" style="font-size:10px;font-weight:600;color:#fcd34d;background:rgba(217,119,6,.25);border:none;border-radius:5px;padding:2px 7px;font-family:inherit;cursor:pointer">Ver</button></div>`);
+    if(_recNaoImplMob>0) _mobAtItems.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)"><span>🟡</span><span style="flex:1;font-size:12px"><b style="color:#fcd34d">${_recNaoImplMob}</b> recomendação${_recNaoImplMob!==1?'ões':''} não implantada${_recNaoImplMob!==1?'s':''}</span><button onclick="mobSetView('manut')" style="font-size:10px;font-weight:600;color:#fcd34d;background:rgba(217,119,6,.25);border:none;border-radius:5px;padding:2px 7px;font-family:inherit;cursor:pointer">Ver</button></div>`);
+    if(costSubst>0) _mobAtItems.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 0"><span>💰</span><span style="flex:1;font-size:12px">Investimento estimado: <b style="color:#86efac">R$ ${costSubst.toLocaleString('pt-BR',{minimumFractionDigits:0})}</b></span><button onclick="mobSetView('budget')" style="font-size:10px;font-weight:600;color:#86efac;background:rgba(22,163,74,.25);border:none;border-radius:5px;padding:2px 7px;font-family:inherit;cursor:pointer">Ver</button></div>`);
+    const _mobAtBlock=_mobAtItems.length?`<div style="background:rgba(15,23,42,.85);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:4px 14px 6px;margin-bottom:12px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.5);padding:8px 0 2px">O que precisa da sua atenção</div>${_mobAtItems.join('')}</div>`:'';
     // Atalhos
     const btn=(lbl,col,bg,bord,fn)=>`<button onclick="${fn}" style="flex:1;min-width:0;padding:11px 4px;border-radius:12px;border:1px solid ${bord};background:${bg};color:${col};font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap">${lbl}</button>`;
     const circ = 2*Math.PI*38;
@@ -8036,6 +8124,7 @@ function mobSetView(v){
     </svg>`;
     ov.innerHTML=`<div style="padding:16px">
       ${mobNavPills(v)}
+      ${_mobAtBlock}
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:16px">
         ${donutSvg}
         <div style="flex:1">
@@ -8064,7 +8153,7 @@ function mobSetView(v){
       </div>
       ${plantRows?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">Saúde por planta</div><div style="font-size:10px;color:var(--text3);margin-bottom:10px">Toque para ver lista</div>${plantRows}</div>`:''}
       <div style="margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Acesso rápido</div>
-        <div style="display:flex;gap:8px;margin-bottom:8px">${btn('⚠ Inativas','var(--nf)','var(--nf-bg)','var(--nf-border)',"mobSetFilter('nf');mobSetView('list')")}${btn('🔴 Críticas ALTA','#dc2626','rgba(220,38,38,.08)','rgba(220,38,38,.25)',"mobSetFilter('nf');mobSetView('list')")}</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">${btn('⚠ Inativas','var(--nf)','var(--nf-bg)','var(--nf-border)',"mobSetFilter('nf');mobSetView('list')")}${btn('🔴 Críticas ALTA','#dc2626','rgba(220,38,38,.08)','rgba(220,38,38,.25)',"mobSetFilter('alta');mobSetView('list')")}</div>
         <div style="display:flex;gap:8px">${btn('$ Orçamento','var(--warn)','rgba(217,119,6,.08)','rgba(217,119,6,.25)',"mobSetView('budget')")}${btn('★ Recomendadas','#ea580c','rgba(234,88,12,.08)','rgba(234,88,12,.25)',"mobSetView('rec')")}</div>
       </div>
     </div>`;
@@ -8309,7 +8398,71 @@ function mobSetView(v){
   }
 
   if(v === 'coverage'){
-    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;color:var(--text3);font-size:13px"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto 12px;opacity:.4"><circle cx="20" cy="20" r="16"/><path d="M20 4v32M4 20h32"/></svg>Mapa de cobertura disponível apenas no desktop — acesse pelo computador para visualizar a planta completa.</div></div>`;
+    const camMap={};
+    DB.cameras.forEach(cam=>{
+      const g=cam['GRAVADOR']||'Sem Gravador';
+      if(!camMap[g])camMap[g]=[];
+      camMap[g].push(cam);
+    });
+    const mStatus={};
+    floors.forEach(fl=>fl.cameras.forEach(c=>{ mStatus[c.name]={fn:c.fn,rec:c.rec||false}; }));
+    let recCards='';
+    if(!DB.recorders.length){
+      recCards=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 16px;text-align:center;color:var(--text3);font-size:13px">Nenhum gravador cadastrado.<br><span style="font-size:11px;margin-top:4px;display:block">Configure em Admin no desktop.</span></div>`;
+    } else {
+      recCards=DB.recorders.map(rec=>{
+        const nome  =rec['NOME DO GRAVADOR']||rec['NOME']||'Gravador';
+        const ip    =rec['IP DE ACESSO']||rec['IP']||'—';
+        const modelo=rec['MODELO']||'—';
+        const local =rec['LOCALIZAÇÃO']||rec['LOCAL']||'—';
+        const obs   =rec['Observação']||'';
+        const cams  =camMap[nome]||[];
+        const total =cams.length;
+        const ativas=cams.filter(c=>{ const s=mStatus[c['NOME CANAL']]; return s&&s.fn&&!s.rec; }).length;
+        const inats =cams.filter(c=>{ const s=mStatus[c['NOME CANAL']]; return s&&!s.fn&&!s.rec; }).length;
+        const nmap  =cams.filter(c=>!mStatus[c['NOME CANAL']]).length;
+        const pct   =total>0?Math.round(ativas/total*100):0;
+        const barColor=pct>=80?'var(--ok)':pct>=50?'var(--warn)':'var(--nf)';
+        const badge =inats>0
+          ?`<span style="background:var(--nf-bg);color:var(--nf);border:1px solid var(--nf-border);border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px">${inats} inativa${inats>1?'s':''}</span>`
+          :`<span style="background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border);border-radius:20px;font-size:10px;font-weight:700;padding:2px 8px">OK</span>`;
+        const cells=cams.map(cam=>{
+          const s=mStatus[cam['NOME CANAL']];
+          const ch=cam['CANAL']||'?';
+          const bg=!s?'var(--surface3)':s.rec?'#ea580c':s.fn?'var(--ok)':'var(--nf)';
+          return `<div title="Ch ${ch}: ${cam['NOME CANAL']}" style="width:20px;height:20px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff">${ch}</div>`;
+        }).join('');
+        return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div><div style="font-size:14px;font-weight:700;color:var(--text)">${nome}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${modelo} · ${local}</div></div>
+            ${badge}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;background:var(--surface3);border-radius:7px;padding:6px 10px;font-size:11px;font-family:monospace;color:var(--text2)">${ip}</div>
+          ${obs?`<div style="font-size:10px;color:var(--warn);background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.3);border-radius:6px;padding:6px 8px">⚠ ${obs}</div>`:''}
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px">
+              <span>${ativas} ativas · ${inats} inativas · ${nmap} não mapeadas</span>
+              <span style="font-weight:700;color:${barColor}">${pct}%</span>
+            </div>
+            <div style="background:var(--surface3);border-radius:4px;height:7px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${barColor};border-radius:4px"></div>
+            </div>
+          </div>
+          ${cells?`<div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Canais (${total})</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">${cells}</div>
+            <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+              <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--ok)"></div>Ativa</span>
+              <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--nf)"></div>Inativa</span>
+              <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:#ea580c"></div>Recomendada</span>
+              <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)"><div style="width:10px;height:10px;border-radius:2px;background:var(--surface3)"></div>Não mapeada</span>
+            </div>
+          </div>`:''}
+        </div>`;
+      }).join('');
+    }
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}${recCards}</div>`;
     ov.scrollTop=0;
     return;
   }
