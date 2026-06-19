@@ -2812,8 +2812,8 @@ function lookup(nome){
   const statusOp=String(cam['STATUS DE OPERAÇÃO']||'').toLowerCase();
   const isNF = statusOp.includes('não') || statusOp.includes('nao') ||
                statusOp.includes('inativ') || statusOp === 'off' ||
-               (par && par['Parecer'].toLowerCase().includes('não'));
-  const parecerStr = par ? par['Parecer'].trim() : (isNF ? 'Não funcional' : 'OK');
+               (par && par['Parecer'] && par['Parecer'].toLowerCase().includes('não'));
+  const parecerStr = par && par['Parecer'] ? par['Parecer'].trim() : (isNF ? 'Não funcional' : 'OK');
   return{
     nome, canal:cam['CANAL']||'', gravador:grav, modelo:cam['MODELO CÂMERA']||'',
     serial:cam['SERIAL']||'', ativo:cam['ATIVO']||'', statusAtivo:cam['STATUS ATIVO']||'',
@@ -4963,7 +4963,7 @@ function showAdmin(){
   function toCSV(arr, cols){
     if(!arr.length) return cols.join(',');
     return [cols.join(','), ...arr.map(r=>cols.map(c=>{
-      const v=String(r[c]||'').replace(/,/g,';').replace(/\n/g,' ');
+      const v=String(r[c]||'').replace(/"/g,'""').replace(/,/g,';').replace(/\n/g,' ');
       return v;
     }).join(','))].join('\n');
   }
@@ -5351,7 +5351,9 @@ function scheduleAutoSave(){
       const json=JSON.stringify(payload);
       // Verificar tamanho antes de salvar (evita erro silencioso)
       if(json.length>4*1024*1024){
-        console.warn('Auto-save: payload grande demais, pulando');return;
+        console.warn('Auto-save: payload grande demais, pulando');
+        toast('⚠ Autosave pausado: projeto muito grande. Salve manualmente.');
+        return;
       }
       localStorage.setItem('ibmp_autosave',json);
     }catch(err){console.warn('Auto-save falhou:',err);}
@@ -5371,7 +5373,7 @@ function loadAutoSave(){
     if(data.db?.pareceres?.length) DB.pareceres=data.db.pareceres;
     // Só restaura posições de câmeras — imagem precisa ser recarregada
     data.floors.forEach((saved,i)=>{
-      if(!floors[i])floors.push({name:saved.name,cameras:[],riskZones:[],zoom:1,panX:0,panY:0,image:null,imgB64:'',scale:0});
+      if(!floors[i])floors.push(mkFloor(saved.name));
       const f=floors[i];
       f.name=saved.name;
       f.scale=saved.scale||0;
