@@ -7418,7 +7418,12 @@ function isMob(){
   return mv ? window.getComputedStyle(mv).display !== 'none' : false;
 }
 
-let _mf = 'all', _mq = '', _mobCurrentView = 'dash';
+let _mf = 'all', _mq = '', _mobCurrentView = 'dash', _mPlanta = null, _mOrcFloor = null, _mOrcMode = 'nf';
+
+function mobNavToFloor(idx){
+  _mPlanta = floors[idx] ? floors[idx].name : null;
+  mobSetView('list');
+}
 
 function mobRender(){
   const _mv = document.getElementById('mob-view');
@@ -7910,13 +7915,23 @@ function mobSetView(v){
     const footer2 = document.getElementById('mob-contact-footer');
     if(footer2) footer2.style.display = 'none';
     ov.style.display = 'block';
-    let cams = DB.cameras.map(c=>{const nome=c['NOME CANAL'];const info=lookup(nome);const fn=isFn(nome);return{nome,info,fn};});
+    let allDbCams = DB.cameras.map(c=>{const nome=c['NOME CANAL'];const info=lookup(nome);const fn=isFn(nome);return{nome,info,fn};});
+    // Filtro por planta
+    if(_mPlanta){
+      const plantaSet = new Set((floors.find(f=>f.name===_mPlanta)||{cameras:[]}).cameras.filter(c=>!c.rec).map(c=>c.name));
+      allDbCams = allDbCams.filter(c=>plantaSet.has(c.nome));
+    }
+    const breadcrumb = _mPlanta
+      ? `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--g-light);border:1px solid var(--g);border-radius:10px;margin-bottom:12px">
+          <span style="font-size:12px;font-weight:600;color:var(--g3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_mPlanta}</span>
+          <button onclick="_mPlanta=null;mobSetView('list')" style="font-size:11px;color:var(--g3);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0;padding:0">Ver todas ×</button>
+        </div>` : '';
     let listHtml='';
-    if(!cams.length){
-      listHtml=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 16px;text-align:center;color:var(--text3);font-size:13px">Nenhuma câmera no banco de dados.<br><span style="font-size:11px;margin-top:4px;display:block">Configure em Admin no desktop.</span></div>`;
+    if(!allDbCams.length){
+      listHtml=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 16px;text-align:center;color:var(--text3);font-size:13px">${_mPlanta?'Nenhuma câmera nesta planta.':'Nenhuma câmera no banco de dados.<br><span style="font-size:11px;margin-top:4px;display:block">Configure em Admin no desktop.</span>'}</div>`;
     } else {
-      const nfs=cams.filter(c=>!c.fn);
-      const oks=cams.filter(c=>c.fn);
+      const nfs=allDbCams.filter(c=>!c.fn);
+      const oks=allDbCams.filter(c=>c.fn);
       if(nfs.length){
         listHtml+=`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--nf);padding:8px 0 4px">Inativas (${nfs.length})</div>`;
         nfs.forEach(c=>{listHtml+=mobItemHTML(c);});
@@ -7928,7 +7943,7 @@ function mobSetView(v){
         bySetor[s].forEach(c=>{listHtml+=mobItemHTML(c);});
       });
     }
-    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}${listHtml}</div>`;
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}${breadcrumb}${listHtml}</div>`;
     ov.scrollTop=0;
     return;
   }
@@ -7974,13 +7989,14 @@ function mobSetView(v){
     const taxaColor   = taxa>=90?'#16a34a':taxa>=70?'#d97706':'#dc2626';
     // Saúde por planta
     const plantRows = floors.filter(f=>f.cameras.filter(c=>!c.rec).length>0).map(f=>{
+      const fIdx=floors.indexOf(f);
       const fCams=f.cameras.filter(c=>!c.rec);
       const fOk=fCams.filter(c=>c.fn).length;
       const fNf=fCams.length-fOk;
       const fTaxa=fCams.length>0?Math.round(fOk/fCams.length*100):0;
       const fAlta=DB.cameras.filter(c=>{const s=fCams.find(fc=>fc.name===c['NOME CANAL']);return s&&!s.fn&&(c['CRITICIDADE']||'MÉDIA')==='ALTA';}).length;
       const barC=fTaxa>=80?'#16a34a':fTaxa>=60?'#d97706':'#dc2626';
-      return `<div onclick="mobSetFilter('all');mobSetView('list')" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent">
+      return `<div onclick="mobNavToFloor(${fIdx})" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent">
         <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</div><div style="background:var(--surface3);border-radius:3px;height:5px;margin-top:5px;overflow:hidden"><div style="width:${fTaxa}%;height:100%;background:${barC};border-radius:3px"></div></div></div>
         <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:${barC}">${fTaxa}%</div><div style="font-size:10px;color:var(--text3)">${fNf} inativa${fNf!==1?'s':''}${fAlta>0?' · ⚠'+fAlta:''}</div></div>
       </div>`;
@@ -8009,7 +8025,7 @@ function mobSetView(v){
       </div>
       ${plantRows?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">Saúde por planta</div><div style="font-size:10px;color:var(--text3);margin-bottom:10px">Toque para ver lista</div>${plantRows}</div>`:''}
       <div style="margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Acesso rápido</div>
-        <div style="display:flex;gap:8px;margin-bottom:8px">${btn('⚠ Inativas','var(--nf)','var(--nf-bg)','var(--nf-border)',"mobSetFilter('nf');mobSetView('list')")}${btn('🔴 Críticas ALTA','#dc2626','rgba(220,38,38,.08)','rgba(220,38,38,.25)',"mobSetFilter('nf');mobSetView('list')")}</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">${btn('⚠ Inativas','var(--nf)','var(--nf-bg)','var(--nf-border)',"_mPlanta=null;mobSetFilter('nf');mobSetView('list')")}${btn('🔴 Críticas ALTA','#dc2626','rgba(220,38,38,.08)','rgba(220,38,38,.25)',"_mPlanta=null;mobSetFilter('nf');mobSetView('list')")}</div>
         <div style="display:flex;gap:8px">${btn('$ Orçamento','var(--warn)','rgba(217,119,6,.08)','rgba(217,119,6,.25)',"mobSetView('budget')")}${btn('★ Recomendadas','#ea580c','rgba(234,88,12,.08)','rgba(234,88,12,.25)',"mobSetView('rec')")}</div>
       </div>
     </div>`;
@@ -8018,17 +8034,14 @@ function mobSetView(v){
   }
 
   if(v === 'budget'){
-    const all     = allCams();
-    const nfCams  = all.filter(c=>!c.rec&&!c.fn);
-    const recCams = all.filter(c=>c.rec);
+    const targetFloors = (typeof _mOrcFloor === 'number') ? [floors[_mOrcFloor]].filter(Boolean) : floors;
+    const showNf  = _mOrcMode === 'nf'  || _mOrcMode === 'both';
+    const showRec = _mOrcMode === 'rec' || _mOrcMode === 'both';
 
-    // Agrupa câmeras inativas por planta
-    const nfByFloor = floors.map(f=>({
-      name: f.name,
-      cams: f.cameras.filter(c=>!c.rec&&!c.fn)
-    })).filter(g=>g.cams.length>0);
+    const nfByFloor = targetFloors.map(f=>({name:f.name,cams:f.cameras.filter(c=>!c.rec&&!c.fn)})).filter(g=>g.cams.length>0);
+    const recByFloor = targetFloors.map(f=>({name:f.name,cams:f.cameras.filter(c=>c.rec)})).filter(g=>g.cams.length>0);
 
-    let grandProd=0, grandLabor=0;
+    let grandNfProd=0, grandNfLabor=0;
     const nfSections = nfByFloor.map(g=>{
       let secProd=0, secLabor=0;
       const camRows = g.cams.map(c=>{
@@ -8040,65 +8053,58 @@ function mobSetView(v){
             <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.info.modelo||'—'}</div></div>
             <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:var(--warn)">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
           </div>
-          <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)">
-            <span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
-            <span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
-          </div>
+          <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
         </div>`;
       }).join('');
-      grandProd+=secProd; grandLabor+=secLabor;
-      return `<div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${g.name}</span>
-          <span style="flex-shrink:0;white-space:nowrap;color:var(--warn)">R$ ${(secProd+secLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
-        </div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0 14px">${camRows}</div>
-      </div>`;
+      grandNfProd+=secProd; grandNfLabor+=secLabor;
+      return `<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${g.name}</span><span style="flex-shrink:0;white-space:nowrap;color:var(--warn)">R$ ${(secProd+secLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0 14px">${camRows}</div></div>`;
     }).join('');
 
-    // Recomendadas plotadas (todas as plantas)
-    let recProd=0, recLabor=0;
-    const recRows = recCams.map(c=>{
-      const rd=DB.recommended.find(r=>r['LOCAL']===c.name)||{};
-      const modelo=rd['MODELO SUGERIDO']||c.info.modelo||'—';
-      const {p,l}=_mobRC(modelo);
-      recProd+=p; recLabor+=l;
-      const plotFloor=floors.find(f=>f.cameras.some(fc=>fc.rec&&fc.name===c.name));
-      const setor=rd['SETOR']||(plotFloor?plotFloor.name:'—');
-      return `<div style="padding:10px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06));border-left:3px solid #ea580c;padding-left:10px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#ea580c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3)">${modelo} · ${setor}</div></div>
-          <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:#ea580c">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
-        </div>
-        <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
-      </div>`;
+    let grandRecProd=0, grandRecLabor=0;
+    const recSections = recByFloor.map(g=>{
+      let secProd=0, secLabor=0;
+      const camRows = g.cams.map(c=>{
+        const rd=DB.recommended.find(r=>r['LOCAL']===c.name)||{};
+        const modelo=rd['MODELO SUGERIDO']||c.info.modelo||'—';
+        const {p,l}=_mobRC(modelo);
+        secProd+=p; secLabor+=l;
+        return `<div style="padding:10px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06));border-left:3px solid #ea580c;padding-left:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+            <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#ea580c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3)">${modelo}</div></div>
+            <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:#ea580c">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
+        </div>`;
+      }).join('');
+      grandRecProd+=secProd; grandRecLabor+=secLabor;
+      return `<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${g.name}</span><span style="flex-shrink:0;white-space:nowrap;color:#ea580c">R$ ${(secProd+secLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div><div style="background:var(--surface);border:1px solid rgba(234,88,12,.3);border-radius:14px;padding:0 14px">${camRows}</div></div>`;
     }).join('');
 
-    const grandTotal = grandProd+grandLabor+recProd+recLabor;
-    const hasRec = recCams.length>0;
+    const totalShown = (showNf?(grandNfProd+grandNfLabor):0)+(showRec?(grandRecProd+grandRecLabor):0);
+    const floorList = floors.filter(f=>f.cameras.length>0);
+    const isAllF = typeof _mOrcFloor !== 'number';
+    const fpill=(f,fi)=>{const sel=!isAllF&&_mOrcFloor===fi;return`<button onclick="_mOrcFloor=${fi};mobSetView('budget')" style="flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid ${sel?'var(--g)':'var(--border)'};background:${sel?'var(--g-light)':'var(--surface)'};color:${sel?'var(--g3)':'var(--text2)'};font-size:11px;font-weight:${sel?700:400};font-family:inherit;cursor:pointer;white-space:nowrap">${f.name.replace('Bloco C1 IBMP - ','').replace('Bloco C1 - IBMP - ','').replace('Bloco C1 - ','')}</button>`;};
+    const mbtn=(lbl,mode)=>{const sel=_mOrcMode===mode;return`<button onclick="_mOrcMode='${mode}';mobSetView('budget')" style="flex:1;padding:8px 4px;border-radius:8px;border:1px solid ${sel?'var(--g)':'var(--border)'};background:${sel?'var(--g-light)':'var(--surface)'};color:${sel?'var(--g3)':'var(--text2)'};font-size:11px;font-weight:${sel?700:400};font-family:inherit;cursor:pointer">${lbl}</button>`;};
 
     ov.innerHTML=`<div style="padding:16px">
       ${mobNavPills(v)}
-      ${hasRec?`<div style="background:var(--surface);border:2px solid var(--g);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g);margin-bottom:2px">Total geral</div><div style="font-size:11px;color:var(--text3)">Inativas + Recomendadas</div></div>
-        <div style="font-size:22px;font-weight:800;color:var(--g)">R$ ${grandTotal.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
-      </div>`:''}
-      ${nfCams.length?`<div style="margin-bottom:4px">
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Câmeras Inativas</div>
-        ${nfSections}
-        <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25);border-radius:10px;margin-bottom:16px">
-          <span style="font-size:12px;font-weight:600;color:var(--warn)">Subtotal inativas</span>
-          <span style="font-size:13px;font-weight:800;color:var(--warn)">R$ ${(grandProd+grandLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
+      <div style="margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Planta</div>
+        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch">
+          <button onclick="_mOrcFloor=null;mobSetView('budget')" style="flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid ${isAllF?'var(--g)':'var(--border)'};background:${isAllF?'var(--g-light)':'var(--surface)'};color:${isAllF?'var(--g3)':'var(--text2)'};font-size:11px;font-weight:${isAllF?700:400};font-family:inherit;cursor:pointer;white-space:nowrap">Todas</button>
+          ${floorList.map((f,fi)=>fpill(f,fi)).join('')}
         </div>
-      </div>`:`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;color:var(--text3);font-size:13px;margin-bottom:16px">Nenhuma câmera inativa mapeada</div>`}
-      ${hasRec?`<div>
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Câmeras Recomendadas <span style="font-size:11px;color:#ea580c;font-weight:600">(plotadas no mapa)</span></div>
-        <div style="background:var(--surface);border:1px solid rgba(234,88,12,.3);border-radius:14px;padding:0 14px;margin-bottom:10px">${recRows}</div>
-        <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.25);border-radius:10px">
-          <span style="font-size:12px;font-weight:600;color:#ea580c">Subtotal recomendadas</span>
-          <span style="font-size:13px;font-weight:800;color:#ea580c">R$ ${(recProd+recLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
-        </div>
-      </div>`:''}
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Incluir no orçamento</div>
+        <div style="display:flex;gap:6px">${mbtn('Só inativas','nf')}${mbtn('Inativas + Rec.','both')}${mbtn('Só Rec.','rec')}</div>
+      </div>
+      <div style="background:var(--surface);border:2px solid var(--g);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="min-width:0"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g);margin-bottom:2px">Total estimado</div><div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${isAllF?'Todas as plantas':(floors[_mOrcFloor]||{name:'—'}).name.replace('Bloco C1 IBMP - ','').replace('Bloco C1 - IBMP - ','')} · ${_mOrcMode==='nf'?'Só inativas':_mOrcMode==='rec'?'Só rec.':'Inativas + Rec.'}</div></div>
+        <div style="font-size:22px;font-weight:800;color:var(--g);flex-shrink:0">R$ ${totalShown.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
+      </div>
+      ${showNf?(nfByFloor.length?`<div style="margin-bottom:4px"><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Câmeras Inativas</div>${nfSections}<div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25);border-radius:10px;margin-bottom:16px"><span style="font-size:12px;font-weight:600;color:var(--warn)">Subtotal inativas</span><span style="font-size:13px;font-weight:800;color:var(--warn)">R$ ${(grandNfProd+grandNfLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div></div>`:`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;color:var(--text3);font-size:13px;margin-bottom:16px">Nenhuma câmera inativa${!isAllF?' nesta planta':''}</div>`):''}
+      ${showRec?(recByFloor.length?`<div><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Câmeras Recomendadas</div>${recSections}<div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.25);border-radius:10px"><span style="font-size:12px;font-weight:600;color:#ea580c">Subtotal recomendadas</span><span style="font-size:13px;font-weight:800;color:#ea580c">R$ ${(grandRecProd+grandRecLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div></div>`:`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;color:var(--text3);font-size:13px">Nenhuma câmera recomendada${!isAllF?' nesta planta':''}</div>`):''}
     </div>`;
     ov.scrollTop=0;
     return;
@@ -8115,63 +8121,68 @@ function mobSetView(v){
 
     const unplotted = recDB.filter(r=>!recCams.find(c=>c.name===r['LOCAL']));
 
-    let plotProd=0, plotLabor=0;
-    const plotRows = recCams.map(c=>{
-      const rd  = recDB.find(r=>r['LOCAL']===c.name)||{};
-      const mod = rd['MODELO SUGERIDO']||c.info.modelo||'—';
-      const {p,l} = _mobRC(mod);
-      plotProd+=p; plotLabor+=l;
-      const plotFloor = floors.find(f=>f.cameras.some(fc=>fc.rec&&fc.name===c.name));
-      const setor = rd['SETOR']||(plotFloor?plotFloor.name:c.info.setor||'—');
-      const just  = rd['JUSTIFICATIVA']||'';
-      return `<div style="padding:10px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06));border-left:3px solid #ea580c;padding-left:10px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#ea580c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3)">${mod} · ${setor}</div></div>
-          <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:#ea580c">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
+    // Plotadas agrupadas por planta
+    const plotByFloor = floors.map(f=>{
+      const cams=f.cameras.filter(c=>c.rec);
+      if(!cams.length) return null;
+      let fProd=0,fLabor=0;
+      const rows=cams.map(c=>{
+        const rd=recDB.find(r=>r['LOCAL']===c.name)||{};
+        const mod=rd['MODELO SUGERIDO']||c.info.modelo||'—';
+        const {p,l}=_mobRC(mod);
+        fProd+=p; fLabor+=l;
+        const just=rd['JUSTIFICATIVA']||'';
+        return `<div style="padding:12px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06))">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:${just?'6px':'0'}">
+            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:#ea580c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${mod}</div></div>
+            <div style="flex-shrink:0;font-size:12px;font-weight:700;color:#ea580c">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
+          </div>
+          ${just?`<div style="background:rgba(234,88,12,.08);border-left:2px solid #ea580c;border-radius:0 4px 4px 0;padding:5px 8px;font-size:11px;color:var(--text2);line-height:1.4">${just}</div>`:''}
+          <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
+        </div>`;
+      }).join('');
+      return {name:f.name,rows,prod:fProd,labor:fLabor};
+    }).filter(Boolean);
+
+    // Não plotadas agrupadas por setor
+    const unplBySetor={};
+    unplotted.forEach(r=>{
+      const s=r['SETOR']||'Sem setor';
+      if(!unplBySetor[s]) unplBySetor[s]={rows:'',prod:0,labor:0};
+      const mod=r['MODELO SUGERIDO']||'VIP-3220-D';
+      const {p,l}=_mobRC(mod);
+      unplBySetor[s].prod+=p; unplBySetor[s].labor+=l;
+      const just=r['JUSTIFICATIVA']||'';
+      unplBySetor[s].rows+=`<div style="padding:12px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06))">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:${just?'6px':'0'}">
+          <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--warn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r['LOCAL']||'(sem nome)'}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${mod}</div></div>
+          <div style="flex-shrink:0;font-size:12px;font-weight:700;color:var(--warn)">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
         </div>
-        ${just?`<div style="font-size:10px;color:var(--text2);margin-top:3px;line-height:1.4">${just}</div>`:''}
+        ${just?`<div style="background:rgba(217,119,6,.08);border-left:2px solid var(--warn);border-radius:0 4px 4px 0;padding:5px 8px;font-size:11px;color:var(--text2);line-height:1.4">${just}</div>`:''}
         <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
       </div>`;
-    }).join('');
+    });
 
-    let unplProd=0, unplLabor=0;
-    const unplRows = unplotted.map(r=>{
-      const mod = r['MODELO SUGERIDO']||'VIP-3220-D';
-      const {p,l} = _mobRC(mod);
-      unplProd+=p; unplLabor+=l;
-      const setor = r['SETOR']||'—';
-      const just  = r['JUSTIFICATIVA']||'';
-      return `<div style="padding:10px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06));border-left:3px solid var(--warn);padding-left:10px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:var(--warn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r['LOCAL']||'(sem nome)'}</div><div style="font-size:11px;color:var(--text3)">${mod} · ${setor}</div></div>
-          <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:var(--warn)">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
-        </div>
-        ${just?`<div style="font-size:10px;color:var(--text2);margin-top:3px;line-height:1.4">${just}</div>`:''}
-        <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
-      </div>`;
-    }).join('');
+    const plotTotal=plotByFloor.reduce((s,g)=>s+g.prod+g.labor,0);
+    const unplTotal=Object.values(unplBySetor).reduce((s,g)=>s+g.prod+g.labor,0);
+    const grandTotal=plotTotal+unplTotal;
+    const totalCount=recCams.length+unplotted.length;
 
-    const grandTotal = plotProd+plotLabor+unplProd+unplLabor;
-    const totalCount = recCams.length + unplotted.length;
+    const plotSections=plotByFloor.map(g=>`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${g.name}</span><span style="flex-shrink:0;color:#ea580c;margin-left:8px">R$ ${(g.prod+g.labor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div><div style="background:var(--surface);border:1px solid rgba(234,88,12,.25);border-radius:14px;padding:0 14px">${g.rows}</div></div>`).join('');
+    const unplSections=Object.entries(unplBySetor).map(([setor,g])=>`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center"><span>${setor}</span><span style="color:var(--warn)">R$ ${(g.prod+g.labor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div><div style="background:var(--surface);border:1px solid rgba(217,119,6,.25);border-radius:14px;padding:0 14px">${g.rows}</div></div>`).join('');
 
     ov.innerHTML=`<div style="padding:16px">
       ${mobNavPills(v)}
-      <div style="background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.3);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
-        <div style="min-width:0;flex:1"><div style="font-size:10px;font-weight:700;color:#ea580c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Total consolidado</div><div style="font-size:20px;font-weight:800;color:#ea580c;line-height:1.1">${totalCount} loca${totalCount!==1?'is':'l'} recomendado${totalCount!==1?'s':''}</div><div style="font-size:10px;color:#ea580c;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${recCams.length} plotada${recCams.length!==1?'s':''} · ${unplotted.length} só no banco</div></div>
-        <div style="flex-shrink:0;text-align:right"><div style="font-size:10px;color:#ea580c;font-weight:600;margin-bottom:2px">Investimento estimado</div><div style="font-size:17px;font-weight:800;color:#ea580c">R$ ${grandTotal.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.3);border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#ea580c">${totalCount}</div><div style="font-size:9px;color:#ea580c;margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Locais recomendados</div></div>
+        <div style="background:var(--surface);border:2px solid var(--g);border-radius:12px;padding:12px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--g);line-height:1.2">R$ ${grandTotal.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div><div style="font-size:9px;color:var(--g);margin-top:4px;text-transform:uppercase;letter-spacing:.04em">Investimento est.</div></div>
       </div>
-      ${recCams.length?`<div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center">
-          <span>Plotadas no mapa</span><span style="color:#ea580c">R$ ${(plotProd+plotLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
-        </div>
-        <div style="background:var(--surface);border:1px solid rgba(234,88,12,.3);border-radius:14px;padding:0 14px">${plotRows}</div>
-      </div>`:''}
-      ${unplotted.length?`<div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center">
-          <span>Só no banco (não plotadas)</span><span style="color:var(--warn)">R$ ${(unplProd+unplLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
-        </div>
-        <div style="background:var(--surface);border:1px solid rgba(217,119,6,.25);border-radius:14px;padding:0 14px">${unplRows}</div>
-      </div>`:''}
+      <div style="display:flex;gap:16px;font-size:11px;color:var(--text3);margin-bottom:16px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
+        <span><span style="color:#ea580c;font-weight:700">${recCams.length}</span> plotadas no mapa</span>
+        <span><span style="color:var(--warn);font-weight:700">${unplotted.length}</span> só no banco</span>
+      </div>
+      ${plotByFloor.length?`<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Plotadas no mapa</div>${plotSections}`:''}
+      ${Object.keys(unplBySetor).length?`<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;margin-top:4px">Só no banco (não plotadas)</div>${unplSections}`:''}
     </div>`;
     ov.scrollTop=0;
     return;
@@ -8226,6 +8237,7 @@ function mobSetView(v){
 
     ov.innerHTML=`<div style="padding:16px">
       ${mobNavPills(v)}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.5"><b style="color:var(--text)">O que precisa de atenção agora.</b> Câmeras inoperantes por criticidade e equipamentos próximos do fim de vida útil.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
         ${kpi(inop.length,'Inoperantes','var(--nf)','var(--nf-bg)','var(--nf-border)')}
         ${kpi(inopAlta.length,'Críticas ALTA','#dc2626','rgba(220,38,38,.08)','rgba(220,38,38,.2)')}
@@ -8254,7 +8266,61 @@ function mobSetView(v){
   }
 
   if(v === 'coverage'){
-    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;color:var(--text3);font-size:13px"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto 12px;opacity:.4"><circle cx="20" cy="20" r="16"/><path d="M20 4v32M4 20h32"/></svg>Mapa de cobertura disponível apenas no desktop — acesse pelo computador para visualizar a planta completa.</div></div>`;
+    const camMap={};
+    DB.cameras.forEach(cam=>{const g=cam['GRAVADOR']||'Sem Gravador';if(!camMap[g])camMap[g]=[];camMap[g].push(cam);});
+    const mStatus={};
+    floors.forEach(fl=>fl.cameras.forEach(c=>{mStatus[c.name]={fn:c.fn,rec:c.rec||false};}));
+    if(!DB.recorders.length){
+      ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center;color:var(--text3);font-size:13px">Nenhum gravador cadastrado.<br><span style="font-size:11px;margin-top:4px;display:block">Importe o banco XLSX com dados de gravadores.</span></div></div>`;
+      ov.scrollTop=0;
+      return;
+    }
+    let totAtivas=0,totInativas=0,totCams=0;
+    const cards=DB.recorders.map(rec=>{
+      const nome=rec['NOME DO GRAVADOR']||rec['NOME']||'Gravador';
+      const ip=rec['IP DE ACESSO']||rec['IP']||'—';
+      const modelo=rec['MODELO']||'—';
+      const local=rec['LOCALIZAÇÃO']||rec['LOCAL']||'—';
+      const obs=rec['Observação']||'';
+      const cams=camMap[nome]||[];
+      const total=cams.length;
+      const ativas=cams.filter(c=>{const s=mStatus[c['NOME CANAL']];return s&&s.fn&&!s.rec;}).length;
+      const inats=cams.filter(c=>{const s=mStatus[c['NOME CANAL']];return s&&!s.fn&&!s.rec;}).length;
+      const nmap=cams.filter(c=>!mStatus[c['NOME CANAL']]).length;
+      const pct=total>0?Math.round(ativas/total*100):0;
+      totAtivas+=ativas; totInativas+=inats; totCams+=total;
+      const barC=pct>=80?'var(--ok)':pct>=50?'var(--warn)':'var(--nf)';
+      const badgeS=inats>0?`background:var(--nf-bg);color:var(--nf);border:1px solid var(--nf-border)`:`background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border)`;
+      const cells=cams.map(cam=>{const s=mStatus[cam['NOME CANAL']];const ch=cam['CANAL']||'?';const bg=!s?'var(--surface3)':s.rec?'#ea580c':s.fn?'var(--ok)':'var(--nf)';return`<div title="Ch ${ch}: ${cam['NOME CANAL']}" style="width:20px;height:20px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff">${ch}</div>`;}).join('');
+      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
+          <div style="min-width:0"><div style="font-size:13px;font-weight:700;color:var(--text)">${nome}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${modelo} · ${local}</div></div>
+          <span style="flex-shrink:0;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;${badgeS}">${inats>0?inats+' inativa'+(inats>1?'s':''):'OK'}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:7px;padding:5px 10px;font-size:11px;font-family:monospace;color:var(--text2);margin-bottom:8px">${ip}</div>
+        ${obs?`<div style="font-size:10px;color:var(--warn);background:var(--warn-bg,#fef9c3);border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:8px">⚠ ${obs}</div>`:''}
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px"><span>${ativas} ativas · ${inats} inativas · ${nmap} não mapeadas</span><span style="font-weight:700;color:${barC}">${pct}%</span></div>
+        <div style="background:var(--surface3);border-radius:4px;height:6px;overflow:hidden;margin-bottom:${cells?'10px':'0'}"><div style="height:100%;width:${pct}%;background:${barC};border-radius:4px"></div></div>
+        ${cells?`<div style="display:flex;flex-wrap:wrap;gap:3px">${cells}</div>`:''}
+      </div>`;
+    }).join('');
+    const taxaG=totCams>0?Math.round(totAtivas/totCams*100):0;
+    const taxaGC=taxaG>=80?'var(--ok)':taxaG>=50?'var(--warn)':'var(--nf)';
+    ov.innerHTML=`<div style="padding:16px">
+      ${mobNavPills(v)}
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--text)">${DB.recorders.length}</div><div style="font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Gravadores</div></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:${taxaGC}">${taxaG}%</div><div style="font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Taxa global</div></div>
+        <div style="background:var(--nf-bg);border:1px solid var(--nf-border);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--nf)">${totInativas}</div><div style="font-size:9px;color:var(--nf);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Inativas</div></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;font-size:10px;color:var(--text3);flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--ok)"></div>Ativa</span>
+        <span style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--nf)"></div>Inativa</span>
+        <span style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#ea580c"></div>Recomendada</span>
+        <span style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--surface3)"></div>Não mapeada</span>
+      </div>
+      ${cards}
+    </div>`;
     ov.scrollTop=0;
     return;
   }
