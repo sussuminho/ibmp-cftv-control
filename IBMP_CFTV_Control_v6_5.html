@@ -6632,13 +6632,14 @@ function exportPlanejamento(){
 <title>Relatório de Planejamento CFTV — ${nowStr}</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-@page{size:A4;margin:0 0 28mm 0}
+/* margin topo em @page cobre TODAS as páginas incluindo overflow natural de tabelas longas */
+@page{size:A4;margin:38mm 13mm 28mm 13mm}
 html,body{width:210mm;font-family:Arial,sans-serif;font-size:10pt;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+/* position:fixed cobre a folha física A4 completa (297×210mm) independente das margens @page */
 .bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:-1;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
-/* Cada div de página é um bloco separado com padding próprio — mesma estrutura do Relatório Técnico */
-.wrap{position:relative;z-index:1;padding:38mm 13mm 0 13mm}
-.pg{position:relative;z-index:1;padding:38mm 13mm 0 13mm;break-before:page;page-break-before:always}
+.wrap{position:relative;z-index:1}
+.pg{position:relative;z-index:1;break-before:page;page-break-before:always}
 h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
 .sub{font-size:8.5pt;color:#5a6a7a;margin-bottom:10px;line-height:1.5}
 .rule{height:2px;background:linear-gradient(90deg,#159b77,#0e7a5e 55%,transparent);margin-bottom:16px;border-radius:1px}
