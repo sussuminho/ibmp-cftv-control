@@ -7418,7 +7418,7 @@ function isMob(){
   return mv ? window.getComputedStyle(mv).display !== 'none' : false;
 }
 
-let _mf = 'all', _mq = '';
+let _mf = 'all', _mq = '', _mobCurrentView = 'dash';
 
 function mobRender(){
   const _mv = document.getElementById('mob-view');
@@ -7455,7 +7455,8 @@ function mobRender(){
   const sbEl = document.getElementById('mob-status-bar');
   if(sbEl && mapped > 0){
     const totalReal = allCams.filter(c=>!c.rec).length;
-    const taxa = totalReal > 0 ? Math.round(okCnt / totalReal * 100) : 0;
+    const okReal = allCams.filter(c=>c.fn && !c.rec).length;
+    const taxa = totalReal > 0 ? Math.round(okReal / totalReal * 100) : 0;
     const altaInativas = DB.cameras.filter(c=>{
       const s = allCams.find(fc=>fc.name===c['NOME CANAL']);
       return s && !s.fn && (c['CRITICIDADE']||'MÉDIA')==='ALTA';
@@ -7475,7 +7476,7 @@ function mobRender(){
     sbEl.style.display = 'none';
   }
 
-  mobBuildList();
+  mobSetView(_mobCurrentView);
 }
 
 function mobBuildList(){
@@ -7885,6 +7886,7 @@ function mobNavPills(active){
 
 function _mobRC(m){return{p:PRICES[m]||0,l:LABOR[m]||0};}
 function mobSetView(v){
+  _mobCurrentView = v;
   closeMobViews();
   const mobView = document.getElementById('mob-view');
   const kpis    = document.getElementById('mob-kpis');
