@@ -7468,11 +7468,12 @@ function mobRender(){
     if(ov)       ov.style.display       = 'none';
   }
   // KPIs
-  const allCams = floors.flatMap(f=>f.cameras);
-  const mapped  = allCams.length;
-  const okCnt   = allCams.filter(c=>c.fn).length;
-  const nfCnt   = mapped - okCnt;
-  const dbCnt   = DB.cameras.length;
+  const allCams   = floors.flatMap(f=>f.cameras);
+  const realCams  = allCams.filter(c=>!c.rec);
+  const mapped    = allCams.length;
+  const okCnt     = realCams.filter(c=>c.fn).length;
+  const nfCnt     = realCams.filter(c=>!c.fn).length;
+  const dbCnt     = DB.cameras.length;
   document.getElementById('mkpi-total').textContent = mapped || '0';
   document.getElementById('mkpi-ok').textContent    = okCnt;
   document.getElementById('mkpi-nf').textContent    = nfCnt;
@@ -7481,7 +7482,7 @@ function mobRender(){
   // Status bar
   const sbEl = document.getElementById('mob-status-bar');
   if(sbEl && mapped > 0){
-    const totalReal = allCams.filter(c=>!c.rec).length;
+    const totalReal = realCams.length;
     const taxa = totalReal > 0 ? Math.round(okCnt / totalReal * 100) : 0;
     const altaInativas = DB.cameras.filter(c=>{
       const s = allCams.find(fc=>fc.name===c['NOME CANAL']);
