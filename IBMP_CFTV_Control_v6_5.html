@@ -1670,7 +1670,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     </button>
     <button class="ntab" id="tab-coverage" onclick="setMode('coverage')">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 2v12M2 8h12M5 4a9 9 0 006 0M5 12a9 9 0 006 0"/></svg>
-      Cobertura
+      Gravadores
     </button>
 
     <button class="ntab" id="tab-timeline" onclick="setMode('timeline')">
@@ -1700,11 +1700,11 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         </button>
         <button class="rmitem" onclick="setMode('coverage');closeViewsMenu()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 2v12M2 8h12"/></svg>
-          <div><div class="rmitem-title">Cobertura</div><div class="rmitem-sub">Mapa de cobertura das câmeras</div></div>
+          <div><div class="rmitem-title">Gravadores</div><div class="rmitem-sub">Gravadores e cobertura por planta</div></div>
         </button>
         <button class="rmitem" onclick="setMode('timeline');closeViewsMenu()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12V4M4 12V7M7 12V5M10 12V3M13 12V6M1 14h14"/></svg>
-          <div><div class="rmitem-title">Timeline</div><div class="rmitem-sub">Histórico de ocorrências</div></div>
+          <div><div class="rmitem-title">Timeline</div><div class="rmitem-sub">Planejamento de substituição</div></div>
         </button>
       </div>
     </div>
@@ -2149,9 +2149,14 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <div class="view-overlay" id="view-budget">
       <div class="view-nav" id="vnav-budget"></div>
       <div id="bgt-global-card" style="margin:0 20px 16px;border-radius:14px;border:2px solid var(--g);background:var(--surface);overflow:hidden"></div>
+      <div id="bgt-plant-divider" style="margin:0 20px 16px;display:flex;align-items:center;gap:10px">
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <div id="bgt-plant-divider-lbl" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);white-space:nowrap">Detalhamento por planta</div>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+      </div>
       <div class="bgt-header">
-        <h2>Orçamento de Manutenção</h2>
-        <div class="bgt-total-card"><div class="bgt-total-lbl">Câmeras Inativas — esta planta</div><div class="bgt-total-val" id="bgt-total">R$ 0,00</div></div>
+        <h2 id="bgt-h2">Orçamento de Manutenção</h2>
+        <div class="bgt-total-card"><div class="bgt-total-lbl" id="bgt-floor-lbl">Câmeras Inativas — esta planta</div><div class="bgt-total-val" id="bgt-total">R$ 0,00</div></div>
       </div>
       <div class="bgt-table-wrap">
         <div class="bgt-row hdr" id="bgt-header"><span>Câmera</span><span>Modelo</span><span>Localização</span><span>Equipamento</span><span style="color:#6366f1">Mão de Obra</span><span style="text-align:right">Total</span></div>
@@ -4792,10 +4797,13 @@ function renderBudget(){
     _allRec.forEach(c=>{const rd=DB.recommended.find(r=>r['LOCAL']===c.name)||{};const m=rd['MODELO SUGERIDO']||c._modelo||'VIP-3220-D';_gRecProd+=PRICES[m]||0;_gRecLabor+=LABOR[m]||0;});
     const _gTotal=(_gNFProd+_gNFLabor)+(_gRecProd+_gRecLabor);
     const _fmt=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2});
+    const _divider=document.getElementById('bgt-plant-divider');
     if(!_allNF.length&&!_allRec.length){
       _gc.style.display='none';
+      if(_divider) _divider.style.display='none';
     } else {
       _gc.style.display='';
+      if(_divider) _divider.style.display='';
       const _recRow=_allRec.length?`
         <div style="padding:14px 20px;border-top:1px solid var(--border)">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#ea580c;margin-bottom:8px">Câmeras Recomendadas (${_allRec.length} plotadas)</div>
@@ -4852,6 +4860,12 @@ function renderBudget(){
   if(hdrEl) hdrEl.innerHTML=`
     <span>CÂMERA</span><span>MODELO</span><span>LOCALIZAÇÃO</span>
     <span>EQUIPAMENTO</span><span style="color:#6366f1">MÃO DE OBRA</span><span>TOTAL</span>`;
+
+  // Mostrar nome da planta atual no label do card de totais
+  const floorLbl=document.getElementById('bgt-floor-lbl');
+  if(floorLbl) floorLbl.textContent=`Câmeras Inativas — ${F().name}`;
+  const bgtH2=document.getElementById('bgt-h2');
+  if(bgtH2) bgtH2.textContent=`Detalhamento — ${F().name}`;
 
   // Totais — exibir breakdown
   const totalEl=document.getElementById('bgt-total');
