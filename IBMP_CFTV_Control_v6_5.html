@@ -1206,7 +1206,7 @@ canvas.chart { width: 100%; display: block; }
   display:flex; align-items:center; justify-content:space-between;
 }
 .tl-row {
-  display:grid; grid-template-columns:1fr 100px 110px 90px 90px;
+  display:grid; grid-template-columns:1fr 120px 90px 100px 70px 62px 110px;
   padding:10px 18px; border-bottom:1px solid var(--border2);
   font-size:12px; align-items:center;
 }
@@ -1853,8 +1853,9 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       </div>
       <!-- Reports dropdown -->
       <div style="position:relative" id="mob-rep-wrap">
-        <button class="mob-hdr-btn" onclick="toggleMobReports()" title="Relatórios">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 2h7l4 4v8H2z"/><path d="M9 2v4h4"/><path d="M5 9h4M5 11h3"/></svg>
+        <button class="mob-hdr-btn" onclick="toggleMobReports()" title="Relatórios" style="width:auto;padding:0 9px;flex-direction:column;gap:1px">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 2h7l4 4v8H2z"/><path d="M9 2v4h4"/><path d="M5 9h4M5 11h3"/></svg>
+          <span style="font-size:9px;font-weight:600;color:var(--text2);white-space:nowrap">Relatórios</span>
         </button>
         <div id="mob-rep-drop" style="display:none;position:fixed;top:56px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px;min-width:200px;z-index:9000;box-shadow:0 8px 32px rgba(0,0,0,.18);flex-direction:column;gap:2px;">
           <button class="mob-drop-item" onclick="exportPDF();closeMobReports()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 2h7l4 4v8H2z"/><path d="M9 2v4h4"/><path d="M5 9h4M5 11h3"/></svg>Relatório Técnico</button>
@@ -1864,9 +1865,10 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         </div>
       </div>
       <!-- Theme toggle -->
-      <button id="mob-theme-btn" class="mob-hdr-btn" onclick="mobToggleTheme()" title="Tema">
-        <svg id="mob-icon-sun" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" style="display:none"><circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
-        <svg id="mob-icon-moon" width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17.5 12.5A7.5 7.5 0 017.5 2.5a7.5 7.5 0 1010 10z"/></svg>
+      <button id="mob-theme-btn" class="mob-hdr-btn" onclick="mobToggleTheme()" title="Tema" style="width:auto;padding:0 9px;flex-direction:column;gap:1px">
+        <svg id="mob-icon-sun" width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" style="display:none"><circle cx="10" cy="10" r="4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>
+        <svg id="mob-icon-moon" width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17.5 12.5A7.5 7.5 0 017.5 2.5a7.5 7.5 0 1010 10z"/></svg>
+        <span style="font-size:9px;font-weight:600;color:var(--text2);white-space:nowrap">Tema</span>
       </button>
     </div>
   </header>
@@ -2812,8 +2814,8 @@ function lookup(nome){
   const statusOp=String(cam['STATUS DE OPERAÇÃO']||'').toLowerCase();
   const isNF = statusOp.includes('não') || statusOp.includes('nao') ||
                statusOp.includes('inativ') || statusOp === 'off' ||
-               (par && par['Parecer'] && par['Parecer'].toLowerCase().includes('não'));
-  const parecerStr = par && par['Parecer'] ? par['Parecer'].trim() : (isNF ? 'Não funcional' : 'OK');
+               (par && par['Parecer'].toLowerCase().includes('não'));
+  const parecerStr = par ? par['Parecer'].trim() : (isNF ? 'Não funcional' : 'OK');
   return{
     nome, canal:cam['CANAL']||'', gravador:grav, modelo:cam['MODELO CÂMERA']||'',
     serial:cam['SERIAL']||'', ativo:cam['ATIVO']||'', statusAtivo:cam['STATUS ATIVO']||'',
@@ -4963,7 +4965,7 @@ function showAdmin(){
   function toCSV(arr, cols){
     if(!arr.length) return cols.join(',');
     return [cols.join(','), ...arr.map(r=>cols.map(c=>{
-      const v=String(r[c]||'').replace(/"/g,'""').replace(/,/g,';').replace(/\n/g,' ');
+      const v=String(r[c]||'').replace(/,/g,';').replace(/\n/g,' ');
       return v;
     }).join(','))].join('\n');
   }
@@ -5168,15 +5170,21 @@ function renderTimeline(){
   const camData=allCams.map(cam=>{
     const c=calcFinancial(cam.name);
     const fin=CAM_FIN[cam.name]||{};
-    let trocaYear=null;
+    let trocaYear=null, installYear=null;
     if(fin.dataInstalacao){
       const inst=new Date(fin.dataInstalacao+'-01');
-      trocaYear=inst.getFullYear()+(fin.vidaUtil||LIFESPAN[cam.info.modelo]||6);
+      installYear=inst.getFullYear();
+      trocaYear=installYear+(fin.vidaUtil||LIFESPAN[cam.info.modelo]||6);
     } else if(INSTALL_YEAR[cam.name]){
-      trocaYear=INSTALL_YEAR[cam.name]+(LIFESPAN[cam.info.modelo]||6);
+      installYear=INSTALL_YEAR[cam.name];
+      trocaYear=installYear+(LIFESPAN[cam.info.modelo]||6);
     }
     const preco=fin.valor||PRICES[cam.info.modelo]||0;
-    return{name:cam.name,modelo:cam.info.modelo||'—',trocaYear,pct:c.pct,saude:c.saude,preco,
+    const dbCam=DB.cameras.find(dc=>dc['NOME CANAL']===cam.name)||{};
+    return{name:cam.name,modelo:cam.info.modelo||'—',trocaYear,installYear,
+           vida:fin.vidaUtil||LIFESPAN[cam.info.modelo]||6,
+           pct:c.pct,saude:c.saude,preco,trocaStr:c.trocaStr,
+           fn:isFn(cam.name),criticidade:dbCam['CRITICIDADE']||'',
            floor:floors.find(f=>f.cameras.includes(cam))?.name||'—'};
   });
 
@@ -5197,45 +5205,61 @@ function renderTimeline(){
     ? (c.trocaYear - currentYear) * 12 - _mes + 1
     : null;
   const cats = [
-    { key:'urgente',      label:'Urgente',      sub:'até 12 meses',
+    { key:'vencida',      label:'Vida útil vencida', sub:'prazo já expirado',
       cls:'urgent',  cor:'var(--nf)',
-      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m<=12; }) },
-    { key:'planejamento', label:'Planejamento',  sub:'12 a 24 meses',
+      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m<=0; }) },
+    { key:'urgente',      label:'Troca urgente', sub:'até 12 meses',
+      cls:'urgent',  cor:'var(--nf)',
+      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m>0&&m<=12; }) },
+    { key:'planejamento', label:'Planejamento',  sub:'13 a 36 meses',
       cls:'warning', cor:'var(--warn)',
-      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m>12&&m<=24; }) },
-    { key:'longo',        label:'Longo Prazo',   sub:'acima de 24 meses',
+      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m>12&&m<=36; }) },
+    { key:'longo',        label:'Longo Prazo',   sub:'acima de 36 meses',
       cls:'normal',  cor:'var(--ok)',
-      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m>24; }) }
+      cams: camData.filter(c=>{ const m=_mesesAte(c); return m!=null&&m>36; }) }
   ];
   const semDataCnt = camData.filter(c=>_mesesAte(c)==null).length;
   const maxCat = Math.max(1,...cats.map(c=>c.cams.length));
-  // Câmeras vencidas (subconjunto do Urgente) — para o banner de alerta
-  const vencidas = cats[0].cams.filter(c=>c.trocaYear&&c.trocaYear<currentYear);
+  const vencidas = cats[0].cams;
 
-  // Câmeras críticas ordenadas por urgência
-  const critiList=[...camData].filter(c=>c.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,20);
+  // Câmeras ordenadas por urgência (substituição mais próxima primeiro)
+  const critiList=[...camData].filter(c=>c.trocaYear!=null).sort((a,b)=>{
+    const ma=_mesesAte(a)??9999; const mb=_mesesAte(b)??9999; return ma-mb;
+  }).slice(0,30);
 
   // Save nav before overwrite, restore after
   const savedNav = document.getElementById('vnav-timeline')?.outerHTML || '';
   el.innerHTML=`
     <div class="view-nav" id="vnav-timeline"></div>
     <div class="tl-header">
-      <h2>Timeline de Renovação do Parque CFTV</h2>
+      <h2>Planejamento de Substituição</h2>
       <span style="font-size:12px;color:var(--text3)">Base: ${totalCams} câmeras mapeadas · ${currentYear}</span>
+    </div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px">
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px">O que é esta tela?</div>
+      <div style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:10px">Estima quando cada câmera deve ser substituída com base no ano de instalação e na vida útil prevista do modelo. <strong>Isso não significa que a câmera está com defeito</strong> — é um planejamento preventivo.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span style="font-size:11px;padding:3px 9px;border-radius:8px;background:var(--nf-bg);color:var(--nf);font-weight:600">● Vida útil vencida — prazo já expirado</span>
+        <span style="font-size:11px;padding:3px 9px;border-radius:8px;background:var(--nf-bg);color:var(--nf);font-weight:600">● Troca urgente — substituição em até 12 meses</span>
+        <span style="font-size:11px;padding:3px 9px;border-radius:8px;background:var(--warn-bg);color:var(--warn);font-weight:600">● Planejamento — 13 a 36 meses</span>
+        <span style="font-size:11px;padding:3px 9px;border-radius:8px;background:var(--ok-bg);color:var(--ok);font-weight:600">● Longo prazo — acima de 36 meses</span>
+        <span style="font-size:11px;padding:3px 9px;border-radius:8px;background:var(--surface3);color:var(--text3);font-weight:600">Criticidade = impacto operacional, independente do prazo</span>
+      </div>
     </div>
 
     <div class="tl-kpis">
       <div class="tl-kpi blue">
         <div class="tl-kpi-val">R$ ${Math.round(patrimonio/1000)}K</div>
-        <div class="tl-kpi-lbl">Patrimônio total</div>
+        <div class="tl-kpi-lbl">Patrimônio estimado</div>
       </div>
       <div class="tl-kpi nf">
-        <div class="tl-kpi-val">${criticas}</div>
-        <div class="tl-kpi-lbl">Câmeras críticas (≥90%)</div>
+        <div class="tl-kpi-val">${cats[0].cams.length + cats[1].cams.length}</div>
+        <div class="tl-kpi-lbl">Vencidas + Troca urgente</div>
       </div>
       <div class="tl-kpi warn">
-        <div class="tl-kpi-val">${atencao}</div>
-        <div class="tl-kpi-lbl">Em atenção (70–90%)</div>
+        <div class="tl-kpi-val">${cats[2].cams.length}</div>
+        <div class="tl-kpi-lbl">Em planejamento (13–36 m)</div>
       </div>
       <div class="tl-kpi ok">
         <div class="tl-kpi-val">${mediaVidaRestante} anos</div>
@@ -5246,13 +5270,13 @@ function renderTimeline(){
     ${vencidas.length?`
     <div style="background:var(--nf-bg);border:1px solid var(--nf-border);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px">
       <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--nf)" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10v1"/></svg>
-      <span style="font-size:13px;font-weight:600;color:var(--nf)">${vencidas.length} câmera${vencidas.length>1?'s':''} com vida útil vencida (sem data de instalação registrada ou prazo expirado)</span>
+      <span style="font-size:13px;font-weight:600;color:var(--nf)">${vencidas.length} câmera${vencidas.length>1?'s':''} com prazo de substituição já expirado — verificar prioridade de troca</span>
     </div>`:''}
 
     <div class="tl-chart-wrap">
       <div class="tl-chart-title">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="8" width="3" height="7" rx="1"/><rect x="6" y="4" width="3" height="11" rx="1"/><rect x="11" y="1" width="3" height="14" rx="1"/></svg>
-        Horizonte de Substituição
+        Distribuição por Prazo de Substituição
         <span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:auto">passe o mouse para detalhes</span>
       </div>
       <div class="tl-bars" style="justify-content:center;gap:24px">
@@ -5289,30 +5313,33 @@ function renderTimeline(){
 
     <div class="tl-table-wrap">
       <div class="tl-table-hdr">
-        Câmeras por Prioridade de Renovação
+        Câmeras por Prazo de Substituição
         <span style="font-size:11px;color:var(--text3);font-weight:400">${critiList.length} câmeras com dados</span>
       </div>
       <div class="tl-row hdr">
-        <span>Câmera</span><span>Modelo</span><span>Planta</span><span>Vida consumida</span><span>Status</span>
+        <span>Câmera</span><span>Planta</span><span>Modelo</span><span>Instalação / Substituição</span><span>Status</span><span>Crit.</span><span>Prazo de Substituição</span>
       </div>
       ${critiList.map(c=>{
-        const badge=c.pct>=90
-          ?'<span class="tl-badge urgent">Urgente</span>'
-          :c.pct>=70
-            ?'<span class="tl-badge warning">Atenção</span>'
-            :'<span class="tl-badge ok">Saudável</span>';
+        const meses=_mesesAte(c);
+        const badge=meses==null?'<span class="tl-badge ok" style="background:var(--surface3);color:var(--text3)">Sem dados</span>'
+          :meses<=0?'<span class="tl-badge urgent">Vida útil vencida</span>'
+          :meses<=12?'<span class="tl-badge urgent">Troca urgente</span>'
+          :meses<=36?'<span class="tl-badge warning">Planejamento</span>'
+          :'<span class="tl-badge ok">Longo prazo</span>';
+        const statusBadge=c.fn
+          ?'<span style="font-size:10px;font-weight:700;color:var(--ok)">● Ativa</span>'
+          :'<span style="font-size:10px;font-weight:700;color:var(--nf)">✕ Inativa</span>';
+        const critColor=c.criticidade==='ALTA'?'#dc2626':c.criticidade==='BAIXA'?'#16a34a':'#d97706';
+        const critBadge=c.criticidade
+          ?`<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;background:${critColor}18;color:${critColor}">${c.criticidade}</span>`
+          :'<span style="color:var(--text3)">—</span>';
         return `<div class="tl-row">
           <span style="font-weight:600;color:var(--text)">${c.name}</span>
-          <span style="color:var(--warn)">${c.modelo}</span>
           <span style="color:var(--text2)">${c.floor}</span>
-          <span>
-            <div style="display:flex;align-items:center;gap:6px">
-              <div style="flex:1;height:6px;border-radius:3px;background:var(--surface2);overflow:hidden">
-                <div style="height:100%;width:${c.pct}%;border-radius:3px;background:${c.pct>=90?'var(--nf)':c.pct>=70?'var(--warn)':'var(--g)'}"></div>
-              </div>
-              <span style="font-size:11px;font-weight:700;color:${c.pct>=90?'var(--nf)':c.pct>=70?'var(--warn)':'var(--ok)'}">${c.pct}%</span>
-            </div>
-          </span>
+          <span style="color:var(--warn)">${c.modelo}</span>
+          <span style="line-height:1.5"><span style="font-size:11px;color:var(--text3)">Inst.: ${c.installYear||'—'}</span><br><span style="font-size:11px;font-weight:600;color:var(--text2)">Subst.: ${c.trocaYear||'—'}</span></span>
+          <span>${statusBadge}</span>
+          <span>${critBadge}</span>
           <span>${badge}</span>
         </div>`;
       }).join('')}
@@ -5351,9 +5378,7 @@ function scheduleAutoSave(){
       const json=JSON.stringify(payload);
       // Verificar tamanho antes de salvar (evita erro silencioso)
       if(json.length>4*1024*1024){
-        console.warn('Auto-save: payload grande demais, pulando');
-        toast('⚠ Autosave pausado: projeto muito grande. Salve manualmente.');
-        return;
+        console.warn('Auto-save: payload grande demais, pulando');return;
       }
       localStorage.setItem('ibmp_autosave',json);
     }catch(err){console.warn('Auto-save falhou:',err);}
@@ -5373,7 +5398,7 @@ function loadAutoSave(){
     if(data.db?.pareceres?.length) DB.pareceres=data.db.pareceres;
     // Só restaura posições de câmeras — imagem precisa ser recarregada
     data.floors.forEach((saved,i)=>{
-      if(!floors[i])floors.push(mkFloor(saved.name));
+      if(!floors[i])floors.push({name:saved.name,cameras:[],riskZones:[],zoom:1,panX:0,panY:0,image:null,imgB64:'',scale:0});
       const f=floors[i];
       f.name=saved.name;
       f.scale=saved.scale||0;
@@ -7420,12 +7445,7 @@ function isMob(){
   return mv ? window.getComputedStyle(mv).display !== 'none' : false;
 }
 
-let _mf = 'all', _mq = '', _mobCurrentView = 'dash', _mPlanta = null, _mOrcFloor = null, _mOrcMode = 'nf';
-
-function mobNavToFloor(idx){
-  _mPlanta = floors[idx] ? floors[idx].name : null;
-  mobSetView('list');
-}
+let _mf = 'all', _mq = '';
 
 function mobRender(){
   const _mv = document.getElementById('mob-view');
@@ -7462,8 +7482,7 @@ function mobRender(){
   const sbEl = document.getElementById('mob-status-bar');
   if(sbEl && mapped > 0){
     const totalReal = allCams.filter(c=>!c.rec).length;
-    const okReal = allCams.filter(c=>c.fn && !c.rec).length;
-    const taxa = totalReal > 0 ? Math.round(okReal / totalReal * 100) : 0;
+    const taxa = totalReal > 0 ? Math.round(okCnt / totalReal * 100) : 0;
     const altaInativas = DB.cameras.filter(c=>{
       const s = allCams.find(fc=>fc.name===c['NOME CANAL']);
       return s && !s.fn && (c['CRITICIDADE']||'MÉDIA')==='ALTA';
@@ -7483,7 +7502,7 @@ function mobRender(){
     sbEl.style.display = 'none';
   }
 
-  mobSetView(_mobCurrentView);
+  mobBuildList();
 }
 
 function mobBuildList(){
@@ -7553,10 +7572,14 @@ function mobItemHTML(c){
   const nomeEnc = encodeURIComponent(c.nome);
   const cls = 'mob-item' + (c.fn ? '' : ' nf-item');
   const dot = c.fn ? 'ok' : 'nf';
+  const dbCam = DB.cameras.find(dc=>dc['NOME CANAL']===c.nome)||{};
+  const crit = dbCam['CRITICIDADE']||'';
+  const critColor = crit==='ALTA'?'#dc2626':crit==='BAIXA'?'#16a34a':'#d97706';
+  const critBadge = crit ? '<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:5px;background:' + critColor + '18;color:' + critColor + ';border:1px solid ' + critColor + '30">' + crit + '</span>' : '';
   return '<div class="' + cls + '" onclick="mobOpenSheet(decodeURIComponent(\'' + nomeEnc + '\'))">' +
     '<div class="mob-item-dot ' + dot + '"></div>' +
     '<div class="mob-item-body"><div class="mob-item-name">' + c.nome + '</div><div class="mob-item-sub">' + sub + '</div></div>' +
-    '<div class="mob-item-right"><span class="mob-item-tag">' + grav + '</span><span class="mob-item-arr">›</span></div>' +
+    '<div class="mob-item-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">' + critBadge + '<span class="mob-item-tag">' + grav + '</span></div>' +
     '</div>';
 }
 
@@ -7893,7 +7916,6 @@ function mobNavPills(active){
 
 function _mobRC(m){return{p:PRICES[m]||0,l:LABOR[m]||0};}
 function mobSetView(v){
-  _mobCurrentView = v;
   closeMobViews();
   const mobView = document.getElementById('mob-view');
   const kpis    = document.getElementById('mob-kpis');
@@ -7917,23 +7939,13 @@ function mobSetView(v){
     const footer2 = document.getElementById('mob-contact-footer');
     if(footer2) footer2.style.display = 'none';
     ov.style.display = 'block';
-    let allDbCams = DB.cameras.map(c=>{const nome=c['NOME CANAL'];const info=lookup(nome);const fn=isFn(nome);return{nome,info,fn};});
-    // Filtro por planta
-    if(_mPlanta){
-      const plantaSet = new Set((floors.find(f=>f.name===_mPlanta)||{cameras:[]}).cameras.filter(c=>!c.rec).map(c=>c.name));
-      allDbCams = allDbCams.filter(c=>plantaSet.has(c.nome));
-    }
-    const breadcrumb = _mPlanta
-      ? `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--g-light);border:1px solid var(--g);border-radius:10px;margin-bottom:12px">
-          <span style="font-size:12px;font-weight:600;color:var(--g3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_mPlanta}</span>
-          <button onclick="_mPlanta=null;mobSetView('list')" style="font-size:11px;color:var(--g3);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0;padding:0">Ver todas ×</button>
-        </div>` : '';
+    let cams = DB.cameras.map(c=>{const nome=c['NOME CANAL'];const info=lookup(nome);const fn=isFn(nome);return{nome,info,fn};});
     let listHtml='';
-    if(!allDbCams.length){
-      listHtml=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 16px;text-align:center;color:var(--text3);font-size:13px">${_mPlanta?'Nenhuma câmera nesta planta.':'Nenhuma câmera no banco de dados.<br><span style="font-size:11px;margin-top:4px;display:block">Configure em Admin no desktop.</span>'}</div>`;
+    if(!cams.length){
+      listHtml=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 16px;text-align:center;color:var(--text3);font-size:13px">Nenhuma câmera no banco de dados.<br><span style="font-size:11px;margin-top:4px;display:block">Configure em Admin no desktop.</span></div>`;
     } else {
-      const nfs=allDbCams.filter(c=>!c.fn);
-      const oks=allDbCams.filter(c=>c.fn);
+      const nfs=cams.filter(c=>!c.fn);
+      const oks=cams.filter(c=>c.fn);
       if(nfs.length){
         listHtml+=`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--nf);padding:8px 0 4px">Inativas (${nfs.length})</div>`;
         nfs.forEach(c=>{listHtml+=mobItemHTML(c);});
@@ -7945,7 +7957,7 @@ function mobSetView(v){
         bySetor[s].forEach(c=>{listHtml+=mobItemHTML(c);});
       });
     }
-    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}${breadcrumb}${listHtml}</div>`;
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}${listHtml}</div>`;
     ov.scrollTop=0;
     return;
   }
@@ -7991,22 +8003,43 @@ function mobSetView(v){
     const taxaColor   = taxa>=90?'#16a34a':taxa>=70?'#d97706':'#dc2626';
     // Saúde por planta
     const plantRows = floors.filter(f=>f.cameras.filter(c=>!c.rec).length>0).map(f=>{
-      const fIdx=floors.indexOf(f);
       const fCams=f.cameras.filter(c=>!c.rec);
       const fOk=fCams.filter(c=>c.fn).length;
       const fNf=fCams.length-fOk;
       const fTaxa=fCams.length>0?Math.round(fOk/fCams.length*100):0;
       const fAlta=DB.cameras.filter(c=>{const s=fCams.find(fc=>fc.name===c['NOME CANAL']);return s&&!s.fn&&(c['CRITICIDADE']||'MÉDIA')==='ALTA';}).length;
       const barC=fTaxa>=80?'#16a34a':fTaxa>=60?'#d97706':'#dc2626';
-      return `<div onclick="mobNavToFloor(${fIdx})" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent">
+      return `<div onclick="mobSetFilter('all');mobSetView('list')" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent">
         <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</div><div style="background:var(--surface3);border-radius:3px;height:5px;margin-top:5px;overflow:hidden"><div style="width:${fTaxa}%;height:100%;background:${barC};border-radius:3px"></div></div></div>
         <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:${barC}">${fTaxa}%</div><div style="font-size:10px;color:var(--text3)">${fNf} inativa${fNf!==1?'s':''}${fAlta>0?' · ⚠'+fAlta:''}</div></div>
       </div>`;
     }).join('');
     // Atalhos
     const btn=(lbl,col,bg,bord,fn)=>`<button onclick="${fn}" style="flex:1;min-width:0;padding:11px 4px;border-radius:12px;border:1px solid ${bord};background:${bg};color:${col};font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap">${lbl}</button>`;
+    const circ = 2*Math.PI*38;
+    const okArc = tot>0 ? (ok/tot)*circ : 0;
+    const nfArc = tot>0 ? (nfC/tot)*circ : 0;
+    const donutSvg = `<svg width="90" height="90" viewBox="0 0 100 100" style="flex-shrink:0">
+      <circle cx="50" cy="50" r="38" fill="none" stroke="var(--border)" stroke-width="13"/>
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#16a34a" stroke-width="13"
+        stroke-dasharray="${okArc.toFixed(2)} ${circ.toFixed(2)}" stroke-dashoffset="0"
+        transform="rotate(-90 50 50)"/>
+      <circle cx="50" cy="50" r="38" fill="none" stroke="#dc2626" stroke-width="13"
+        stroke-dasharray="${nfArc.toFixed(2)} ${circ.toFixed(2)}" stroke-dashoffset="${(-okArc).toFixed(2)}"
+        transform="rotate(-90 50 50)"/>
+      <text x="50" y="46" text-anchor="middle" font-size="16" font-weight="800" fill="${taxaColor}" font-family="inherit">${taxa}%</text>
+      <text x="50" y="59" text-anchor="middle" font-size="8" fill="var(--text3)" font-family="inherit">operacional</text>
+    </svg>`;
     ov.innerHTML=`<div style="padding:16px">
       ${mobNavPills(v)}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:16px">
+        ${donutSvg}
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:10px;height:10px;border-radius:50%;background:#16a34a;flex-shrink:0"></div><span style="font-size:12px;color:var(--text2);flex:1">Ativas</span><span style="font-size:16px;font-weight:800;color:#16a34a">${ok}</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:10px;height:10px;border-radius:50%;background:#dc2626;flex-shrink:0"></div><span style="font-size:12px;color:var(--text2);flex:1">Inativas</span><span style="font-size:16px;font-weight:800;color:#dc2626">${nfC}</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:var(--surface3);flex-shrink:0"></div><span style="font-size:12px;color:var(--text2);flex:1">Mapeadas</span><span style="font-size:16px;font-weight:800;color:var(--text)">${tot}</span></div>
+        </div>
+      </div>
       <div style="background:${statusBg};border:1px solid ${statusBord};border-radius:14px;padding:14px 16px;margin-bottom:12px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${statusColor}">Situação atual</span>
@@ -8027,7 +8060,7 @@ function mobSetView(v){
       </div>
       ${plantRows?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">Saúde por planta</div><div style="font-size:10px;color:var(--text3);margin-bottom:10px">Toque para ver lista</div>${plantRows}</div>`:''}
       <div style="margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Acesso rápido</div>
-        <div style="display:flex;gap:8px;margin-bottom:8px">${btn('⚠ Inativas','var(--nf)','var(--nf-bg)','var(--nf-border)',"_mPlanta=null;mobSetFilter('nf');mobSetView('list')")}${btn('🔴 Críticas ALTA','#dc2626','rgba(220,38,38,.08)','rgba(220,38,38,.25)',"_mPlanta=null;mobSetFilter('nf');mobSetView('list')")}</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">${btn('⚠ Inativas','var(--nf)','var(--nf-bg)','var(--nf-border)',"mobSetFilter('nf');mobSetView('list')")}${btn('🔴 Críticas ALTA','#dc2626','rgba(220,38,38,.08)','rgba(220,38,38,.25)',"mobSetFilter('nf');mobSetView('list')")}</div>
         <div style="display:flex;gap:8px">${btn('$ Orçamento','var(--warn)','rgba(217,119,6,.08)','rgba(217,119,6,.25)',"mobSetView('budget')")}${btn('★ Recomendadas','#ea580c','rgba(234,88,12,.08)','rgba(234,88,12,.25)',"mobSetView('rec')")}</div>
       </div>
     </div>`;
@@ -8036,14 +8069,17 @@ function mobSetView(v){
   }
 
   if(v === 'budget'){
-    const targetFloors = (typeof _mOrcFloor === 'number') ? [floors[_mOrcFloor]].filter(Boolean) : floors;
-    const showNf  = _mOrcMode === 'nf'  || _mOrcMode === 'both';
-    const showRec = _mOrcMode === 'rec' || _mOrcMode === 'both';
+    const all     = allCams();
+    const nfCams  = all.filter(c=>!c.rec&&!c.fn);
+    const recCams = all.filter(c=>c.rec);
 
-    const nfByFloor = targetFloors.map(f=>({name:f.name,cams:f.cameras.filter(c=>!c.rec&&!c.fn)})).filter(g=>g.cams.length>0);
-    const recByFloor = targetFloors.map(f=>({name:f.name,cams:f.cameras.filter(c=>c.rec)})).filter(g=>g.cams.length>0);
+    // Agrupa câmeras inativas por planta
+    const nfByFloor = floors.map(f=>({
+      name: f.name,
+      cams: f.cameras.filter(c=>!c.rec&&!c.fn)
+    })).filter(g=>g.cams.length>0);
 
-    let grandNfProd=0, grandNfLabor=0;
+    let grandProd=0, grandLabor=0;
     const nfSections = nfByFloor.map(g=>{
       let secProd=0, secLabor=0;
       const camRows = g.cams.map(c=>{
@@ -8055,58 +8091,65 @@ function mobSetView(v){
             <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.info.modelo||'—'}</div></div>
             <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:var(--warn)">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
           </div>
-          <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
-        </div>`;
-      }).join('');
-      grandNfProd+=secProd; grandNfLabor+=secLabor;
-      return `<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${g.name}</span><span style="flex-shrink:0;white-space:nowrap;color:var(--warn)">R$ ${(secProd+secLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div><div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0 14px">${camRows}</div></div>`;
-    }).join('');
-
-    let grandRecProd=0, grandRecLabor=0;
-    const recSections = recByFloor.map(g=>{
-      let secProd=0, secLabor=0;
-      const camRows = g.cams.map(c=>{
-        const rd=DB.recommended.find(r=>r['LOCAL']===c.name)||{};
-        const modelo=rd['MODELO SUGERIDO']||c.info.modelo||'—';
-        const {p,l}=_mobRC(modelo);
-        secProd+=p; secLabor+=l;
-        return `<div style="padding:10px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06));border-left:3px solid #ea580c;padding-left:10px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-            <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#ea580c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3)">${modelo}</div></div>
-            <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:#ea580c">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
+          <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)">
+            <span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
+            <span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
           </div>
-          <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
         </div>`;
       }).join('');
-      grandRecProd+=secProd; grandRecLabor+=secLabor;
-      return `<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${g.name}</span><span style="flex-shrink:0;white-space:nowrap;color:#ea580c">R$ ${(secProd+secLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div><div style="background:var(--surface);border:1px solid rgba(234,88,12,.3);border-radius:14px;padding:0 14px">${camRows}</div></div>`;
+      grandProd+=secProd; grandLabor+=secLabor;
+      return `<div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${g.name}</span>
+          <span style="flex-shrink:0;white-space:nowrap;color:var(--warn)">R$ ${(secProd+secLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0 14px">${camRows}</div>
+      </div>`;
     }).join('');
 
-    const totalShown = (showNf?(grandNfProd+grandNfLabor):0)+(showRec?(grandRecProd+grandRecLabor):0);
-    const floorList = floors.filter(f=>f.cameras.length>0);
-    const isAllF = typeof _mOrcFloor !== 'number';
-    const fpill=(f,fi)=>{const sel=!isAllF&&_mOrcFloor===fi;return`<button onclick="_mOrcFloor=${fi};mobSetView('budget')" style="flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid ${sel?'var(--g)':'var(--border)'};background:${sel?'var(--g-light)':'var(--surface)'};color:${sel?'var(--g3)':'var(--text2)'};font-size:11px;font-weight:${sel?700:400};font-family:inherit;cursor:pointer;white-space:nowrap">${f.name.replace('Bloco C1 IBMP - ','').replace('Bloco C1 - IBMP - ','').replace('Bloco C1 - ','')}</button>`;};
-    const mbtn=(lbl,mode)=>{const sel=_mOrcMode===mode;return`<button onclick="_mOrcMode='${mode}';mobSetView('budget')" style="flex:1;padding:8px 4px;border-radius:8px;border:1px solid ${sel?'var(--g)':'var(--border)'};background:${sel?'var(--g-light)':'var(--surface)'};color:${sel?'var(--g3)':'var(--text2)'};font-size:11px;font-weight:${sel?700:400};font-family:inherit;cursor:pointer">${lbl}</button>`;};
+    // Recomendadas plotadas (todas as plantas)
+    let recProd=0, recLabor=0;
+    const recRows = recCams.map(c=>{
+      const rd=DB.recommended.find(r=>r['LOCAL']===c.name)||{};
+      const modelo=rd['MODELO SUGERIDO']||c.info.modelo||'—';
+      const {p,l}=_mobRC(modelo);
+      recProd+=p; recLabor+=l;
+      const plotFloor=floors.find(f=>f.cameras.some(fc=>fc.rec&&fc.name===c.name));
+      const setor=rd['SETOR']||(plotFloor?plotFloor.name:'—');
+      return `<div style="padding:10px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06));border-left:3px solid #ea580c;padding-left:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:#ea580c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3)">${modelo} · ${setor}</div></div>
+          <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:#ea580c">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
+      </div>`;
+    }).join('');
+
+    const grandTotal = grandProd+grandLabor+recProd+recLabor;
+    const hasRec = recCams.length>0;
 
     ov.innerHTML=`<div style="padding:16px">
       ${mobNavPills(v)}
-      <div style="margin-bottom:12px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Planta</div>
-        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch">
-          <button onclick="_mOrcFloor=null;mobSetView('budget')" style="flex-shrink:0;padding:5px 12px;border-radius:20px;border:1px solid ${isAllF?'var(--g)':'var(--border)'};background:${isAllF?'var(--g-light)':'var(--surface)'};color:${isAllF?'var(--g3)':'var(--text2)'};font-size:11px;font-weight:${isAllF?700:400};font-family:inherit;cursor:pointer;white-space:nowrap">Todas</button>
-          ${floorList.map((f,fi)=>fpill(f,fi)).join('')}
+      ${hasRec?`<div style="background:var(--surface);border:2px solid var(--g);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g);margin-bottom:2px">Total geral</div><div style="font-size:11px;color:var(--text3)">Inativas + Recomendadas</div></div>
+        <div style="font-size:22px;font-weight:800;color:var(--g)">R$ ${grandTotal.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
+      </div>`:''}
+      ${nfCams.length?`<div style="margin-bottom:4px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Câmeras Inativas</div>
+        ${nfSections}
+        <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25);border-radius:10px;margin-bottom:16px">
+          <span style="font-size:12px;font-weight:600;color:var(--warn)">Subtotal inativas</span>
+          <span style="font-size:13px;font-weight:800;color:var(--warn)">R$ ${(grandProd+grandLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
         </div>
-      </div>
-      <div style="margin-bottom:16px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px">Incluir no orçamento</div>
-        <div style="display:flex;gap:6px">${mbtn('Só inativas','nf')}${mbtn('Inativas + Rec.','both')}${mbtn('Só Rec.','rec')}</div>
-      </div>
-      <div style="background:var(--surface);border:2px solid var(--g);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-        <div style="min-width:0"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g);margin-bottom:2px">Total estimado</div><div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${isAllF?'Todas as plantas':(floors[_mOrcFloor]||{name:'—'}).name.replace('Bloco C1 IBMP - ','').replace('Bloco C1 - IBMP - ','')} · ${_mOrcMode==='nf'?'Só inativas':_mOrcMode==='rec'?'Só rec.':'Inativas + Rec.'}</div></div>
-        <div style="font-size:22px;font-weight:800;color:var(--g);flex-shrink:0">R$ ${totalShown.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
-      </div>
-      ${showNf?(nfByFloor.length?`<div style="margin-bottom:4px"><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Câmeras Inativas</div>${nfSections}<div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25);border-radius:10px;margin-bottom:16px"><span style="font-size:12px;font-weight:600;color:var(--warn)">Subtotal inativas</span><span style="font-size:13px;font-weight:800;color:var(--warn)">R$ ${(grandNfProd+grandNfLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div></div>`:`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;color:var(--text3);font-size:13px;margin-bottom:16px">Nenhuma câmera inativa${!isAllF?' nesta planta':''}</div>`):''}
-      ${showRec?(recByFloor.length?`<div><div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Câmeras Recomendadas</div>${recSections}<div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.25);border-radius:10px"><span style="font-size:12px;font-weight:600;color:#ea580c">Subtotal recomendadas</span><span style="font-size:13px;font-weight:800;color:#ea580c">R$ ${(grandRecProd+grandRecLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div></div>`:`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;color:var(--text3);font-size:13px">Nenhuma câmera recomendada${!isAllF?' nesta planta':''}</div>`):''}
+      </div>`:`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;color:var(--text3);font-size:13px;margin-bottom:16px">Nenhuma câmera inativa mapeada</div>`}
+      ${hasRec?`<div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Câmeras Recomendadas <span style="font-size:11px;color:#ea580c;font-weight:600">(plotadas no mapa)</span></div>
+        <div style="background:var(--surface);border:1px solid rgba(234,88,12,.3);border-radius:14px;padding:0 14px;margin-bottom:10px">${recRows}</div>
+        <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.25);border-radius:10px">
+          <span style="font-size:12px;font-weight:600;color:#ea580c">Subtotal recomendadas</span>
+          <span style="font-size:13px;font-weight:800;color:#ea580c">R$ ${(recProd+recLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
+        </div>
+      </div>`:''}
     </div>`;
     ov.scrollTop=0;
     return;
@@ -8123,68 +8166,63 @@ function mobSetView(v){
 
     const unplotted = recDB.filter(r=>!recCams.find(c=>c.name===r['LOCAL']));
 
-    // Plotadas agrupadas por planta
-    const plotByFloor = floors.map(f=>{
-      const cams=f.cameras.filter(c=>c.rec);
-      if(!cams.length) return null;
-      let fProd=0,fLabor=0;
-      const rows=cams.map(c=>{
-        const rd=recDB.find(r=>r['LOCAL']===c.name)||{};
-        const mod=rd['MODELO SUGERIDO']||c.info.modelo||'—';
-        const {p,l}=_mobRC(mod);
-        fProd+=p; fLabor+=l;
-        const just=rd['JUSTIFICATIVA']||'';
-        return `<div style="padding:12px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06))">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:${just?'6px':'0'}">
-            <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:#ea580c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${mod}</div></div>
-            <div style="flex-shrink:0;font-size:12px;font-weight:700;color:#ea580c">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
-          </div>
-          ${just?`<div style="background:rgba(234,88,12,.08);border-left:2px solid #ea580c;border-radius:0 4px 4px 0;padding:5px 8px;font-size:11px;color:var(--text2);line-height:1.4">${just}</div>`:''}
-          <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
-        </div>`;
-      }).join('');
-      return {name:f.name,rows,prod:fProd,labor:fLabor};
-    }).filter(Boolean);
-
-    // Não plotadas agrupadas por setor
-    const unplBySetor={};
-    unplotted.forEach(r=>{
-      const s=r['SETOR']||'Sem setor';
-      if(!unplBySetor[s]) unplBySetor[s]={rows:'',prod:0,labor:0};
-      const mod=r['MODELO SUGERIDO']||'VIP-3220-D';
-      const {p,l}=_mobRC(mod);
-      unplBySetor[s].prod+=p; unplBySetor[s].labor+=l;
-      const just=r['JUSTIFICATIVA']||'';
-      unplBySetor[s].rows+=`<div style="padding:12px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06))">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:${just?'6px':'0'}">
-          <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:var(--warn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r['LOCAL']||'(sem nome)'}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${mod}</div></div>
-          <div style="flex-shrink:0;font-size:12px;font-weight:700;color:var(--warn)">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div>
+    let plotProd=0, plotLabor=0;
+    const plotRows = recCams.map(c=>{
+      const rd  = recDB.find(r=>r['LOCAL']===c.name)||{};
+      const mod = rd['MODELO SUGERIDO']||c.info.modelo||'—';
+      const {p,l} = _mobRC(mod);
+      plotProd+=p; plotLabor+=l;
+      const plotFloor = floors.find(f=>f.cameras.some(fc=>fc.rec&&fc.name===c.name));
+      const setor = rd['SETOR']||(plotFloor?plotFloor.name:c.info.setor||'—');
+      const just  = rd['JUSTIFICATIVA']||'';
+      return `<div style="padding:10px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06));border-left:3px solid #ea580c;padding-left:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#ea580c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div><div style="font-size:11px;color:var(--text3)">${mod} · ${setor}</div></div>
+          <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:#ea580c">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
         </div>
-        ${just?`<div style="background:rgba(217,119,6,.08);border-left:2px solid var(--warn);border-radius:0 4px 4px 0;padding:5px 8px;font-size:11px;color:var(--text2);line-height:1.4">${just}</div>`:''}
+        ${just?`<div style="font-size:10px;color:var(--text2);margin-top:3px;line-height:1.4">${just}</div>`:''}
         <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
       </div>`;
-    });
+    }).join('');
 
-    const plotTotal=plotByFloor.reduce((s,g)=>s+g.prod+g.labor,0);
-    const unplTotal=Object.values(unplBySetor).reduce((s,g)=>s+g.prod+g.labor,0);
-    const grandTotal=plotTotal+unplTotal;
-    const totalCount=recCams.length+unplotted.length;
+    let unplProd=0, unplLabor=0;
+    const unplRows = unplotted.map(r=>{
+      const mod = r['MODELO SUGERIDO']||'VIP-3220-D';
+      const {p,l} = _mobRC(mod);
+      unplProd+=p; unplLabor+=l;
+      const setor = r['SETOR']||'—';
+      const just  = r['JUSTIFICATIVA']||'';
+      return `<div style="padding:10px 0;border-bottom:1px solid var(--border2,rgba(0,0,0,.06));border-left:3px solid var(--warn);padding-left:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:var(--warn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r['LOCAL']||'(sem nome)'}</div><div style="font-size:11px;color:var(--text3)">${mod} · ${setor}</div></div>
+          <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:700;color:var(--warn)">R$ ${(p+l).toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
+        </div>
+        ${just?`<div style="font-size:10px;color:var(--text2);margin-top:3px;line-height:1.4">${just}</div>`:''}
+        <div style="display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3)"><span>Equip: R$ ${p.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span><span>M.O.: R$ ${l.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div>
+      </div>`;
+    }).join('');
 
-    const plotSections=plotByFloor.map(g=>`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${g.name}</span><span style="flex-shrink:0;color:#ea580c;margin-left:8px">R$ ${(g.prod+g.labor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div><div style="background:var(--surface);border:1px solid rgba(234,88,12,.25);border-radius:14px;padding:0 14px">${g.rows}</div></div>`).join('');
-    const unplSections=Object.entries(unplBySetor).map(([setor,g])=>`<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center"><span>${setor}</span><span style="color:var(--warn)">R$ ${(g.prod+g.labor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span></div><div style="background:var(--surface);border:1px solid rgba(217,119,6,.25);border-radius:14px;padding:0 14px">${g.rows}</div></div>`).join('');
+    const grandTotal = plotProd+plotLabor+unplProd+unplLabor;
+    const totalCount = recCams.length + unplotted.length;
 
     ov.innerHTML=`<div style="padding:16px">
       ${mobNavPills(v)}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-        <div style="background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.3);border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#ea580c">${totalCount}</div><div style="font-size:9px;color:#ea580c;margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Locais recomendados</div></div>
-        <div style="background:var(--surface);border:2px solid var(--g);border-radius:12px;padding:12px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--g);line-height:1.2">R$ ${grandTotal.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div><div style="font-size:9px;color:var(--g);margin-top:4px;text-transform:uppercase;letter-spacing:.04em">Investimento est.</div></div>
+      <div style="background:rgba(234,88,12,.08);border:1px solid rgba(234,88,12,.3);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <div style="min-width:0;flex:1"><div style="font-size:10px;font-weight:700;color:#ea580c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Total consolidado</div><div style="font-size:20px;font-weight:800;color:#ea580c;line-height:1.1">${totalCount} loca${totalCount!==1?'is':'l'} recomendado${totalCount!==1?'s':''}</div><div style="font-size:10px;color:#ea580c;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${recCams.length} plotada${recCams.length!==1?'s':''} · ${unplotted.length} só no banco</div></div>
+        <div style="flex-shrink:0;text-align:right"><div style="font-size:10px;color:#ea580c;font-weight:600;margin-bottom:2px">Investimento estimado</div><div style="font-size:17px;font-weight:800;color:#ea580c">R$ ${grandTotal.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div></div>
       </div>
-      <div style="display:flex;gap:16px;font-size:11px;color:var(--text3);margin-bottom:16px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px">
-        <span><span style="color:#ea580c;font-weight:700">${recCams.length}</span> plotadas no mapa</span>
-        <span><span style="color:var(--warn);font-weight:700">${unplotted.length}</span> só no banco</span>
-      </div>
-      ${plotByFloor.length?`<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Plotadas no mapa</div>${plotSections}`:''}
-      ${Object.keys(unplBySetor).length?`<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;margin-top:4px">Só no banco (não plotadas)</div>${unplSections}`:''}
+      ${recCams.length?`<div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center">
+          <span>Plotadas no mapa</span><span style="color:#ea580c">R$ ${(plotProd+plotLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
+        </div>
+        <div style="background:var(--surface);border:1px solid rgba(234,88,12,.3);border-radius:14px;padding:0 14px">${plotRows}</div>
+      </div>`:''}
+      ${unplotted.length?`<div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:8px 0 6px;display:flex;justify-content:space-between;align-items:center">
+          <span>Só no banco (não plotadas)</span><span style="color:var(--warn)">R$ ${(unplProd+unplLabor).toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
+        </div>
+        <div style="background:var(--surface);border:1px solid rgba(217,119,6,.25);border-radius:14px;padding:0 14px">${unplRows}</div>
+      </div>`:''}
     </div>`;
     ov.scrollTop=0;
     return;
@@ -8239,7 +8277,6 @@ function mobSetView(v){
 
     ov.innerHTML=`<div style="padding:16px">
       ${mobNavPills(v)}
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--text2);line-height:1.5"><b style="color:var(--text)">O que precisa de atenção agora.</b> Câmeras inoperantes por criticidade e equipamentos próximos do fim de vida útil.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
         ${kpi(inop.length,'Inoperantes','var(--nf)','var(--nf-bg)','var(--nf-border)')}
         ${kpi(inopAlta.length,'Críticas ALTA','#dc2626','rgba(220,38,38,.08)','rgba(220,38,38,.2)')}
@@ -8268,61 +8305,7 @@ function mobSetView(v){
   }
 
   if(v === 'coverage'){
-    const camMap={};
-    DB.cameras.forEach(cam=>{const g=cam['GRAVADOR']||'Sem Gravador';if(!camMap[g])camMap[g]=[];camMap[g].push(cam);});
-    const mStatus={};
-    floors.forEach(fl=>fl.cameras.forEach(c=>{mStatus[c.name]={fn:c.fn,rec:c.rec||false};}));
-    if(!DB.recorders.length){
-      ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center;color:var(--text3);font-size:13px">Nenhum gravador cadastrado.<br><span style="font-size:11px;margin-top:4px;display:block">Importe o banco XLSX com dados de gravadores.</span></div></div>`;
-      ov.scrollTop=0;
-      return;
-    }
-    let totAtivas=0,totInativas=0,totCams=0;
-    const cards=DB.recorders.map(rec=>{
-      const nome=rec['NOME DO GRAVADOR']||rec['NOME']||'Gravador';
-      const ip=rec['IP DE ACESSO']||rec['IP']||'—';
-      const modelo=rec['MODELO']||'—';
-      const local=rec['LOCALIZAÇÃO']||rec['LOCAL']||'—';
-      const obs=rec['Observação']||'';
-      const cams=camMap[nome]||[];
-      const total=cams.length;
-      const ativas=cams.filter(c=>{const s=mStatus[c['NOME CANAL']];return s&&s.fn&&!s.rec;}).length;
-      const inats=cams.filter(c=>{const s=mStatus[c['NOME CANAL']];return s&&!s.fn&&!s.rec;}).length;
-      const nmap=cams.filter(c=>!mStatus[c['NOME CANAL']]).length;
-      const pct=total>0?Math.round(ativas/total*100):0;
-      totAtivas+=ativas; totInativas+=inats; totCams+=total;
-      const barC=pct>=80?'var(--ok)':pct>=50?'var(--warn)':'var(--nf)';
-      const badgeS=inats>0?`background:var(--nf-bg);color:var(--nf);border:1px solid var(--nf-border)`:`background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-border)`;
-      const cells=cams.map(cam=>{const s=mStatus[cam['NOME CANAL']];const ch=cam['CANAL']||'?';const bg=!s?'var(--surface3)':s.rec?'#ea580c':s.fn?'var(--ok)':'var(--nf)';return`<div title="Ch ${ch}: ${cam['NOME CANAL']}" style="width:20px;height:20px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff">${ch}</div>`;}).join('');
-      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
-          <div style="min-width:0"><div style="font-size:13px;font-weight:700;color:var(--text)">${nome}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${modelo} · ${local}</div></div>
-          <span style="flex-shrink:0;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;${badgeS}">${inats>0?inats+' inativa'+(inats>1?'s':''):'OK'}</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:7px;padding:5px 10px;font-size:11px;font-family:monospace;color:var(--text2);margin-bottom:8px">${ip}</div>
-        ${obs?`<div style="font-size:10px;color:var(--warn);background:var(--warn-bg,#fef9c3);border:1px solid #fde68a;border-radius:6px;padding:4px 8px;margin-bottom:8px">⚠ ${obs}</div>`:''}
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px"><span>${ativas} ativas · ${inats} inativas · ${nmap} não mapeadas</span><span style="font-weight:700;color:${barC}">${pct}%</span></div>
-        <div style="background:var(--surface3);border-radius:4px;height:6px;overflow:hidden;margin-bottom:${cells?'10px':'0'}"><div style="height:100%;width:${pct}%;background:${barC};border-radius:4px"></div></div>
-        ${cells?`<div style="display:flex;flex-wrap:wrap;gap:3px">${cells}</div>`:''}
-      </div>`;
-    }).join('');
-    const taxaG=totCams>0?Math.round(totAtivas/totCams*100):0;
-    const taxaGC=taxaG>=80?'var(--ok)':taxaG>=50?'var(--warn)':'var(--nf)';
-    ov.innerHTML=`<div style="padding:16px">
-      ${mobNavPills(v)}
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--text)">${DB.recorders.length}</div><div style="font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Gravadores</div></div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:${taxaGC}">${taxaG}%</div><div style="font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Taxa global</div></div>
-        <div style="background:var(--nf-bg);border:1px solid var(--nf-border);border-radius:12px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--nf)">${totInativas}</div><div style="font-size:9px;color:var(--nf);margin-top:2px;text-transform:uppercase;letter-spacing:.04em">Inativas</div></div>
-      </div>
-      <div style="display:flex;gap:10px;margin-bottom:10px;font-size:10px;color:var(--text3);flex-wrap:wrap">
-        <span style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--ok)"></div>Ativa</span>
-        <span style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--nf)"></div>Inativa</span>
-        <span style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#ea580c"></div>Recomendada</span>
-        <span style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--surface3)"></div>Não mapeada</span>
-      </div>
-      ${cards}
-    </div>`;
+    ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;color:var(--text3);font-size:13px"><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto 12px;opacity:.4"><circle cx="20" cy="20" r="16"/><path d="M20 4v32M4 20h32"/></svg>Mapa de cobertura disponível apenas no desktop — acesse pelo computador para visualizar a planta completa.</div></div>`;
     ov.scrollTop=0;
     return;
   }
@@ -8332,18 +8315,21 @@ function mobSetView(v){
     const allFloorCams = floors.flatMap(f=>f.cameras).filter(c=>!c.rec);
 
     // KPIs via calcFinancial
+    const now = new Date();
     const camData = allFloorCams.map(cam=>{
       const c = calcFinancial(cam.name);
-      return {...c, name:cam.name, modelo:cam.info.modelo||'—',
+      const fin = CAM_FIN[cam.name]||{};
+      let trocaYear=null;
+      if(fin.dataInstalacao){ const inst=new Date(fin.dataInstalacao+'-01'); trocaYear=inst.getFullYear()+(fin.vidaUtil||LIFESPAN[cam.info.modelo]||6); }
+      else if(INSTALL_YEAR[cam.name]) trocaYear=INSTALL_YEAR[cam.name]+(LIFESPAN[cam.info.modelo]||6);
+      return {...c, name:cam.name, modelo:cam.info.modelo||'—', trocaYear,
               floor:floors.find(f=>f.cameras.includes(cam))?.name||'—'};
     });
-    const criticas = camData.filter(c=>c.pct>=90).length;
-    const atencao  = camData.filter(c=>c.pct>=70&&c.pct<90).length;
     const kpiCard=(bg,col,val,lbl)=>`<div style="background:${bg};border:1px solid ${col};border-radius:12px;padding:12px;text-align:center"><div style="font-size:20px;font-weight:800;color:${col}">${val}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.04em">${lbl}</div></div>`;
 
-    // Renovation schedule (next 5 years)
+    // Renovation schedule (2 years back + 5 years forward)
     const renovRows = [];
-    for(let y=currentYear; y<=currentYear+4; y++){
+    for(let y=currentYear-2; y<=currentYear+4; y++){
       const camsY = allFloorCams.filter(c=>{
         const fin=CAM_FIN[c.name]||{};
         const yr = fin.dataInstalacao ? parseInt(fin.dataInstalacao.split('-')[0]) : INSTALL_YEAR[c.name];
@@ -8352,9 +8338,12 @@ function mobSetView(v){
       if(!camsY.length) continue;
       const custo = camsY.reduce((s,c)=>s+(PRICES[c.info.modelo]||0),0);
       const isNow = y===currentYear;
+      const isPast = y < currentYear;
+      const yLabel = isPast ? `⚠ ${y} — vida útil vencida` : isNow ? `⚠ ${y} — substituição prevista (urgente)` : `Substituição prevista: ${y}`;
+      const yColor = (isPast||isNow) ? 'var(--nf)' : 'var(--text)';
       renovRows.push(`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:13px;font-weight:800;color:${isNow?'var(--nf)':'var(--text)'}">${y}${isNow?' ⚠':''}</span>
+          <span style="font-size:12px;font-weight:800;color:${yColor}">${yLabel}</span>
           <span style="font-size:12px;font-weight:700;color:var(--warn)">R$ ${custo.toLocaleString('pt-BR',{minimumFractionDigits:0})}</span>
         </div>
         <div style="font-size:11px;color:var(--text3)">${camsY.length} câmera(s): ${camsY.slice(0,3).map(c=>c.name).join(', ')}${camsY.length>3?' +'+(camsY.length-3)+' mais':''}</div>
@@ -8364,21 +8353,38 @@ function mobSetView(v){
       ? renovRows.join('')
       : '<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Nenhuma renovação prevista nos próximos 5 anos</div>';
 
-    // Camera priority list — sorted by pct desc, only those with data
-    const priorityList = [...camData].filter(c=>c.pct>0).sort((a,b)=>b.pct-a.pct).slice(0,15);
-    const saudeColor={red:'#dc2626',yellow:'#d97706',green:'#16a34a'};
+    // Camera priority list — sorted by urgency (meses to replacement, ascending)
+    const _mesPrio = now.getMonth()+1;
+    const _mesesAtePrio = c => c.trocaYear!=null ? (c.trocaYear-currentYear)*12 - _mesPrio + 1 : null;
+    const priorityList = [...camData].filter(c=>c.trocaYear!=null).sort((a,b)=>{
+      const ma=_mesesAtePrio(a)??9999; const mb=_mesesAtePrio(b)??9999; return ma-mb;
+    }).slice(0,15);
     const prioRows = priorityList.length
-      ? priorityList.map(c=>`<div style="padding:10px 0;border-bottom:1px solid var(--border)">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
-            <div style="font-size:12px;font-weight:600;color:var(--text);flex:1;margin-right:8px">${c.name}</div>
-            <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:${saudeColor[c.saude]}22;color:${saudeColor[c.saude]};white-space:nowrap">${c.pct}%${c.pct>=90?' Urgente':c.pct>=70?' Atenção':''}</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:${c.pct}%;height:100%;background:${saudeColor[c.saude]};border-radius:3px"></div></div>
-            <span style="font-size:10px;color:var(--text3);white-space:nowrap">${c.trocaStr}</span>
-          </div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">${c.modelo} · ${c.floor.replace('Bloco C1 IBMP - ','').replace('Bloco C1 - IBMP - ','')}</div>
-        </div>`).join('')
+      ? priorityList.map(c=>{
+          const mp = _mesesAtePrio(c);
+          const prazoBadge = mp==null ? '' : mp<=0
+            ? `<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--nf-bg);color:var(--nf)">Vida útil vencida</span>`
+            : mp<=12
+            ? `<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--nf-bg);color:var(--nf)">Troca urgente</span>`
+            : mp<=36
+            ? `<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--warn-bg);color:var(--warn)">Planejamento</span>`
+            : `<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--ok-bg);color:var(--ok)">Longo prazo</span>`;
+          const fnLabel = isFn(c.name)
+            ? '<span style="font-size:10px;color:var(--ok);font-weight:600">● Ativa</span>'
+            : '<span style="font-size:10px;color:var(--nf);font-weight:600">✕ Inativa</span>';
+          const substLabel = c.trocaYear ? `Substituição prevista: ${c.trocaYear}` : 'Sem data de instalação';
+          return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+              <div style="font-size:12px;font-weight:600;color:var(--text);flex:1;margin-right:8px">${c.name}</div>
+              ${prazoBadge}
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-bottom:3px">${c.modelo} · ${c.floor.replace('Bloco C1 IBMP - ','').replace('Bloco C1 - IBMP - ','')}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:10px;color:var(--text3)">${substLabel}</span>
+              ${fnLabel}
+            </div>
+          </div>`;
+        }).join('')
       : '<div style="text-align:center;padding:12px;color:var(--text3);font-size:12px">Sem dados de instalação registrados</div>';
 
     // Recent occurrences
@@ -8390,14 +8396,22 @@ function mobSetView(v){
       ? recent.map(l=>`<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;background:${tcMap[l.type]||'#8a95a3'}22;color:${tcMap[l.type]||'#8a95a3'}">${tlMap[l.type]||l.type}</span><span style="font-size:10px;color:var(--text3)">${l.date}</span></div><div style="font-size:12px;font-weight:600;color:var(--text)">${l.cam}</div><div style="font-size:11px;color:var(--text2)">${l.text}</div></div>`).join('')
       : '<div style="text-align:center;padding:12px;color:var(--text3);font-size:12px">Sem ocorrências registradas</div>';
 
+    const _mesMob = now.getMonth()+1;
+    const _mesesAteMob = c => c.trocaYear!=null ? (c.trocaYear-currentYear)*12 - _mesMob + 1 : null;
+    const vencidaCntMob = camData.filter(c=>{ const m=_mesesAteMob(c); return m!=null&&m<=0; }).length;
+    const urgenteCntMob = camData.filter(c=>{ const m=_mesesAteMob(c); return m!=null&&m>0&&m<=12; }).length;
     ov.innerHTML=`<div style="padding:16px">${mobNavPills(v)}
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-        ${kpiCard('rgba(220,38,38,.08)','#dc2626',criticas,'Críticas ≥90%')}
-        ${kpiCard('rgba(217,119,6,.08)','#d97706',atencao,'Atenção 70–90%')}
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Planejamento de Substituição</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.5">Estima quando cada câmera deve ser substituída com base no ano de instalação e vida útil prevista. Isso não significa que a câmera está com defeito.</div>
       </div>
-      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Renovação Prevista</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        ${kpiCard('rgba(220,38,38,.08)','#dc2626',vencidaCntMob,'Vida útil vencida')}
+        ${kpiCard('rgba(217,119,6,.08)','#d97706',urgenteCntMob,'Troca urgente (≤12 m)')}
+      </div>
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Substituição Prevista (próximos 5 anos)</div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px">${renovSection}</div>
-      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Câmeras por Prioridade</div>
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Câmeras por Prazo de Substituição</div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px">${prioRows}</div>
       <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:8px">Ocorrências Recentes</div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px">${logItems}</div>
