@@ -7559,7 +7559,7 @@ function mobRender(){
   // KPIs
   const allCams   = floors.flatMap(f=>f.cameras);
   const realCams  = allCams.filter(c=>!c.rec);
-  const mapped    = allCams.length;
+  const mapped    = realCams.length;
   const okCnt     = realCams.filter(c=>c.fn).length;
   const nfCnt     = realCams.filter(c=>!c.fn).length;
   const dbCnt     = DB.cameras.length;
@@ -7614,7 +7614,7 @@ function mobBuildList(){
 
   if(_mf==='nf')   cams = cams.filter(c=>!c.fn);
   if(_mf==='ok')   cams = cams.filter(c=> c.fn);
-  if(_mf==='alta') cams = cams.filter(c=>{const dc=DB.cameras.find(d=>d['NOME CANAL']===c.nome)||{};return (dc['CRITICIDADE']||'MÉDIA')==='ALTA';});
+  if(_mf==='alta') cams = cams.filter(c=>{const dc=DB.cameras.find(d=>d['NOME CANAL']===c.nome)||{};return !c.fn&&(dc['CRITICIDADE']||'MÉDIA')==='ALTA';});
 
   if(_mq){
     const q=_mq.toLowerCase();
@@ -7936,8 +7936,9 @@ function closeChangelog(){
 function mobSetFilter(f){
   _mf=f;
   document.querySelectorAll('.mob-filter').forEach(b=>b.classList.remove('on'));
-  document.getElementById('mf-'+f).classList.add('on');
-  // Also update KPI card highlight
+  const fBtn=document.getElementById('mf-'+f);
+  if(fBtn) fBtn.classList.add('on');
+  // Update KPI card highlight
   ['mob-kpi-total','mob-kpi-ok','mob-kpi-nf','mob-kpi-db'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.style.outline='';
@@ -8119,7 +8120,9 @@ function mobSetView(v){
     if(_subst12Mob>0) _mobAtItems.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)"><span>🟠</span><span style="flex:1;font-size:12px"><b style="color:#fcd34d">${_subst12Mob}</b> câmera${_subst12Mob!==1?'s':''} com substituição em até 12 meses</span><button onclick="mobSetView('timeline')" style="font-size:10px;font-weight:600;color:#fcd34d;background:rgba(217,119,6,.25);border:none;border-radius:5px;padding:2px 7px;font-family:inherit;cursor:pointer">Ver</button></div>`);
     if(_recNaoImplMob>0) _mobAtItems.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12)"><span>🟡</span><span style="flex:1;font-size:12px"><b style="color:#fcd34d">${_recNaoImplMob}</b> recomendação${_recNaoImplMob!==1?'ões':''} não implantada${_recNaoImplMob!==1?'s':''}</span><button onclick="mobSetView('manut')" style="font-size:10px;font-weight:600;color:#fcd34d;background:rgba(217,119,6,.25);border:none;border-radius:5px;padding:2px 7px;font-family:inherit;cursor:pointer">Ver</button></div>`);
     if(costSubst>0) _mobAtItems.push(`<div style="display:flex;align-items:center;gap:8px;padding:8px 0"><span>💰</span><span style="flex:1;font-size:12px">Investimento estimado: <b style="color:#86efac">R$ ${costSubst.toLocaleString('pt-BR',{minimumFractionDigits:0})}</b></span><button onclick="mobSetView('budget')" style="font-size:10px;font-weight:600;color:#86efac;background:rgba(22,163,74,.25);border:none;border-radius:5px;padding:2px 7px;font-family:inherit;cursor:pointer">Ver</button></div>`);
-    const _mobAtBlock=_mobAtItems.length?`<div style="background:rgba(15,23,42,.85);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:4px 14px 6px;margin-bottom:12px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.5);padding:8px 0 2px">O que precisa da sua atenção</div>${_mobAtItems.join('')}</div>`:'';
+    const _mobAtBlock=_mobAtItems.length
+      ?`<div style="background:rgba(15,23,42,.85);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:4px 14px 6px;margin-bottom:12px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.5);padding:8px 0 2px">O que precisa da sua atenção</div>${_mobAtItems.join('')}</div>`
+      :(tot>0?`<div style="background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.25);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#86efac;font-weight:600">✓ Sem pendências críticas — sistema operacional</div>`:'');
     // Atalhos
     const btn=(lbl,col,bg,bord,fn)=>`<button onclick="${fn}" style="flex:1;min-width:0;padding:11px 4px;border-radius:12px;border:1px solid ${bord};background:${bg};color:${col};font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap">${lbl}</button>`;
     const circ = 2*Math.PI*38;
@@ -8520,9 +8523,12 @@ function mobSetView(v){
         <div style="font-size:11px;color:var(--text3)">${camsY.length} câmera(s): ${camsY.slice(0,3).map(c=>c.name).join(', ')}${camsY.length>3?' +'+(camsY.length-3)+' mais':''}</div>
       </div>`);
     }
+    const _comData = allFloorCams.filter(c=>{ const fin=CAM_FIN[c.name]||{}; return fin.dataInstalacao||INSTALL_YEAR[c.name]; }).length;
     const renovSection = renovRows.length
       ? renovRows.join('')
-      : '<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Nenhuma renovação prevista nos próximos 5 anos</div>';
+      : _comData>0
+        ? '<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Nenhuma renovação prevista no período exibido</div>'
+        : '<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Sem dados de instalação cadastrados.<br><span style="font-size:11px">Acesse o Editor de cada câmera e preencha a data de instalação.</span></div>';
 
     // Camera priority list — sorted by urgency (meses to replacement, ascending)
     const _mesPrio = now.getMonth()+1;
