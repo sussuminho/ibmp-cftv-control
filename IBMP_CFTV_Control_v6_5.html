@@ -1839,16 +1839,19 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <div id="mob-hdr-right">
       <!-- Views dropdown -->
       <div style="position:relative" id="mob-views-wrap">
-        <button class="mob-hdr-btn" onclick="toggleMobViews()" title="Visualizações" style="display:none">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>
+        <button class="mob-hdr-btn" onclick="toggleMobViews()" title="Visualizações" style="width:auto;padding:0 9px;flex-direction:column;gap:1px">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>
+          <span style="font-size:9px;font-weight:600;color:var(--text2);white-space:nowrap">Telas</span>
         </button>
         <div id="mob-views-drop" style="display:none;position:fixed;top:56px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px;min-width:200px;z-index:9000;box-shadow:0 8px 32px rgba(0,0,0,.18);flex-direction:column;gap:2px;">
-          <button class="mob-drop-item" onclick="mobSetView('dash')"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>Dashboard</button>
-          <button class="mob-drop-item" onclick="mobSetView('budget')"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 2v12M5 5h5a2 2 0 010 4H5M5 9h5"/></svg>Orçamento</button>
-          <button class="mob-drop-item" onclick="mobSetView('rec')"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5"/><path d="M11 2l1 1.5-2 1"/></svg>Câm. Recomendadas</button>
-          <button class="mob-drop-item" onclick="mobSetView('timeline')"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12V4M4 12V7M7 12V5M10 12V3M13 12V6M1 14h14"/></svg>Timeline</button>
+          <button class="mob-drop-item" onclick="mobSetView('dash');closeMobViews()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>Dashboard</button>
+          <button class="mob-drop-item" onclick="mobSetView('manut');closeMobViews()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 2a3 3 0 100 6 3 3 0 000-6zM3 14c0-3 2.2-5 5-5s5 2 5 5"/><path d="M11 9l2 2-1 1"/></svg>Manutenção</button>
+          <button class="mob-drop-item" onclick="mobSetView('budget');closeMobViews()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 2v12M5 5h5a2 2 0 010 4H5M5 9h5"/></svg>Orçamento</button>
+          <button class="mob-drop-item" onclick="mobSetView('rec');closeMobViews()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5"/><path d="M11 2l1 1.5-2 1"/></svg>Recomendadas</button>
+          <button class="mob-drop-item" onclick="mobSetView('timeline');closeMobViews()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12V4M4 12V7M7 12V5M10 12V3M13 12V6M1 14h14"/></svg>Timeline</button>
+          <button class="mob-drop-item" onclick="mobSetView('coverage');closeMobViews()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="4" width="14" height="9" rx="1.5"/><path d="M4 7h8M4 10h5"/><circle cx="12" cy="10" r="1.5"/></svg>Gravadores</button>
           <div style="height:1px;background:var(--border);margin:4px 0"></div>
-          <button class="mob-drop-item" onclick="mobSetView('list')"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 4h10M3 8h10M3 12h6"/></svg>Lista câmeras</button>
+          <button class="mob-drop-item" onclick="mobSetView('list');closeMobViews()"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 4h10M3 8h10M3 12h6"/></svg>Lista de câmeras</button>
         </div>
       </div>
       <!-- Reports dropdown -->
