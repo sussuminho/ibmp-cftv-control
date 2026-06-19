@@ -6608,104 +6608,96 @@ function exportPlanejamento(){
     </tr>`);
   }
 
-  // Tabela por categoria
-  const catTable=cat=>{
-    if(!cat.items.length)return`<p style="font-size:8pt;color:#94a3b8;font-style:italic">Nenhuma câmera nesta categoria.</p>`;
-    const rows=cat.items.map(c=>{
-      const mStr=c.meses!=null?(c.meses<=0?`${Math.abs(c.meses)} m atrás`:`${c.meses} m`):'—';
-      const pctCol=c.pct>=90?'#dc2626':c.pct>=70?'#d97706':'#159b77';
-      return`<tr>
-        <td style="font-size:8pt;font-weight:600">${c.name}</td>
-        <td style="font-size:7.5pt;color:#d97706">${c.modelo}</td>
-        <td style="font-size:7.5pt;color:#64748b;white-space:nowrap">${c.installYear||'—'}</td>
-        <td style="font-size:7.5pt;text-align:center;font-weight:700">${c.trocaYear||'—'}</td>
-        <td style="font-size:7.5pt;text-align:center;font-weight:700;color:${pctCol}">${c.pct}%</td>
-        <td style="font-size:7.5pt;text-align:center">${mStr}</td>
-        <td style="font-size:7.5pt;text-align:center;font-weight:700;color:${c.crit==='ALTA'?'#dc2626':c.crit==='BAIXA'?'#64748b':'#d97706'}">${c.crit}</td>
-        <td style="font-size:7.5pt;text-align:right;font-weight:700;color:#d97706">R$ ${c.custo.toLocaleString('pt-BR',{minimumFractionDigits:0})}</td>
-      </tr>`;
-    }).join('');
-    return`<table><thead><tr><th>Câmera</th><th>Modelo</th><th>Instalação</th><th>Troca</th><th>% Vida</th><th>Prazo</th><th>Crit.</th><th>Custo</th></tr></thead><tbody>${rows}</tbody></table>`;
+  // Cada categoria e seção "sem dados" é quebrada em blocos de MAX_ROWS linhas.
+  // Cada bloco vira um .pg independente com padding:38mm próprio.
+  // Isso garante que nenhum bloco transborde para uma página sem proteção de topo.
+  const MAX_ROWS = 25;
+  const THR = `<thead><tr><th>Câmera</th><th>Modelo</th><th>Instalação</th><th>Troca</th><th>% Vida</th><th>Prazo</th><th>Crit.</th><th>Custo est.</th></tr></thead>`;
+  const catRow = c => {
+    const mStr=c.meses!=null?(c.meses<=0?`${Math.abs(c.meses)}m atrás`:`${c.meses}m`):'—';
+    const pctCol=c.pct>=90?'#dc2626':c.pct>=70?'#d97706':'#159b77';
+    return `<tr>
+      <td style="font-size:8pt;font-weight:600">${c.name}</td>
+      <td style="font-size:7.5pt;color:#d97706">${c.modelo}</td>
+      <td style="font-size:7.5pt;color:#64748b">${c.installYear||'—'}</td>
+      <td style="font-size:7.5pt;text-align:center;font-weight:700">${c.trocaYear||'—'}</td>
+      <td style="font-size:7.5pt;text-align:center;font-weight:700;color:${pctCol}">${c.pct}%</td>
+      <td style="font-size:7.5pt;text-align:center">${mStr}</td>
+      <td style="font-size:7.5pt;text-align:center;font-weight:700;color:${c.crit==='ALTA'?'#dc2626':c.crit==='BAIXA'?'#64748b':'#d97706'}">${c.crit}</td>
+      <td style="font-size:7.5pt;text-align:right;font-weight:700;color:#d97706">R$&nbsp;${c.custo.toLocaleString('pt-BR',{minimumFractionDigits:0})}</td>
+    </tr>`;
   };
+
+  // Gerar blocos de página para as categorias
+  const catPageBlocks = [];
+  cats.forEach(cat => {
+    if(!cat.items.length){
+      catPageBlocks.push(`<div style="margin-bottom:10px"><div style="font-size:8pt;font-weight:700;color:${cat.cor};background:${cat.bg};padding:4px 8px;border-radius:4px;margin-bottom:4px">${cat.label} — ${cat.sub}</div><p style="font-size:8pt;color:#94a3b8;font-style:italic">Nenhuma câmera nesta categoria.</p></div>`);
+      return;
+    }
+    for(let i=0;i<cat.items.length;i+=MAX_ROWS){
+      const chunk=cat.items.slice(i,i+MAX_ROWS);
+      const isCont=i>0;
+      catPageBlocks.push(`<div style="font-size:8pt;font-weight:700;color:${cat.cor};background:${cat.bg};padding:4px 8px;border-radius:4px;margin-bottom:6px">${isCont?`${cat.label} — continuação (${i+1}–${Math.min(i+MAX_ROWS,cat.items.length)} de ${cat.items.length})`:`${cat.label} — ${cat.sub} (${cat.items.length} câmera${cat.items.length!==1?'s':''})`}</div><table>${THR}<tbody>${chunk.map(catRow).join('')}</tbody></table>`);
+    }
+  });
+
+  // Gerar blocos de página para câmeras sem dados
+  const semPageBlocks = [];
+  for(let i=0;i<semData.length;i+=MAX_ROWS){
+    const chunk=semData.slice(i,i+MAX_ROWS);
+    const isCont=i>0;
+    semPageBlocks.push(`${isCont?`<p style="font-size:7pt;color:#94a3b8;margin-bottom:6px">Sem Dados de Instalação — continuação (${i+1}–${Math.min(i+MAX_ROWS,semData.length)} de ${semData.length})</p>`:`<h2>Sem Dados de Instalação (${semData.length} câmeras)</h2><p style="font-size:8pt;color:#64748b;margin-bottom:8px">Câmeras sem data de instalação — não é possível calcular o prazo de substituição.</p>`}<table><thead><tr><th>Câmera</th><th>Modelo</th><th>Planta</th><th>Criticidade</th><th>Status</th></tr></thead><tbody>${chunk.map(c=>`<tr><td style="font-size:8pt;font-weight:600">${c.name}</td><td style="font-size:7.5pt;color:#d97706">${c.modelo}</td><td style="font-size:7.5pt;color:#64748b">${c.floor}</td><td style="font-size:7.5pt;font-weight:700;color:${c.crit==='ALTA'?'#dc2626':c.crit==='BAIXA'?'#64748b':'#d97706'}">${c.crit}</td><td style="font-size:7.5pt;font-weight:700;color:${c.fn?'#16a34a':'#dc2626'}">${c.fn?'Ativa':'Inativa'}</td></tr>`).join('')}</tbody></table>`);
+  }
+
+  const pg=(content)=>`<div class="pg">${content}</div>`;
 
   const html=`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
 <title>Relatório de Planejamento CFTV — ${nowStr}</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-/* margin topo em @page cobre TODAS as páginas incluindo overflow natural de tabelas longas */
-@page{size:A4;margin:38mm 13mm 28mm 13mm}
+@page{size:A4;margin:0 0 28mm 0}
 html,body{width:210mm;font-family:Arial,sans-serif;font-size:10pt;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-/* position:fixed cobre a folha física A4 completa (297×210mm) independente das margens @page */
 .bg{position:fixed;top:0;left:0;width:210mm;height:297mm;z-index:-1;pointer-events:none}
 .bg img{width:210mm;height:297mm;display:block;object-fit:fill}
-.wrap{position:relative;z-index:1}
-.pg{position:relative;z-index:1;break-before:page;page-break-before:always}
+.wrap{position:relative;z-index:1;padding:38mm 13mm 0 13mm}
+.pg{position:relative;z-index:1;padding:38mm 13mm 0 13mm;break-before:page;page-break-before:always}
 h1{font-size:14pt;font-weight:700;color:#0f1923;margin-bottom:4px;line-height:1.25}
+h2{font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #d1fae5}
 .sub{font-size:8.5pt;color:#5a6a7a;margin-bottom:10px;line-height:1.5}
 .rule{height:2px;background:linear-gradient(90deg,#159b77,#0e7a5e 55%,transparent);margin-bottom:16px;border-radius:1px}
-h2{font-size:8pt;font-weight:700;color:#159b77;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #d1fae5;margin-top:16px}
-h2:first-child{margin-top:0}
 .kpis{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .kpi{flex:1;min-width:90px;background:#f8f9fb;border:1px solid #e2e8f0;border-radius:7px;padding:8px 9px}
 .kv{font-size:15pt;font-weight:800;line-height:1;color:#0f1923}
 .kl{font-size:6.5pt;color:#64748b;margin-top:3px}
-.kpi.urg .kv{color:#dc2626}.kpi.plan .kv{color:#d97706}.kpi.ok .kv{color:#159b77}
-table{width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:8px}
 thead th{background:#f1f5f9;padding:5px 7px;text-align:left;font-size:7.5pt;text-transform:uppercase;letter-spacing:.05em;color:#64748b;font-weight:700}
 td{padding:5px 7px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
-.cat-hdr{font-size:8pt;font-weight:700;margin-bottom:4px;margin-top:14px;padding:4px 8px;border-radius:4px}
 .warn-box{background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;font-size:8pt;color:#dc2626;margin-bottom:10px;font-weight:600}
 .info-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 12px;font-size:8pt;color:#15803d;margin-bottom:10px}
 </style></head><body>
 <div class="bg"><img src="${TIMBRADO_B64}" alt=""></div>
 
-<!-- Página 1: Resumo + Cronograma -->
 <div class="wrap">
   <h1>Relatório de Planejamento CFTV</h1>
   <div class="sub">Gerado em: ${nowStr} &nbsp;·&nbsp; IBMP CFTV Control · by Luan Hachiguti &nbsp;·&nbsp; ${allC.length} câmeras analisadas</div>
   <div class="rule"></div>
-
   <h2>Resumo Executivo</h2>
   <div class="kpis">
-    <div class="kpi urg"><div class="kv">${urgCnt}</div><div class="kl">Urgente / Vencida</div></div>
-    <div class="kpi plan"><div class="kv">${planCnt}</div><div class="kl">Planejamento (13–36m)</div></div>
-    <div class="kpi ok"><div class="kv">${lptCnt}</div><div class="kl">Longo Prazo (&gt;36m)</div></div>
+    <div class="kpi" style="border-color:#dc2626"><div class="kv" style="color:#dc2626">${urgCnt}</div><div class="kl">Urgente / Vencida</div></div>
+    <div class="kpi" style="border-color:#d97706"><div class="kv" style="color:#d97706">${planCnt}</div><div class="kl">Planejamento (13–36m)</div></div>
+    <div class="kpi" style="border-color:#159b77"><div class="kv" style="color:#159b77">${lptCnt}</div><div class="kl">Longo Prazo (&gt;36m)</div></div>
     <div class="kpi"><div class="kv">${semCnt}</div><div class="kl">Sem data cadastrada</div></div>
     <div class="kpi" style="border-color:#dc2626"><div class="kv" style="font-size:10pt;color:#dc2626">R$&nbsp;${urgCusto.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div><div class="kl">Custo urgentes</div></div>
     <div class="kpi" style="border-color:#d97706"><div class="kv" style="font-size:10pt;color:#d97706">R$&nbsp;${investTotal.toLocaleString('pt-BR',{minimumFractionDigits:0})}</div><div class="kl">Custo total estimado</div></div>
   </div>
-  ${urgCnt>0?`<div class="warn-box">⚠ ${urgCnt} câmera${urgCnt!==1?'s':''} com vida útil vencida ou substituição urgente (até 12 meses) — ação imediata recomendada.</div>`:'<div class="info-box">✓ Nenhuma câmera com substituição urgente no momento.</div>'}
-
+  ${urgCnt>0?`<div class="warn-box">⚠ ${urgCnt} câmera${urgCnt!==1?'s':''} com vida útil vencida ou substituição urgente — ação imediata recomendada.</div>`:`<div class="info-box">✓ Nenhuma câmera com substituição urgente no momento.</div>`}
   <h2>Cronograma por Ano de Substituição</h2>
-  ${timelineRows.length
-    ?`<table><thead><tr><th>Ano</th><th>Câmeras</th><th>Identificação</th><th style="text-align:right">Custo estimado</th></tr></thead><tbody>${timelineRows.join('')}</tbody></table>`
-    :`<p style="font-size:8pt;color:#94a3b8;font-style:italic;margin-bottom:8px">Nenhuma câmera com data de instalação cadastrada.</p>`}
+  ${timelineRows.length?`<table><thead><tr><th>Ano</th><th>Câmeras</th><th>Identificação</th><th style="text-align:right">Custo estimado</th></tr></thead><tbody>${timelineRows.join('')}</tbody></table>`:`<p style="font-size:8pt;color:#94a3b8;font-style:italic">Nenhuma câmera com data de instalação cadastrada.</p>`}
 </div>
 
-<!-- Página 2+: Tabelas por horizonte gerencial (div separado = padding próprio na nova página) -->
-<div class="pg">
-  <h2>Por Horizonte Gerencial</h2>
-  ${cats.map(cat=>`
-    <div class="cat-hdr" style="color:${cat.cor};background:${cat.bg}">${cat.label} — ${cat.sub} (${cat.items.length} câmeras)</div>
-    ${catTable(cat)}
-  `).join('')}
-</div>
-
-${semData.length?`
-<!-- Página final: câmeras sem dados -->
-<div class="pg">
-  <h2>Sem Dados de Instalação (${semData.length} câmeras)</h2>
-  <p style="font-size:8pt;color:#64748b;margin-bottom:8px">Câmeras sem data de instalação cadastrada — não é possível calcular o prazo de substituição. Acesse o Editor de cada câmera para preencher.</p>
-  <table><thead><tr><th>Câmera</th><th>Modelo</th><th>Planta</th><th>Criticidade</th><th>Status</th></tr></thead><tbody>
-  ${semData.map(c=>`<tr>
-    <td style="font-size:8pt;font-weight:600">${c.name}</td>
-    <td style="font-size:7.5pt;color:#d97706">${c.modelo}</td>
-    <td style="font-size:7.5pt;color:#64748b">${c.floor}</td>
-    <td style="font-size:7.5pt;font-weight:700;color:${c.crit==='ALTA'?'#dc2626':c.crit==='BAIXA'?'#64748b':'#d97706'}">${c.crit}</td>
-    <td style="font-size:7.5pt;font-weight:700;color:${c.fn?'#16a34a':'#dc2626'}">${c.fn?'Ativa':'Inativa'}</td>
-  </tr>`).join('')}
-  </tbody></table>
-</div>`:''}
+${catPageBlocks.map(block=>pg(block)).join('')}
+${semPageBlocks.map(block=>pg(block)).join('')}
 </body></html>`;
 
   const w=window.open('','_blank','width=900,height=700');
