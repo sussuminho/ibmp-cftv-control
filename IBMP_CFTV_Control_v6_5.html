@@ -4277,7 +4277,7 @@ function buildList(){
     const noIp=isP&&(!ipResolved||ipResolved==='N/D'||ipResolved==='—');
     const logCount=(CAM_LOG[nm]||[]).length;
     const _dotCls=inCurrent?'pl':fn?'ok':'nf';
-    const _subModel=(_info.modelo||'').replace(/^(Hikvision|Intelbras|VIP)\s*/i,'').slice(0,20);
+    const _subModel=(_info.modelo||'').replace(/^(Hikvision|Intelbras)\s+/i,'').slice(0,24);
     const _camData=DB.cameras.find(x=>(x['NOME CANAL']||x['NOME']||'')===nm)||c;
     const _canal=_camData['CANAL']||_camData['CANAL IP']||'';
     const _gravSub=_info.gravador?(_info.gravador+(_canal?` · CH${_canal}`:'')):'' ;
@@ -5881,9 +5881,7 @@ function loadAutoSave(){
       const f=floors[i];
       f.name=saved.name;
       f.scale=saved.scale||0;
-      f.zoom=saved.zoom||1;
-      f.panX=saved.panX||0;
-      f.panY=saved.panY||0;
+      // zoom/pan não restaurados: imagem virá do GitHub, _fitFloor() ajusta ao carregar
       f.riskZones=saved.riskZones||[];
       if(f.riskZones.length)_riskUid=Math.max(_riskUid,...f.riskZones.map(z=>z.id+1),1);
       f.cameras=saved.cameras.map(c=>{
@@ -9541,10 +9539,12 @@ function buildProjectJSON(){
 }
 
 async function saveToCloud(){
-  // Sempre salva no localStorage
+  // Backup local sem imagens (evita QuotaExceededError)
   try{
-    localStorage.setItem('ibmp_projeto_bkp', JSON.stringify(buildProjectJSON()));
-  }catch(e){ console.warn('localStorage:', e); }
+    const bkp=buildProjectJSON();
+    if(bkp.floors)bkp.floors.forEach(f=>{f.image=null;f.imgB64=null;});
+    localStorage.setItem('ibmp_projeto_bkp', JSON.stringify(bkp));
+  }catch(e){ console.warn('localStorage backup:', e); }
 
   const cfg = getGhConfig();
   if(!cfg.token || !cfg.user || !cfg.repo){
@@ -9593,7 +9593,13 @@ async function saveToCloud(){
   }catch(e){
     btn.classList.remove('saving'); btn.classList.add('error');
     if(lbl) lbl.textContent = 'Erro';
-    toast('Erro: ' + e.message);
+    const is401 = e.message && (e.message.includes('401') || e.message.toLowerCase().includes('bad credential') || e.message.toLowerCase().includes('unauthorized'));
+    if(is401){
+      toast('Token GitHub expirado — clique em Configurar GitHub');
+      setTimeout(()=>openGhConfig(), 500);
+    } else {
+      toast('Erro ao salvar: ' + e.message);
+    }
     setTimeout(() => { btn.classList.remove('error'); if(lbl) lbl.textContent = 'Salvar'; }, 3000);
   }
 }
@@ -9626,9 +9632,9 @@ function loadProjectJSON(data){
       const src = fd.image || fd.imgB64 || null;
       if(src && typeof src === 'string'){
         const img = new Image();
-        img.src   = src;
         fl.image  = img;
         fl.imgB64 = src;
+        img.src   = src;
       } else {
         fl.image = null; fl.imgB64 = null;
       }
@@ -9650,7 +9656,14 @@ function loadProjectJSON(data){
   const hasImg = floors.some(f=>f.image||f.imgB64);
   document.getElementById('sbar').classList.toggle('visible', true);
   document.getElementById('minimap').classList.toggle('visible', hasImg);
-  setTimeout(()=>{ _fitFloor(); E.render(); }, 300);
+  // Aguarda a imagem da planta ativa carregar antes de ajustar zoom
+  const _activeImg = floors[0]?.image;
+  if(_activeImg && !_activeImg.complete){
+    _activeImg.onload = ()=>{ _fitFloor(); E.render(); mmUpdate(); };
+    setTimeout(()=>{ if(!_activeImg.complete){ _fitFloor(); E.render(); } }, 1500);
+  } else {
+    setTimeout(()=>{ _fitFloor(); E.render(); }, 100);
+  }
   // Mobile: sempre atualiza lista e KPIs após carregar projeto
   if(typeof mobRender==='function'){
     setTimeout(()=>mobRender(), 400);
