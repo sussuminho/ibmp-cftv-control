@@ -2692,9 +2692,10 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <input type="text" class="minput" id="ecm-setor" placeholder="automático (vindo do parecer)">
       </div>
     </div>
-    <div class="mbtns" style="margin-top:14px">
+    <div class="mbtns" style="margin-top:14px;flex-wrap:wrap;gap:8px">
       <button class="mbtn cancel" onclick="closeModal('edit-cam-modal')">Cancelar</button>
       <button class="mbtn primary" onclick="saveEditModal()">Salvar</button>
+      <button class="mbtn" style="background:#0369a1;color:#fff;border:none" onclick="saveEditAndExport()">Salvar e Exportar XLS</button>
     </div>
   </div>
 </div>
@@ -7813,7 +7814,7 @@ function exportInventory(){
   function makeSheet(rows){
     if(!rows.length)return'';
     const headers=Object.keys(rows[0]);
-    const hdrRow='<Row ss:Height="22">'+headers.map(h=>`<Cell ss:StyleID="hdr"><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`).join('')+'</Row>';
+    const hdrRow='<Row ss:Height="24">'+headers.map(h=>`<Cell ss:StyleID="hdr"><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`).join('')+'</Row>';
     const body=rows.map((r,i)=>{
       const sid=i%2===1?'alt':'txt';
       const isNF=(String(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não'))||
@@ -7827,28 +7828,24 @@ function exportInventory(){
     }).join('');
     return hdrRow+body;
   }
-  // ── Aba Câmeras ───────────────────────────────────────────────────────────
+  // ── Aba "Relação de Câmeras" — colunas idênticas ao IBMP_CFTV_Banco_de_Dados.xlsx ──
   const camRows=DB.cameras.map(c=>{
     const nome=c['NOME CANAL']||'';
-    const row={
+    return{
       'NOME CANAL':         nome,
       'GRAVADOR':           c['GRAVADOR']||'',
       'MODELO CÂMERA':      c['MODELO CÂMERA']||'',
-      'MODELO GRAVADOR':    c['MODELO GRAVADOR']||'',
       'CANAL':              c['CANAL']||'',
       'STATUS DE OPERAÇÃO': c['STATUS DE OPERAÇÃO']||'Ativo',
-      'SERIAL':             c['SERIAL']||'',
-      'ATIVO':              c['ATIVO']||'',
-      'STATUS ATIVO':       c['STATUS ATIVO']||'',
-      'CRITICIDADE':        c['CRITICIDADE']||'MÉDIA',
       'ANO INSTALAÇÃO':     INSTALL_YEAR[nome]||'',
+      'Ativo':              c['ATIVO']||'',
+      'Número de Série':    c['SERIAL']||'',
+      'Status do Ativo':    c['STATUS ATIVO']||'',
       'Observação':         CAM_OBS[nome]||'',
-      'IP_OVERRIDE':        c['IP_OVERRIDE']||'',
-      'SETOR_OVERRIDE':     c['SETOR_OVERRIDE']||'',
+      'CRITICIDADE':        c['CRITICIDADE']||'MÉDIA',
     };
-    return row;
   });
-  // ── Aba Gravadores ────────────────────────────────────────────────────────
+  // ── Aba "Gravadores" ──────────────────────────────────────────────────────
   const gravRows=DB.recorders.map(r=>({
     'NOME DO GRAVADOR': r['NOME DO GRAVADOR']||'',
     'MODELO':           r['MODELO']||'',
@@ -7859,17 +7856,33 @@ function exportInventory(){
     'Armazenamento':    r['Armazenamento']||'',
     'Observação':       r['Observação']||'',
   }));
-  // ── Aba Pareceres ─────────────────────────────────────────────────────────
+  // ── Aba "Parecer" ─────────────────────────────────────────────────────────
   const parRows=DB.pareceres.map(p=>({
     'Câmera':            p['Câmera']||'',
     'Localização/Bloco': p['Localização/Bloco']||'',
     'Parecer':           p['Parecer']||'',
   }));
+  // ── Aba "Referência de Preços" ────────────────────────────────────────────
+  const precRows=Object.keys(PRICES).map(m=>({
+    'MODELO':             m,
+    'VALOR MERCADO (R$)': PRICES[m]||0,
+    'VIDA ÚTIL (anos)':   LIFESPAN[m]||0,
+    'MÃO DE OBRA (R$)':   LABOR[m]||0,
+  }));
+  // ── Aba "Câmeras Recomendadas" ────────────────────────────────────────────
+  const recRows=DB.recommended.map(r=>({
+    'LOCAL':           r['LOCAL']||'',
+    'SETOR':           r['SETOR']||'',
+    'MODELO SUGERIDO': r['MODELO SUGERIDO']||'',
+    'JUSTIFICATIVA':   r['JUSTIFICATIVA']||'',
+  }));
   // ── SpreadsheetML ─────────────────────────────────────────────────────────
   const abas=[
-    {name:'Câmeras',    rows:camRows},
-    {name:'Gravadores', rows:gravRows},
-    {name:'Pareceres',  rows:parRows},
+    {name:'Relação de Câmeras',  rows:camRows},
+    {name:'Gravadores',          rows:gravRows},
+    {name:'Parecer',             rows:parRows},
+    ...(precRows.length?[{name:'Referência de Preços',  rows:precRows}]:[]),
+    ...(recRows.length? [{name:'Câmeras Recomendadas',  rows:recRows}] :[]),
   ].filter(a=>a.rows.length);
   const sheetsXML=abas.map(a=>
     `<Worksheet ss:Name="${xmlEsc(a.name)}">
@@ -7912,11 +7925,15 @@ ${sheetsXML}
   const blob=new Blob(['﻿'+xml],{type:'application/vnd.ms-excel;charset=UTF-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=`IBMP_CFTV_Inventario_${dateFmt}.xls`;
+  a.href=url;a.download=`IBMP_CFTV_Banco_de_Dados_${dateFmt}.xls`;
   document.body.appendChild(a);a.click();
   setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
-  toast(`✓ Inventário exportado — ${DB.cameras.length} câmeras · ${DB.recorders.length} gravadores · ${DB.pareceres.length} pareceres`);
+  toast(`✓ Banco exportado — ${DB.cameras.length} câmeras · ${DB.recorders.length} gravadores (5 abas)`);
   setTimeout(()=>toast('⚠ O Excel não inclui histórico de ocorrências, dados financeiros manuais nem posições no mapa. Para backup completo, use Salvar no GitHub ou Exportar Projeto.',5000),800);
+}
+function saveEditAndExport(){
+  saveEditModal();
+  exportInventory();
 }
 
 // ═══════════════ LOCALSTORAGE (só inventário — sem imagens) ═══════════════
