@@ -2,8 +2,8 @@
  * IBMP CFTV Control — Service Worker v8
  * Cache atualizado — força limpeza do cache anterior
  */
-const CACHE_NAME = 'ibmp-cftv-v8';
-const CACHE_CDN  = 'ibmp-cftv-cdn-v8';
+const CACHE_NAME = 'ibmp-cftv-v9';
+const CACHE_CDN  = 'ibmp-cftv-cdn-v9';
 const LOCAL_ASSETS = [
   './IBMP_CFTV_Control_v6_5.html',
   './manifest.json',

@@ -53,6 +53,7 @@
   --nf-border: rgba(220,38,38,.22);
   --warn:      #d97706;
   --warn-bg:   rgba(217,119,6,.08);
+  --warn-border: rgba(217,119,6,.3);
   --b:         #0369a1;
   --shadow:    0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06);
   --shadow2:   0 2px 8px rgba(0,0,0,.1), 0 8px 24px rgba(0,0,0,.08);
@@ -63,15 +64,15 @@
 
 /* ═══ DARK THEME ═══ */
 [data-theme="dark"] {
-  --bg:        #080e18;
-  --surface:   #0d1520;
-  --surface2:  #111d2e;
-  --surface3:  #162236;
+  --bg:        #0f1724;
+  --surface:   #152030;
+  --surface2:  #1a2840;
+  --surface3:  #1e2e48;
   --border:    rgba(255,255,255,.09);
-  --border2:   rgba(255,255,255,.05);
+  --border2:   rgba(255,255,255,.06);
   --text:      #e8edf5;
   --text2:     #7a8fa8;
-  --text3:     #3d5270;
+  --text3:     #50677f;
   --g:         #159b77;
   --g-light:   rgba(21,155,119,.12);
   --g-mid:     rgba(21,155,119,.25);
@@ -84,6 +85,7 @@
   --nf-border: rgba(248,113,113,.22);
   --warn:      #fbbf24;
   --warn-bg:   rgba(251,191,36,.08);
+  --warn-border: rgba(251,191,36,.3);
   --b:         #38bdf8;
   --shadow:    0 1px 4px rgba(0,0,0,.4);
   --shadow2:   0 4px 20px rgba(0,0,0,.5);
@@ -287,6 +289,41 @@ input, textarea { font-family: inherit; }
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
+/* Hero KPI card — Taxa Operacional */
+.kpi-card-hero {
+  grid-column: span 2;
+  position: relative; overflow: hidden;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+.kpi-card-hero .kpi-lbl { color: rgba(255,255,255,.75) !important; }
+.kpi-card-hero .kpi-icon { background: rgba(255,255,255,.15) !important; }
+.kpi-card-hero .kpi-val { color: #fff !important; }
+/* Status pill — Em Manutenção */
+.status-pill.mn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn); }
+/* Right panel tabs */
+.rp-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+.rp-tab {
+  flex: 1; padding: 9px 4px; font-size: 11px; font-weight: 600; color: var(--text3);
+  background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer;
+  font-family: inherit; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.rp-tab:hover { color: var(--text2); background: var(--surface2); }
+.rp-tab.active { color: var(--g3); border-bottom-color: var(--g); background: var(--g-light); }
+.rp-tab-count {
+  background: var(--b); color: #fff; font-size: 9px; font-weight: 700;
+  min-width: 16px; height: 16px; border-radius: 8px; padding: 0 4px;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+}
+/* Camera list item — two-line layout */
+.ci { padding: 8px 9px; border-radius: 8px; cursor: pointer; display: flex; align-items: flex-start; gap: 8px; font-size: 13px; transition: background .12s; user-select: none; position: relative; }
+.ci-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ci-row  { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.ci-sub  { display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; }
+.ci-sub-text { font-size: 11px; color: var(--text3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; min-width: 0; }
+.ci-sub-sep  { width: 3px; height: 3px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+.ci-sub-grav { font-size: 11px; color: var(--b); white-space: nowrap; flex-shrink: 0; }
+.ci-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
 
 /* Chart cards entrada suave */
 .chart-card { animation: fadeSlideUp 0.4s ease-out both; }
@@ -409,12 +446,21 @@ input, textarea { font-family: inherit; }
 
 .filter-bar { display: flex; flex-direction: column; gap: 5px; padding: 4px 12px 8px; }
 .filter-bar-row { display: flex; gap: 5px; align-items: center; }
-.fbtn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all .12s; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.fbtn { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 8px; cursor: pointer; transition: all .12s; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 .fbtn:hover { border-color: var(--text3); color: var(--text); }
+.fbtn .fc { font-size: 9px; font-weight: 700; background: var(--border); color: var(--text3); padding: 1px 5px; border-radius: 4px; line-height: 1.4; }
 .fbtn.f-all { }
 .fbtn.f-all.on { background: var(--g-light); border-color: var(--g); color: var(--g3); }
-.fbtn.f-nf.on  { background: var(--nf-bg);   border-color: var(--nf-border); color: var(--nf); }
+.fbtn.f-all.on .fc { background: var(--g); color: #fff; }
+.fbtn.f-nf.on  { background: var(--nf-bg); border-color: var(--nf-border); color: var(--nf); }
+.fbtn.f-nf.on .fc { background: var(--nf); color: #fff; }
+.fbtn.f-ok.on  { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); }
+.fbtn.f-ok.on .fc { background: var(--ok); color: #fff; }
 #fb-log.on     { background: rgba(37,99,235,.1); border-color: #2563eb; color: #2563eb; }
+#fb-log.on .fc { background: #2563eb; color: #fff; }
+#fb-crit-alta.on  { background: var(--nf-bg);  border-color: var(--nf-border); }
+#fb-crit-media.on { background: var(--warn-bg); border-color: var(--warn-border); }
+#fb-crit-baixa.on { background: var(--ok-bg);  border-color: var(--ok-border); }
 
 
 #cam-list { flex: 1; overflow-y: auto; padding: 4px 8px 8px; }
@@ -429,6 +475,7 @@ input, textarea { font-family: inherit; }
 .ci-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .ci-dot.ok { background: var(--ok); box-shadow: 0 0 5px var(--ok); }
 .ci-dot.nf { background: var(--nf); box-shadow: 0 0 5px var(--nf); }
+.ci-dot.mn { background: var(--warn); }
 .ci-dot.pl { background: var(--border); }
 .ci-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
 .ci-tag  { font-size: 10px; color: var(--text3); background: var(--surface2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; flex-shrink: 0; }
@@ -678,7 +725,7 @@ input, textarea { font-family: inherit; }
 #rp-idle.show { display: flex; }
 .rp-idle-floor { font-size: 13px; font-weight: 700; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 4px; }
 .rp-idle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 8px; }
-.rp-idle-kpi { border-radius: 10px; padding: 12px 10px; text-align: center; border: 1px solid transparent; }
+.rp-idle-kpi { border-radius: 12px; padding: 12px 10px; text-align: center; border: 1px solid transparent; }
 .rp-idle-kpi .kv { font-size: 22px; font-weight: 800; line-height: 1; }
 .rp-idle-kpi .kl { font-size: 10px; margin-top: 3px; }
 .rp-idle-kpi.total { background: var(--surface2); border-color: var(--border); }
@@ -1035,7 +1082,7 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
 #dash-grid  { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px; }
 #manut-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 14px; }
 .kpi-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px;
   box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px;
 }
 .kpi-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -1048,7 +1095,7 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
 
 .dash-row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 14px; margin-bottom: 14px; }
 .dash-row.full { grid-template-columns: 1fr; }
-.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
+.chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); }
 .chart-card h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
 .chart-card .sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
 canvas.chart { width: 100%; display: block; }
@@ -1557,6 +1604,10 @@ canvas.chart { width: 100%; display: block; }
 /* TOAST */
 #toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 10px; opacity: 0; transition: all .22s; pointer-events: none; z-index: 9999; box-shadow: var(--shadow2); }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* Mobile bottom sheet tabs */
+.mob-sheet-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 8px -18px 0; }
+.mob-sheet-tab { flex: 1; padding: 10px 4px; font-size: 12px; font-weight: 600; color: var(--text3); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.mob-sheet-tab.active { color: var(--g3); border-bottom-color: var(--g); background: var(--g-light); }
 </style>
 <!-- SheetJS para import de inventário Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -1641,7 +1692,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     </svg>
     <div>
       <div class="logo-name">IBMP CFTV Control</div>
-      <div class="logo-sub">by Luan Hachiguti · <a href="mailto:luan.hachiguti@ibmp.org.br" style="color:inherit;text-decoration:none;opacity:.7" title="luan.hachiguti@ibmp.org.br">IBMP</a></div>
+      <div class="logo-sub">by Luan Hachiguti · <a href="/cdn-cgi/l/email-protection#d8b4adb9b6f6b0b9bbb0b1bfadacb198b1bab5a8f6b7aabff6baaa" style="color:inherit;text-decoration:none;opacity:.7" title="luan.hachiguti@ibmp.org.br">IBMP</a></div>
     </div>
   </div>
 
@@ -1712,8 +1763,23 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
 
   <div class="hspace"></div>
 
+  <!-- botão ··· para overflow em telas estreitas -->
+  <div class="report-menu-wrap" id="more-wrap" style="display:none">
+    <button class="hbtn icon-only" id="btn-more" onclick="document.getElementById('more-drop').classList.toggle('open')" title="Mais opções">···</button>
+    <div class="report-menu-drop" id="more-drop" style="min-width:180px">
+      <button class="rmitem" onclick="document.getElementById('json-in').click();document.getElementById('more-drop').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/><path d="M8 10V2M5 5l3-3 3 3"/></svg>
+        <div><div class="rmitem-title">Abrir projeto</div></div>
+      </button>
+      <button class="rmitem" onclick="exportProject();document.getElementById('more-drop').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/><path d="M8 2v8M5 7l3 3 3-3"/></svg>
+        <div><div class="rmitem-title">Exportar projeto</div></div>
+      </button>
+    </div>
+  </div>
+
   <!-- GRUPO: Projeto -->
-  <div class="hgroup">
+  <div class="hgroup" id="hgroup-projeto">
     <button class="hbtn" onclick="document.getElementById('json-in').click()" title="Abrir projeto salvo (.json)">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/><path d="M8 10V2M5 5l3-3 3 3"/></svg>
       Abrir
@@ -1805,7 +1871,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <!-- Versão -->
     <div style="position:relative" id="ver-wrap">
       <button class="hbtn icon-only" id="btn-version" onclick="toggleChangelog()" title="Versão e histórico de mudanças" style="font-size:9px;font-weight:700;letter-spacing:.02em;color:var(--text3);min-width:36px">
-        v6.5
+        v7
       </button>
       <div id="changelog-drop" style="display:none;position:fixed;top:52px;right:8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;width:320px;z-index:9000;box-shadow:0 8px 32px rgba(0,0,0,.18);max-height:70vh;overflow-y:auto;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -1841,7 +1907,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#159b77" stroke-width="1.7"><rect x="1" y="4" width="14" height="11" rx="2"/><circle cx="8" cy="9.5" r="2.5"/><path d="M15 7l5-2v7l-5-2"/></svg>
       <div>
         <span style="font-size:14px;font-weight:700;color:var(--text)">CFTV <strong>IBMP</strong></span>
-        <div style="font-size:9px;color:var(--text3);margin-top:-1px;line-height:1.2">by Luan Hachiguti · <span style="color:var(--g3)">v6.5</span></div>
+        <div style="font-size:9px;color:var(--text3);margin-top:-1px;line-height:1.2">by Luan Hachiguti · <span style="color:var(--g3)">v7</span></div>
       </div>
     </div>
     <div id="mob-hdr-right">
@@ -1884,6 +1950,17 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       </button>
     </div>
   </header>
+  <div id="mob-hero" style="display:none;margin:12px 14px 4px;border-radius:14px;padding:14px 16px;overflow:hidden;position:relative">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.7);margin-bottom:4px">Taxa Operacional</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="mob-hero-val" style="font-size:38px;font-weight:800;color:#fff;line-height:1">—</div>
+      <div id="mob-hero-status" style="font-size:11px;font-weight:700;background:rgba(255,255,255,.18);border-radius:6px;padding:3px 9px;color:#fff;flex-shrink:0">—</div>
+    </div>
+    <div style="margin-top:10px;height:4px;background:rgba(255,255,255,.25);border-radius:2px;overflow:hidden">
+      <div id="mob-hero-bar" style="height:100%;background:#fff;border-radius:2px;transition:width .6s ease;width:0%"></div>
+    </div>
+    <div id="mob-hero-sub" style="font-size:11px;color:rgba(255,255,255,.75);margin-top:6px">—</div>
+  </div>
   <div id="mob-kpis">
     <div class="mob-kpi mob-kpi-total" onclick="mobSetFilter('all')" style="cursor:pointer"><div class="mob-kpi-val" id="mkpi-total">—</div><div class="mob-kpi-lbl">Mapeadas</div></div>
     <div class="mob-kpi mob-kpi-ok" onclick="mobSetFilter('ok')" style="cursor:pointer"><div class="mob-kpi-val" id="mkpi-ok">—</div><div class="mob-kpi-lbl">Operantes</div></div>
@@ -1928,8 +2005,12 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <div><div id="mob-sheet-name"></div><div id="mob-sheet-status"></div></div>
         <button id="mob-sheet-close" onclick="mobCloseSheet()">✕</button>
       </div>
+      <div class="mob-sheet-tabs" id="mob-sheet-tabs">
+        <button class="mob-sheet-tab active" id="msht-tec" onclick="mobSheetTab('tec')">Técnico</button>
+        <button class="mob-sheet-tab" id="msht-log" onclick="mobSheetTab('log')">Histórico<span class="rp-tab-count" id="msht-log-ct" style="display:none"></span></button>
+      </div>
       <div id="mob-sheet-fields"></div>
-      <div id="mob-sheet-logs"></div>
+      <div id="mob-sheet-logs" style="display:none"></div>
       <!-- Contato fixo no rodapé da ficha -->
       <div style="margin-top:18px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;gap:10px">
         <div style="width:34px;height:34px;border-radius:50%;background:var(--g-light);border:1px solid var(--g);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -1938,9 +2019,9 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <div style="flex:1;min-width:0">
           <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Responsável SST</div>
           <div style="font-size:13px;font-weight:600;color:var(--text)">Luan Hachiguti</div>
-          <a href="mailto:luan.hachiguti@ibmp.org.br" style="font-size:11px;color:#3b82f6;text-decoration:none">luan.hachiguti@ibmp.org.br</a>
+          <a href="/cdn-cgi/l/email-protection#2f435a4e4101474e4c4746485a5b466f464d425f01405d48014d5d" style="font-size:11px;color:#3b82f6;text-decoration:none"><span class="__cf_email__" data-cfemail="58342d39367630393b30313f2d2c3118313a352876372a3f763a2a">[email&#160;protected]</span></a>
         </div>
-        <a href="mailto:luan.hachiguti@ibmp.org.br?subject=Câmera CFTV IBMP" style="width:34px;height:34px;border-radius:9px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text2);text-decoration:none">
+        <a href="/cdn-cgi/l/email-protection#7c10091d1252141d1f14151b0908153c151e110c52130e1b521e0e430f091e16191f08413fbfde11190e1d5c3f3a282a5c353e312c" style="width:34px;height:34px;border-radius:9px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text2);text-decoration:none">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 4l7 5 7-5"/></svg>
         </a>
       </div>
@@ -1952,7 +2033,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <div style="font-size:11px;color:var(--text3)">
       Responsável SST: <span style="font-weight:600;color:var(--text2)">Luan Hachiguti</span>
     </div>
-    <a href="mailto:luan.hachiguti@ibmp.org.br" style="font-size:11px;color:#3b82f6;text-decoration:none;display:flex;align-items:center;gap:4px">
+    <a href="/cdn-cgi/l/email-protection#620e17030c4c0a03010a0b0517160b220b000f124c0d10054c0010" style="font-size:11px;color:#3b82f6;text-decoration:none;display:flex;align-items:center;gap:4px">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M1 4l7 5 7-5"/></svg>
       Contato
     </a>
@@ -2012,18 +2093,22 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     </div>
     <div class="filter-bar">
       <div class="filter-bar-row">
-        <button class="fbtn f-all on" id="fb-all" onclick="setFilter('all')">Todas</button>
+        <button class="fbtn f-all on" id="fb-all" onclick="setFilter('all')">Todas <span class="fc" id="fc-all"></span></button>
+        <button class="fbtn f-ok" id="fb-ok" onclick="setFilter('ok')">
+          <svg width="8" height="8" viewBox="0 0 10 10" fill="var(--ok)"><circle cx="5" cy="5" r="4"/></svg>
+          Ativas <span class="fc" id="fc-ok"></span>
+        </button>
         <button class="fbtn f-nf" id="fb-nf" onclick="setFilter('nf')">
           <svg width="8" height="8" viewBox="0 0 10 10" fill="var(--nf)"><circle cx="5" cy="5" r="4"/></svg>
-          Inativas
+          Inativas <span class="fc" id="fc-nf"></span>
         </button>
-        <button class="fbtn" id="fb-log" onclick="setFilter('log')" title="Câmeras com ocorrências registradas">
+        <button class="fbtn" id="fb-log" onclick="setFilter('log')" title="Câmeras com ocorrências">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h12M2 7h8M2 11h5"/></svg>
-          Ocorrências
+          Log <span class="fc" id="fc-log"></span>
         </button>
       </div>
       <div class="filter-bar-row" style="margin-top:4px">
-        <button class="fbtn" id="fb-crit-alta"  onclick="setFilter('crit-alta')"  title="Criticidade ALTA"  style="font-size:10px;font-weight:700;color:#dc2626">● ALTA</button>
+        <button class="fbtn" id="fb-crit-alta"  onclick="setFilter('crit-alta')"  title="Criticidade ALTA"  style="font-size:10px;font-weight:700;color:#dc2626">● ALTA <span class="fc" id="fc-alta"></span></button>
         <button class="fbtn" id="fb-crit-media" onclick="setFilter('crit-media')" title="Criticidade MÉDIA" style="font-size:10px;font-weight:700;color:#d97706">● MÉDIA</button>
         <button class="fbtn" id="fb-crit-baixa" onclick="setFilter('crit-baixa')" title="Criticidade BAIXA" style="font-size:10px;font-weight:700;color:#16a34a">● BAIXA</button>
       </div>
@@ -2329,8 +2414,15 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         </div>
       </div>
 
+      <!-- TAB BAR -->
+      <div class="rp-tabs" id="rp-tabs">
+        <button class="rp-tab active" id="rpt-tec" onclick="rpTab('tec')">Técnico</button>
+        <button class="rp-tab" id="rpt-fin" onclick="rpTab('fin')">Financeiro</button>
+        <button class="rp-tab" id="rpt-log" onclick="rpTab('log')">Histórico<span class="rp-tab-count" id="rpt-log-ct" style="display:none"></span></button>
+      </div>
+
       <!-- ② PROPRIEDADES TÉCNICAS -->
-      <div class="rp-fields">
+      <div class="rp-fields" id="rptp-tec">
         <div class="rf"><div class="rf-lbl">Canal</div><div class="rf-val" id="rp-canal">—</div></div>
         <div class="rf"><div class="rf-lbl">Gravador</div><div class="rf-val" id="rp-gravador">—</div></div>
         <div class="rf"><div class="rf-lbl">IP de Acesso</div><div class="rf-val ip" id="rp-ip">—</div></div>
@@ -2427,7 +2519,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       </div><!-- /fin-block -->
 
       <!-- ④ Campos de vida útil e troca (mantidos para compatibilidade) -->
-      <div class="rp-fields" style="padding-top:0">
+      <div class="rp-fields" id="rptp-fin-extra" style="padding-top:0">
         <div class="rf"><div class="rf-lbl">Vida Útil (modelo)</div><div class="rf-val" id="rp-life">—</div></div>
         <div class="rf" style="align-items:center">
           <div class="rf-lbl">Ano de Instalação</div>
@@ -2755,7 +2847,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
 <input type="file" id="json-in" accept=".json" style="display:none" onchange="importProject(event)">
 <input type="file" id="xlsx-in" accept=".xlsx,.csv" style="display:none" onchange="importInventory(event)">
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ╔══════════════════════════════════════════════════════════════╗
    ║  IBMP CFTV Control — CONFIGURAÇÃO DE DADOS                  ║
    ║  Edite os três blocos CSV abaixo ou atualize via Admin →    ║
@@ -2790,6 +2882,7 @@ let CAM_LOG={};  // histórico de ocorrências: {camName: [{id,date,text,type}]}
 let _logUid=1;
 let _logFormOpen=false;
 let _logType='info'; // tipo selecionado no form
+let _CHANGE_LOG=[];  // histórico de alterações exportáveis: [{ts,camera,campo,de,para}]
 
 // Hash SHA-256 da senha de acesso — nunca armazena a senha em texto claro
 let ADMIN_HASH='a0c1b2e3f4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1';
@@ -3689,9 +3782,23 @@ const E={
 };
 
 // ═══════════════ UI ═══════════════
+function rpTab(t){
+  const panels={tec:['rptp-tec'],fin:['fin-block','rptp-fin-extra'],log:['log-section']};
+  ['tec','fin','log'].forEach(id=>{
+    const isActive=id===t;
+    document.getElementById('rpt-'+id)?.classList.toggle('active',isActive);
+    (panels[id]||[]).forEach(pid=>{const el=document.getElementById(pid);if(el)el.style.display=isActive?'':'none';});
+  });
+  if(t==='log'){
+    const cnt=E.sel?(CAM_LOG[E.sel.name]||[]).length:0;
+    const ct=document.getElementById('rpt-log-ct');
+    if(ct){ct.textContent=cnt||'';ct.style.display=cnt?'flex':'none';}
+  }
+}
 function showInfo(cam){
   document.getElementById('rp-empty').style.display='none';
   document.getElementById('rp-data').style.display='flex';
+  rpTab('tec');
   document.getElementById('rp-name').textContent=cam.name;
   const b=document.getElementById('rp-badge');b.className='status-pill '+(cam.fn?'ok':'nf');
   b.innerHTML=cam.fn?'● Funcional':'✕ Não Funcional';
@@ -3732,6 +3839,10 @@ function showInfo(cam){
   const logForm=document.getElementById('log-form');
   if(logForm)logForm.style.display='none';
   renderLogList(cam.name);
+  // Atualizar badge de count no tab Histórico
+  const _logCnt=(CAM_LOG[cam.name]||[]).length;
+  const _logCt=document.getElementById('rpt-log-ct');
+  if(_logCt){_logCt.textContent=_logCnt||'';_logCt.style.display=_logCnt?'flex':'none';}
   E.syncCtrl();
 }
 
@@ -3792,6 +3903,16 @@ function saveEditModal(){
   if(!dbCam)return;
   const newNome=document.getElementById('ecm-nome').value.trim();
   const _renamed=newNome!==_editCamName;
+  // Captura estado anterior para log de alterações
+  const _before={
+    nome:   _editCamName,
+    status: dbCam['STATUS DE OPERAÇÃO']||'',
+    modelo: dbCam['MODELO CÂMERA']||'',
+    grav:   dbCam['GRAVADOR']||'',
+    canal:  String(dbCam['CANAL']||''),
+    serial: dbCam['SERIAL']||'',
+    ativo:  dbCam['ATIVO']||'',
+  };
   if(_renamed){
     if(!renameCamera(_editCamName,newNome))return;
     _editCamName=newNome;
@@ -3806,6 +3927,20 @@ function saveEditModal(){
   const _setorOv=document.getElementById('ecm-setor').value.trim();
   if(_ipOv) dbCam['IP_OVERRIDE']=_ipOv; else delete dbCam['IP_OVERRIDE'];
   if(_setorOv) dbCam['SETOR_OVERRIDE']=_setorOv; else delete dbCam['SETOR_OVERRIDE'];
+  // Registra alterações no log de exportação
+  const ts=new Date().toLocaleString('pt-BR');
+  const camFinal=_renamed?newNome:_editCamName;
+  [
+    {campo:'Nome',        de:_before.nome,   para:newNome},
+    {campo:'Status',      de:_before.status, para:dbCam['STATUS DE OPERAÇÃO']},
+    {campo:'Modelo',      de:_before.modelo, para:dbCam['MODELO CÂMERA']},
+    {campo:'Gravador',    de:_before.grav,   para:dbCam['GRAVADOR']},
+    {campo:'Canal',       de:_before.canal,  para:String(dbCam['CANAL']||'')},
+    {campo:'Nº de Série', de:_before.serial, para:dbCam['SERIAL']},
+    {campo:'Patrimônio',  de:_before.ativo,  para:dbCam['ATIVO']},
+  ].forEach(({campo,de,para})=>{
+    if(String(de)!==String(para)) _CHANGE_LOG.push({ts,camera:camFinal,campo,de:de||'—',para:para||'—'});
+  });
   // Atualiza o cache de info em todas as instâncias plotadas desta câmera
   floors.forEach(f=>f.cameras.forEach(c=>{if(c.name===_editCamName&&!c.rec)c.info=lookup(c.name);}));
   closeModal('edit-cam-modal');
@@ -3944,6 +4079,9 @@ function renderLogList(camName){
     CAM_LOG[camName]=[{id:_logUid++,date:'—',text:CAM_OBS[camName],type:'info',_migrated:true},...(CAM_LOG[camName]||[])];
   }
   const all=CAM_LOG[camName]||[];
+  // Atualizar badge de count no tab Histórico
+  const _ct=document.getElementById('rpt-log-ct');
+  if(_ct){_ct.textContent=all.length||'';_ct.style.display=all.length?'flex':'none';}
   if(!all.length){
     el.innerHTML='<div class="log-empty">Nenhuma ocorrência registrada</div>';
     return;
@@ -4110,6 +4248,7 @@ function buildList(){
   DB.cameras.forEach(c=>{
     const nm=c['NOME CANAL'],isP=plottedAll.has(nm),fn=isFn(nm);
     if(filterMode==='nf'&&fn)return;
+    if(filterMode==='ok'&&!fn)return;
     if(filterMode==='log'&&!(CAM_LOG[nm]?.length>0))return;
     const _crit=c['CRITICIDADE']||'MÉDIA';
     if(filterMode==='crit-alta'&&_crit!=='ALTA')return;
@@ -4133,12 +4272,21 @@ function buildList(){
     const ipResolved=ipDirect||ipViaLookup;
     const noIp=isP&&(!ipResolved||ipResolved==='N/D'||ipResolved==='—');
     const logCount=(CAM_LOG[nm]||[]).length;
-    d.innerHTML=`<span class="ci-dot ${inCurrent?'pl':fn?'ok':'nf'}"></span>
-      <span class="ci-name">${nm}</span>
-      ${_crit==='ALTA'?`<span style="font-size:8px;font-weight:700;color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:4px;flex-shrink:0;border:1px solid #fecaca">ALTA</span>`:''}
-      ${logCount>0?`<span style="font-size:9px;font-weight:700;color:var(--text2);background:var(--surface3);padding:1px 5px;border-radius:8px;flex-shrink:0">${logCount}</span>`:''}
-      ${noIp?`<span class="ci-noip" title="IP não cadastrado">⚠ sem IP</span>`:''}
-      ${inOther?`<span class="ci-tag" title="Em uso: ${otherFloor}" style="color:var(--warn);font-size:9px">📌${(otherFloor||'').slice(0,6)}</span>`:(!noIp?`<span class="ci-tag">${(c['GRAVADOR']||'').replace('DVR-','')}</span>`:'')}`;
+    const _dotCls=inCurrent?'pl':fn?'ok':'nf';
+    const _subModel=(_info.modelo||'').replace(/^(Hikvision|Intelbras|VIP)\s*/i,'').slice(0,20);
+    const _camData=DB.cameras.find(x=>(x['NOME CANAL']||x['NOME']||'')===nm)||c;
+    const _canal=_camData['CANAL']||_camData['CANAL IP']||'';
+    const _gravSub=_info.gravador?(_info.gravador+(_canal?` · CH${_canal}`:'')):'' ;
+    d.innerHTML=`<span class="ci-dot ${_dotCls}"></span>
+      <div class="ci-main">
+        <div class="ci-row">
+          <span class="ci-name">${nm}</span>
+          ${_crit==='ALTA'?`<span style="font-size:8px;font-weight:700;color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:4px;flex-shrink:0;border:1px solid #fecaca">ALTA</span>`:''}
+          ${logCount>0?`<span style="font-size:9px;font-weight:700;color:var(--text2);background:var(--surface3);padding:1px 5px;border-radius:8px;flex-shrink:0">${logCount}</span>`:''}
+          ${noIp?`<span class="ci-noip" title="IP não cadastrado">⚠ IP</span>`:''}
+          ${inOther?`<span class="ci-tag" style="color:var(--warn);font-size:9px" title="Em uso: ${otherFloor}">📌${(otherFloor||'').slice(0,5)}</span>`:''}
+        </div>
+        ${(_subModel||_gravSub)?`<div class="ci-sub">${_subModel?`<span class="ci-sub-text">${_subModel}</span>`:''} ${(_subModel&&_gravSub)?`<span class="ci-sub-sep"></span>`:''} ${_gravSub?`<span class="ci-sub-grav">${_gravSub}</span>`:''}</div>`:''}</div>`;
     d.onclick=()=>goToCamera(nm);
     list.appendChild(d);
   });
@@ -4164,6 +4312,7 @@ function buildList(){
       });
     }
   }
+  updateFilterCounts();
 }
 
 // ── Helper: abrir relatório em nova aba e disparar impressão (PDF via Ctrl+P)
@@ -4327,12 +4476,22 @@ function ctxFilter(q){q=q.toLowerCase();document.querySelectorAll('.ctx-item').f
 function setFilter(mode){
   filterMode=mode;
   document.getElementById('fb-all').classList.toggle('on',mode==='all');
+  document.getElementById('fb-ok')?.classList.toggle('on',mode==='ok');
   document.getElementById('fb-nf').classList.toggle('on',mode==='nf');
   document.getElementById('fb-log')?.classList.toggle('on',mode==='log');
   document.getElementById('fb-crit-alta')?.classList.toggle('on',mode==='crit-alta');
   document.getElementById('fb-crit-media')?.classList.toggle('on',mode==='crit-media');
   document.getElementById('fb-crit-baixa')?.classList.toggle('on',mode==='crit-baixa');
   buildList();
+}
+function updateFilterCounts(){  const cams=DB.cameras;if(!cams.length)return;
+  const total=cams.length;
+  const okN=cams.filter(c=>isFn(c['NOME CANAL']||'')).length;
+  const nfN=total-okN;
+  const logN=cams.filter(c=>(CAM_LOG[c['NOME CANAL']||'']||[]).length>0).length;
+  const altaN=cams.filter(c=>(c['CRITICIDADE']||'').toUpperCase()==='ALTA'&&!isFn(c['NOME CANAL']||'')).length;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v||'';};
+  set('fc-all',total||''); set('fc-ok',okN||''); set('fc-nf',nfN||''); set('fc-log',logN||''); set('fc-alta',altaN||'');
 }
 
 let _nfI=0;
@@ -4660,11 +4819,24 @@ function renderDash(){
   // KPI cards
   const grid=document.getElementById('dash-grid');grid.innerHTML='';
 
-  // Hero: Taxa Operacional
+  // Hero: Taxa Operacional — gradiente dinâmico por status
+  const _heroGrad=taxaStatus==='OPERACIONAL'?'linear-gradient(135deg,#0e7a5e,#159b77)':taxaStatus==='ATENÇÃO'?'linear-gradient(135deg,#b45309,#d97706)':'linear-gradient(135deg,#b91c1c,#dc2626)';
   const heroCard=document.createElement('div');
-  heroCard.className='kpi-card';
-  heroCard.style.cssText=`border:1.5px solid ${taxaColor};background:${taxaBg}`;
-  heroCard.innerHTML=`<div class="kpi-icon" style="background:${taxaBg}"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="${taxaColor}" stroke-width="1.8"><path d="M3.5 15.5a9 9 0 1 1 15 0"/><path d="M11 11.5L7.5 8"/><circle cx="11" cy="12" r="1.5" fill="${taxaColor}" stroke="none"/></svg></div><div><div style="font-size:30px;font-weight:800;line-height:1;color:${taxaColor}">${taxa}%</div><div class="kpi-lbl">Taxa Operacional</div><div style="font-size:10px;color:var(--text3);margin-top:1px">câmeras mapeadas (excl. recomendadas)</div><div style="margin-top:5px;font-size:11px;font-weight:700;color:${taxaColor}">● ${taxaStatus}</div></div>`;
+  heroCard.className='kpi-card kpi-card-hero';
+  heroCard.style.cssText=`background:${_heroGrad}`;
+  heroCard.innerHTML=`
+    <div class="kpi-icon" style="background:rgba(255,255,255,.15);flex-shrink:0">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" stroke-width="1.8"><path d="M3.5 15.5a9 9 0 1 1 15 0"/><path d="M11 11.5L7.5 8"/><circle cx="11" cy="12" r="1.5" fill="#fff" stroke="none"/></svg>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:36px;font-weight:800;line-height:1;color:#fff">${taxa}%</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:3px">Taxa Operacional</div>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:5px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden"><div style="width:${taxa}%;height:100%;background:#fff;border-radius:3px;transition:width .6s ease"></div></div>
+        <span style="font-size:11px;color:rgba(255,255,255,.9);font-weight:700;flex-shrink:0">${ok}/${total}</span>
+      </div>
+      <div style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.18);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;color:#fff">● ${taxaStatus}${altaInativas>0?` · ⚠ ${altaInativas} ALTA`:''}</div>
+    </div>`;
   grid.appendChild(heroCard);
 
   const kpis=[
@@ -7835,9 +8007,9 @@ function exportInventory(){
       'NOME CANAL':         nome,
       'GRAVADOR':           c['GRAVADOR']||'',
       'MODELO CÂMERA':      c['MODELO CÂMERA']||'',
-      'CANAL':              c['CANAL']||'',
+      'CANAL':              String(c['CANAL']||''),          // string — evita "1,00"
       'STATUS DE OPERAÇÃO': c['STATUS DE OPERAÇÃO']||'Ativo',
-      'ANO INSTALAÇÃO':     INSTALL_YEAR[nome]||'',
+      'ANO INSTALAÇÃO':     INSTALL_YEAR[nome]?String(INSTALL_YEAR[nome]):'', // string — evita "2.021,00"
       'Ativo':              c['ATIVO']||'',
       'Número de Série':    c['SERIAL']||'',
       'Status do Ativo':    c['STATUS ATIVO']||'',
@@ -7876,13 +8048,22 @@ function exportInventory(){
     'MODELO SUGERIDO': r['MODELO SUGERIDO']||'',
     'JUSTIFICATIVA':   r['JUSTIFICATIVA']||'',
   }));
+  // ── Aba "Histórico de Alterações" ─────────────────────────────────────────
+  const histRows=_CHANGE_LOG.map(h=>({
+    'Data/Hora': h.ts,
+    'Câmera':    h.camera,
+    'Campo':     h.campo,
+    'De':        h.de,
+    'Para':      h.para,
+  }));
   // ── SpreadsheetML ─────────────────────────────────────────────────────────
   const abas=[
-    {name:'Relação de Câmeras',  rows:camRows},
-    {name:'Gravadores',          rows:gravRows},
-    {name:'Parecer',             rows:parRows},
-    ...(precRows.length?[{name:'Referência de Preços',  rows:precRows}]:[]),
-    ...(recRows.length? [{name:'Câmeras Recomendadas',  rows:recRows}] :[]),
+    {name:'Relação de Câmeras',      rows:camRows},
+    {name:'Gravadores',              rows:gravRows},
+    {name:'Parecer',                 rows:parRows},
+    ...(precRows.length?[{name:'Referência de Preços',    rows:precRows}]:[]),
+    ...(recRows.length? [{name:'Câmeras Recomendadas',    rows:recRows}] :[]),
+    ...(histRows.length?[{name:'Histórico de Alterações', rows:histRows}]:[]),
   ].filter(a=>a.rows.length);
   const sheetsXML=abas.map(a=>
     `<Worksheet ss:Name="${xmlEsc(a.name)}">
@@ -7943,7 +8124,8 @@ function saveLocalInventory(){
       _userImport:true,
       cameras:DB.cameras,recorders:DB.recorders,pareceres:DB.pareceres,
       recommended:DB.recommended||[],
-      installYear:INSTALL_YEAR,camFin:CAM_FIN,camObs:CAM_OBS
+      installYear:INSTALL_YEAR,camFin:CAM_FIN,camObs:CAM_OBS,
+      changeLog:_CHANGE_LOG,
     };
     localStorage.setItem('ibmp_inventory',JSON.stringify(payload));
   }catch(err){console.warn('localStorage cheio ou indisponível:',err);toast('⚠ Não foi possível salvar automaticamente. Faça backup do projeto via Salvar no GitHub ou Exportar Projeto.',5000);}
@@ -7968,6 +8150,7 @@ function loadLocalInventory(){
     if(d.installYear)Object.assign(INSTALL_YEAR,d.installYear);
     if(d.camFin)Object.assign(CAM_FIN,d.camFin);
     if(d.camObs)Object.assign(CAM_OBS,d.camObs);
+    if(d.changeLog?.length)_CHANGE_LOG=d.changeLog;
     // Garante campo CRITICIDADE em bancos antigos sem a coluna
     DB.cameras.forEach(c=>{ if(!c['CRITICIDADE']) c['CRITICIDADE']='MÉDIA'; });
     return !!(d.cameras?.length);
@@ -7980,6 +8163,22 @@ let _autoLoaded = false;
 
 window.addEventListener('DOMContentLoaded',()=>{
   E.init();
+  // ResizeObserver — botão ··· no header para telas estreitas
+  const _hdr=document.getElementById('hdr');
+  const _moreWrap=document.getElementById('more-wrap');
+  const _hgroup=document.getElementById('hgroup-projeto');
+  if(_hdr&&_moreWrap&&_hgroup){
+    const _ro=new ResizeObserver(()=>{
+      const tight=_hdr.scrollWidth>_hdr.clientWidth+2||_hdr.clientWidth<1200;
+      _moreWrap.style.display=tight?'':'none';
+      _hgroup.style.display=tight?'none':'';
+    });
+    _ro.observe(_hdr);
+  }
+  // Fechar dropdown ··· ao clicar fora
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('#more-wrap'))document.getElementById('more-drop')?.classList.remove('open');
+  });
   // Sempre começa com o banco embutido
   DB.cameras=_DB_CAMERAS;DB.recorders=_DB_RECORDERS;DB.pareceres=_DB_PARECERES;
   Object.assign(INSTALL_YEAR, {"Cromatografia - DT": 2021, "Cultivo Procariotos - DT": 2021, "Sintese de Acidos Nucleicos - DT": 2021, "Sintese Quimica - DT": 2021, "Acesso a Convivencia - DT": 2021, "Sala de Freezers - DT": 2021, "Convivencia 1 - DT": 2021, "Data Center - DT": 2020, "Cultivo Eucariotos 2 - DT": 2021, "Cultivo Eucariotos - DT": 2021, "Convivencia 2 - DT": 2021, "Hall Entrada - DT": 2021, "Piso Tecnico - DT": 2021, "Externo 1": 2020, "0.15%": 2021, "0.50%": 2021, "PRM": 2021, "Sala de PCR": 2021, "Extracao": 2021, "Porta Data Center": 2021, "Sala Nilson": 2021, "Esterilizacao": 2021, "Entrada Lab Central": 2021, "Lab Central": 2021, "Corredor Lab Central": 2021, "Sala de Manutencao Bloco C1": 2022, "Entrada Piso Tecnico - Bloco C1": 2021, "Corredor/Escada 1 - Bloco D": 2022, "Corredor/SAC - Bloco D": 2022, "Corredor/DN - Bloco D": 2022, "Estoque TI - Bloco D": 2022, "Convivencia - Bloco C1": 2021, "Preparo e Tampoes": 2021, "Envase 3": 2021, "Envase 2": 2021, "Corredor Sujo 1": 2021, "Empacotamento 1a": 2021, "Corredor Sujo 2": 2022, "Envase 1": 2021, "Corredor Limpo": 2021, "Purificacao": 2021, "Teste rapido": 2021, "Empacotamento 2a": 2021, "Sala Lise": 2021, "Empacotamento 1b": 2022, "Sala de Crescimento": 2021, "Sala de Impressao": 2022, "Secretaria Bloco C1": 2020, "Hall de Entrada - Bloco C1": 2020, "Sala de Reuniao Mezanino": 2021, "Corredor Sujo Saida de Rejeitos": 2020, "Subida Mezanino - Producao": 2020, "Corredor Sujo 2 - Producao": 2020, "Corredor Sujo 3 - Producao": 2020, "Empacotamento 2 - Producao 2": 2020, "Entrada - CQ": 2020, "Microbiologia - CQ": 2020, "PCR - CQ": 2020, "Externo Expedicao": 2020, "Escritorio Logistica": 2020, "Externo Controle Positivo": 2020, "Entrada Logistica 1": 2020, "Estoque Logistica": 2020, "Corredor Estoque 1": 2020, "Corredor Estoque 2": 2020, "Corredor Estoque 3": 2020, "Escritorio Estoque": 2020, "Corredor Estoque 4": 2020, "Quarentena Estoque": 2020, "Escritorio Recebimento": 2020, "Entrada Logistica 2": 2020, "Externo Fundos": 2020, "Coredor prox. Sala equipamentos": 2020, "Corredor /Frente Preparo soluções": 2020, "Corredor C": 2020, "Corredor Sujo Produção C": 2020, "Entrada Copa C": 2020, "Entrada sala Distribuição Piso Técnico": 2020, "Escritório Produção C": 2020, "Expedição C": 2020, "Preparo soluções": 2020, "Sala de Distribuição Piso Técnico": 2020, "Sala de Preparo  C": 2020, "Sala Equipamentos": 2020, "Sala principal (Lise, Purificação e Crescimento C": 2020});
@@ -8092,6 +8291,20 @@ function mobRender(){
   document.getElementById('mkpi-nf').textContent    = nfCnt;
   document.getElementById('mkpi-db').textContent    = dbCnt || '0';
 
+  // Hero card Taxa Operacional
+  const heroEl = document.getElementById('mob-hero');
+  if(heroEl && mapped > 0){
+    const _taxa = Math.round(okCnt/mapped*100);
+    const _altaInativas = DB.cameras.filter(c=>{ const s=allCams.find(fc=>fc.name===c['NOME CANAL']); return s&&!s.fn&&(c['CRITICIDADE']||'MÉDIA')==='ALTA'; }).length;
+    const _txStatus = (_altaInativas>0||_taxa<70)?'CRÍTICO':_taxa>=90?'OPERACIONAL':'ATENÇÃO';
+    const _grad = _txStatus==='OPERACIONAL'?'linear-gradient(135deg,#0e7a5e,#159b77)':_txStatus==='ATENÇÃO'?'linear-gradient(135deg,#b45309,#d97706)':'linear-gradient(135deg,#b91c1c,#dc2626)';
+    heroEl.style.cssText=`display:block;margin:12px 14px 4px;border-radius:14px;padding:14px 16px;overflow:hidden;position:relative;background:${_grad}`;
+    document.getElementById('mob-hero-val').textContent=_taxa+'%';
+    document.getElementById('mob-hero-status').textContent='● '+_txStatus+(_altaInativas>0?` · ⚠ ${_altaInativas} ALTA`:'');
+    document.getElementById('mob-hero-bar').style.width=_taxa+'%';
+    document.getElementById('mob-hero-sub').textContent=`${okCnt} operantes · ${nfCnt} inativas de ${mapped} mapeadas`;
+  } else if(heroEl){ heroEl.style.display='none'; }
+
   // Status bar
   const sbEl = document.getElementById('mob-status-bar');
   if(sbEl && mapped > 0){
@@ -8183,7 +8396,9 @@ function mobBuildList(){
 
 function mobItemHTML(c){
   const grav = (c.info.gravador||'').replace(/DVR-|NVR-/g,'')||'—';
-  const sub  = [c.info.setor, c.info.ip!=='N/D'?c.info.ip:''].filter(Boolean).join(' · ')||grav;
+  const modelo = (c.info.modelo||'').replace(/^(Hikvision|Intelbras|VIP)\s*/i,'').slice(0,20);
+  const gravCh = c.info.gravador ? (c.info.gravador + (dbCam['CANAL'] ? ` · CH${dbCam['CANAL']}` : '')) : '';
+  const sub  = [modelo, gravCh].filter(Boolean).join(' · ') || c.info.setor || grav;
   const nomeEnc = encodeURIComponent(c.nome);
   const cls = 'mob-item' + (c.fn ? '' : ' nf-item');
   const dot = c.fn ? 'ok' : 'nf';
@@ -8206,6 +8421,12 @@ function mobSearch(v){
 function mobClearSearch(){
   document.getElementById('mob-search').value='';
   mobSearch('');
+}
+function mobSheetTab(t){
+  document.getElementById('msht-tec')?.classList.toggle('active',t==='tec');
+  document.getElementById('msht-log')?.classList.toggle('active',t==='log');
+  document.getElementById('mob-sheet-fields').style.display = t==='tec' ? '' : 'none';
+  document.getElementById('mob-sheet-logs').style.display   = t==='log' ? '' : 'none';
 }
 function mobOpenSheet(nome){
   const info = lookup(nome);
@@ -8251,6 +8472,10 @@ function mobOpenSheet(nome){
 
   document.getElementById('mob-sheet-bg').classList.add('show');
   document.getElementById('mob-sheet').classList.add('open');
+  mobSheetTab('tec');
+  // Badge de count no tab Histórico
+  const _msCt=document.getElementById('msht-log-ct');
+  if(_msCt){_msCt.textContent=logs.length||'';_msCt.style.display=logs.length?'flex':'none';}
 }
 
 function mobCloseSheet(){
