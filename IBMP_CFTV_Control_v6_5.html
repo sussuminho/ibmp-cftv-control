@@ -1767,6 +1767,10 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
   <div class="report-menu-wrap" id="more-wrap" style="display:none">
     <button class="hbtn icon-only" id="btn-more" onclick="document.getElementById('more-drop').classList.toggle('open')" title="Mais opções">···</button>
     <div class="report-menu-drop" id="more-drop" style="min-width:180px">
+      <button class="rmitem" onclick="saveToCloud();document.getElementById('more-drop').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 2h9l3 3v9H2z"/><path d="M5 2v4h6V2"/><rect x="4" y="10" width="8" height="4" rx="1"/></svg>
+        <div><div class="rmitem-title">Salvar no GitHub</div></div>
+      </button>
       <button class="rmitem" onclick="document.getElementById('json-in').click();document.getElementById('more-drop').classList.remove('open')">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/><path d="M8 10V2M5 5l3-3 3 3"/></svg>
         <div><div class="rmitem-title">Abrir projeto</div></div>
@@ -5600,10 +5604,12 @@ function closeViewsMenu(){
 }
 // Fechar menus ao clicar fora
 document.addEventListener('click',e=>{
-  const repWrap=document.querySelector('.report-menu-wrap:not(#views-wrap)');
+  const repWrap=document.getElementById('report-menu-drop')?.closest('.report-menu-wrap');
   if(repWrap&&!repWrap.contains(e.target))closeReportMenu();
   const viewWrap=document.getElementById('views-wrap');
   if(viewWrap&&!viewWrap.contains(e.target))closeViewsMenu();
+  const moreWrap=document.getElementById('more-wrap');
+  if(moreWrap&&!moreWrap.contains(e.target))document.getElementById('more-drop')?.classList.remove('open');
 });
 
 function toggleTheme(){
@@ -8169,16 +8175,12 @@ window.addEventListener('DOMContentLoaded',()=>{
   const _hgroup=document.getElementById('hgroup-projeto');
   if(_hdr&&_moreWrap&&_hgroup){
     const _ro=new ResizeObserver(()=>{
-      const tight=_hdr.scrollWidth>_hdr.clientWidth+2||_hdr.clientWidth<1200;
+      const tight=_hdr.scrollWidth>_hdr.clientWidth+2;
       _moreWrap.style.display=tight?'':'none';
       _hgroup.style.display=tight?'none':'';
     });
     _ro.observe(_hdr);
   }
-  // Fechar dropdown ··· ao clicar fora
-  document.addEventListener('click',e=>{
-    if(!e.target.closest('#more-wrap'))document.getElementById('more-drop')?.classList.remove('open');
-  });
   // Sempre começa com o banco embutido
   DB.cameras=_DB_CAMERAS;DB.recorders=_DB_RECORDERS;DB.pareceres=_DB_PARECERES;
   Object.assign(INSTALL_YEAR, {"Cromatografia - DT": 2021, "Cultivo Procariotos - DT": 2021, "Sintese de Acidos Nucleicos - DT": 2021, "Sintese Quimica - DT": 2021, "Acesso a Convivencia - DT": 2021, "Sala de Freezers - DT": 2021, "Convivencia 1 - DT": 2021, "Data Center - DT": 2020, "Cultivo Eucariotos 2 - DT": 2021, "Cultivo Eucariotos - DT": 2021, "Convivencia 2 - DT": 2021, "Hall Entrada - DT": 2021, "Piso Tecnico - DT": 2021, "Externo 1": 2020, "0.15%": 2021, "0.50%": 2021, "PRM": 2021, "Sala de PCR": 2021, "Extracao": 2021, "Porta Data Center": 2021, "Sala Nilson": 2021, "Esterilizacao": 2021, "Entrada Lab Central": 2021, "Lab Central": 2021, "Corredor Lab Central": 2021, "Sala de Manutencao Bloco C1": 2022, "Entrada Piso Tecnico - Bloco C1": 2021, "Corredor/Escada 1 - Bloco D": 2022, "Corredor/SAC - Bloco D": 2022, "Corredor/DN - Bloco D": 2022, "Estoque TI - Bloco D": 2022, "Convivencia - Bloco C1": 2021, "Preparo e Tampoes": 2021, "Envase 3": 2021, "Envase 2": 2021, "Corredor Sujo 1": 2021, "Empacotamento 1a": 2021, "Corredor Sujo 2": 2022, "Envase 1": 2021, "Corredor Limpo": 2021, "Purificacao": 2021, "Teste rapido": 2021, "Empacotamento 2a": 2021, "Sala Lise": 2021, "Empacotamento 1b": 2022, "Sala de Crescimento": 2021, "Sala de Impressao": 2022, "Secretaria Bloco C1": 2020, "Hall de Entrada - Bloco C1": 2020, "Sala de Reuniao Mezanino": 2021, "Corredor Sujo Saida de Rejeitos": 2020, "Subida Mezanino - Producao": 2020, "Corredor Sujo 2 - Producao": 2020, "Corredor Sujo 3 - Producao": 2020, "Empacotamento 2 - Producao 2": 2020, "Entrada - CQ": 2020, "Microbiologia - CQ": 2020, "PCR - CQ": 2020, "Externo Expedicao": 2020, "Escritorio Logistica": 2020, "Externo Controle Positivo": 2020, "Entrada Logistica 1": 2020, "Estoque Logistica": 2020, "Corredor Estoque 1": 2020, "Corredor Estoque 2": 2020, "Corredor Estoque 3": 2020, "Escritorio Estoque": 2020, "Corredor Estoque 4": 2020, "Quarentena Estoque": 2020, "Escritorio Recebimento": 2020, "Entrada Logistica 2": 2020, "Externo Fundos": 2020, "Coredor prox. Sala equipamentos": 2020, "Corredor /Frente Preparo soluções": 2020, "Corredor C": 2020, "Corredor Sujo Produção C": 2020, "Entrada Copa C": 2020, "Entrada sala Distribuição Piso Técnico": 2020, "Escritório Produção C": 2020, "Expedição C": 2020, "Preparo soluções": 2020, "Sala de Distribuição Piso Técnico": 2020, "Sala de Preparo  C": 2020, "Sala Equipamentos": 2020, "Sala principal (Lise, Purificação e Crescimento C": 2020});
