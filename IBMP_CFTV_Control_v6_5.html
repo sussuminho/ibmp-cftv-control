@@ -187,7 +187,6 @@ input, textarea { font-family: inherit; }
   opacity: 1; pointer-events: auto;
 }
 /* Old standalone view tabs hidden — now inside Views dropdown */
-#tab-dash, #tab-monitor, #tab-budget, #tab-coverage, #tab-timeline { display: none; }
 .hgroup { display: flex; align-items: center; gap: 4px; }
 .hbtn.icon-only { padding: 6px 8px; min-width: 32px; justify-content: center; }
 .view-nav {
@@ -458,8 +457,6 @@ input, textarea { font-family: inherit; }
 .fbtn.f-nf.on .fc { background: var(--nf); color: #fff; }
 .fbtn.f-ok.on  { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok); }
 .fbtn.f-ok.on .fc { background: var(--ok); color: #fff; }
-#fb-log.on     { background: rgba(37,99,235,.1); border-color: #2563eb; color: #2563eb; }
-#fb-log.on .fc { background: #2563eb; color: #fff; }
 #fb-crit-alta.on  { background: var(--nf-bg);  border-color: var(--nf-border); }
 #fb-crit-media.on { background: var(--warn-bg); border-color: var(--warn-border); }
 #fb-crit-baixa.on { background: var(--ok-bg);  border-color: var(--ok-border); }
@@ -1710,33 +1707,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M4 5h8M4 8h6M4 11h4"/></svg>
       Editor
     </button>
-    <button class="ntab" id="tab-dash" onclick="setMode('dash')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>
-      Dashboard
-    </button>
-    <button class="ntab" id="tab-manut" onclick="setMode('manut')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13.5 2.5l-1 1-1-1L10 4l1 1-7 7-1.5.5.5-1.5 7-7 1 1 1.5-1.5z"/><circle cx="3.5" cy="12.5" r="1"/></svg>
-      Manutenção
-    </button>
-    <button class="ntab" id="tab-monitor" onclick="setMode('monitor')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="2" width="14" height="10" rx="1.5"/><path d="M5 15h6M8 12v3"/></svg>
-      Monitor
-    </button>
-    <button class="ntab" id="tab-budget" onclick="setMode('budget')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v12M5 5h5a2 2 0 010 4H5M5 9h5"/></svg>
-      Orçamento
-    </button>
-    <button class="ntab" id="tab-coverage" onclick="setMode('coverage')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 2v12M2 8h12M5 4a9 9 0 006 0M5 12a9 9 0 006 0"/></svg>
-      Gravadores
-    </button>
-
-    <button class="ntab" id="tab-timeline" onclick="setMode('timeline')">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12V4"/><path d="M4 12V7"/><path d="M7 12V5"/><path d="M10 12V3"/><path d="M13 12V6"/><path d="M1 14h14"/></svg>
-      Planejamento
-    </button>
-
-    <!-- Views dropdown -->
+    <!-- Views dropdown — todas as visualizações vivem aqui dentro -->
     <div class="report-menu-wrap" id="views-wrap">
       <button class="ntab" id="tab-views-btn" onclick="toggleViewsMenu()" title="Outras visualizações">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>
@@ -1747,6 +1718,10 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <button class="rmitem" onclick="setMode('dash');closeViewsMenu()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="9" width="4" height="6" rx="1"/><rect x="6" y="5" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="14" rx="1"/></svg>
           <div><div class="rmitem-title">Dashboard</div><div class="rmitem-sub">KPIs e gráficos de status</div></div>
+        </button>
+        <button class="rmitem" onclick="setMode('monitor');closeViewsMenu()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="2" width="14" height="10" rx="1.5"/><path d="M5 15h6M8 12v3"/></svg>
+          <div><div class="rmitem-title">Monitor</div><div class="rmitem-sub">Grade visual de todas as câmeras</div></div>
         </button>
         <button class="rmitem" onclick="setMode('manut');closeViewsMenu()">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13.5 2.5l-1 1-1-1L10 4l1 1-7 7-1.5.5.5-1.5 7-7 1 1 1.5-1.5z"/><circle cx="3.5" cy="12.5" r="1"/></svg>
@@ -2112,10 +2087,6 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <button class="fbtn f-nf" id="fb-nf" onclick="setFilter('nf')">
           <svg width="8" height="8" viewBox="0 0 10 10" fill="var(--nf)"><circle cx="5" cy="5" r="4"/></svg>
           Inativas <span class="fc" id="fc-nf"></span>
-        </button>
-        <button class="fbtn" id="fb-log" onclick="setFilter('log')" title="Câmeras com ocorrências">
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h12M2 7h8M2 11h5"/></svg>
-          Log <span class="fc" id="fc-log"></span>
         </button>
       </div>
       <div class="filter-bar-row" style="margin-top:4px">
@@ -4508,7 +4479,6 @@ function setFilter(mode){
   document.getElementById('fb-all').classList.toggle('on',mode==='all');
   document.getElementById('fb-ok')?.classList.toggle('on',mode==='ok');
   document.getElementById('fb-nf').classList.toggle('on',mode==='nf');
-  document.getElementById('fb-log')?.classList.toggle('on',mode==='log');
   document.getElementById('fb-crit-alta')?.classList.toggle('on',mode==='crit-alta');
   document.getElementById('fb-crit-media')?.classList.toggle('on',mode==='crit-media');
   document.getElementById('fb-crit-baixa')?.classList.toggle('on',mode==='crit-baixa');
@@ -4518,10 +4488,9 @@ function updateFilterCounts(){  const cams=DB.cameras;if(!cams.length)return;
   const total=cams.length;
   const okN=cams.filter(c=>isFn(c['NOME CANAL']||'')).length;
   const nfN=total-okN;
-  const logN=cams.filter(c=>(CAM_LOG[c['NOME CANAL']||'']||[]).length>0).length;
   const altaN=cams.filter(c=>(c['CRITICIDADE']||'').toUpperCase()==='ALTA'&&!isFn(c['NOME CANAL']||'')).length;
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v||'';};
-  set('fc-all',total||''); set('fc-ok',okN||''); set('fc-nf',nfN||''); set('fc-log',logN||''); set('fc-alta',altaN||'');
+  set('fc-all',total||''); set('fc-ok',okN||''); set('fc-nf',nfN||''); set('fc-alta',altaN||'');
 }
 
 let _nfI=0;
@@ -8230,11 +8199,17 @@ function finishInit(){
 function restoreAutoSave(){
   closeModal('autosave-modal');
   _asModalPending=false;_asRestored=true;
-  if(_pendingCloudData){
-    _pendingCloudData=null;
-    setTimeout(()=>toast('Versão da nuvem NÃO aplicada — seu autosave local foi mantido. Clique em Salvar para sincronizar.'),1200);
+  const _cloud=_pendingCloudData;_pendingCloudData=null;
+  if(!loadAutoSave()){
+    // Autosave corrompido — usa a nuvem como fallback em vez de ficar sem nada
+    if(_cloud){loadProjectJSON(_cloud);toast('Autosave inválido — projeto carregado da nuvem');}
+    return;
   }
-  if(loadAutoSave()){
+  if(_cloud){
+    hydrateFloorImages(_cloud);
+    setTimeout(()=>toast('Dados locais mantidos · imagens das plantas carregadas da nuvem. Clique em Salvar para sincronizar.',5000),1200);
+  }
+  {
     finishInit();
     const f=F();
     const hasImg=!!f.image||!!f.imgB64;
@@ -9720,6 +9695,33 @@ function loadProjectJSON(data){
   }
 }
 
+// ── Hidrata SÓ as imagens das plantas a partir do projeto da nuvem.
+//    O autosave local não guarda imagens (imgRef) — quando mantemos os dados
+//    locais, as imagens precisam vir da nuvem mesmo assim.
+function hydrateFloorImages(data){
+  if(!data||!data.floors||!data.floors.length)return;
+  let hydrated=0;
+  floors.forEach((f,i)=>{
+    if(f.image||f.imgB64)return; // já tem imagem — não mexe
+    const src=data.floors.find(df=>df.name===f.name)||data.floors[i]||{};
+    const b64=src.image||src.imgB64;
+    if(b64&&typeof b64==='string'){
+      const img=new Image();
+      img.onload=()=>{ if(F()===f){_fitFloor();E.render();mmUpdate();} };
+      f.image=img;f.imgB64=b64;img.src=b64;
+      hydrated++;
+    }
+  });
+  if(hydrated){
+    const wel=document.getElementById('welcome');if(wel)wel.style.display='none';
+    const tb=document.getElementById('toolbar');if(tb)tb.style.display='flex';
+    document.getElementById('minimap')?.classList.add('visible');
+    document.getElementById('sbar')?.classList.add('visible');
+    E.render();mmUpdate();
+    console.log(`[Hydrate] ${hydrated} imagem(ns) de planta carregada(s) da nuvem`);
+  }
+}
+
 // ══════════════════════════════════════════════════════
 //  AUTOLOAD projeto.json
 // ══════════════════════════════════════════════════════
@@ -9739,13 +9741,15 @@ window.addEventListener('DOMContentLoaded', () => {
         console.log('[AutoLoad] aguardando decisão do modal de autosave');
         return;
       }
-      // Autosave já restaurado e mais novo que a nuvem? Não sobrescreve trabalho local
+      // Autosave já restaurado e mais novo que a nuvem? Não sobrescreve trabalho local,
+      // mas hidrata as imagens das plantas (o autosave não as guarda)
       if(_asRestored){
         let asTs=0;try{asTs=JSON.parse(localStorage.getItem('ibmp_autosave')||'{}').ts||0;}catch(e){}
         const cloudTs=Date.parse(data.exported||'')||0;
         if(asTs>cloudTs){
-          toast('⚠ Seu autosave local é mais recente que a nuvem — mantido. Clique em Salvar para sincronizar.');
-          console.log('[AutoLoad] pulado: autosave local mais novo',{asTs,cloudTs});
+          hydrateFloorImages(data);
+          toast('⚠ Seu autosave local é mais recente que a nuvem — dados mantidos. Clique em Salvar para sincronizar.',5000);
+          console.log('[AutoLoad] dados locais mantidos, imagens hidratadas',{asTs,cloudTs});
           return;
         }
       }
