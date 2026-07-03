@@ -143,6 +143,7 @@ input, textarea { font-family: inherit; }
 .hspace { flex: 1; }
 
 /* header buttons */
+.hbtn.dirty { border-color: var(--warn); box-shadow: 0 0 0 1px var(--warn) inset; }
 .hbtn {
   background: var(--surface2); border: 1px solid var(--border);
   color: var(--text2); font-size: 13px; font-weight: 500;
@@ -920,6 +921,7 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
   .mob-item-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .mob-item-dot.ok { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
   .mob-item-dot.nf { background: var(--nf); box-shadow: 0 0 5px var(--nf); }
+  .mob-item-dot.mn { background: var(--warn); box-shadow: 0 0 5px var(--warn); }
   .mob-item-dot.db { background: var(--border); }
   .mob-item-body { flex: 1; min-width: 0; }
   .mob-item-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -954,6 +956,7 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
   #mob-sheet-status { display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
   #mob-sheet-status.ok { background: rgba(21,155,119,.12); color: var(--ok); border: 1px solid rgba(21,155,119,.3); }
   #mob-sheet-status.nf { background: rgba(220,38,38,.1); color: var(--nf); border: 1px solid rgba(220,38,38,.25); }
+  #mob-sheet-status.mn { background: rgba(217,119,6,.12); color: var(--warn); border: 1px solid rgba(217,119,6,.3); }
   #mob-sheet-close { width: 30px; height: 30px; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
   .mob-field { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 7px; }
   .mob-field-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing:.06em; color: var(--text3); flex-shrink: 0; }
@@ -1012,6 +1015,7 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
   .mob-item-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .mob-item-dot.ok { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
   .mob-item-dot.nf { background: var(--nf); box-shadow: 0 0 5px var(--nf); }
+  .mob-item-dot.mn { background: var(--warn); box-shadow: 0 0 5px var(--warn); }
   .mob-item-body { flex: 1; min-width: 0; }
   .mob-item-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mob-item-sub { font-size: 12px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1033,6 +1037,7 @@ input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--g-li
   #mob-sheet-status { display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
   #mob-sheet-status.ok { background: rgba(21,155,119,.12); color: var(--ok); border: 1px solid rgba(21,155,119,.3); }
   #mob-sheet-status.nf { background: rgba(220,38,38,.1); color: var(--nf); border: 1px solid rgba(220,38,38,.25); }
+  #mob-sheet-status.mn { background: rgba(217,119,6,.12); color: var(--warn); border: 1px solid rgba(217,119,6,.3); }
   #mob-sheet-close { width: 30px; height: 30px; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
   .mob-field { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 7px; }
   .mob-field-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing:.06em; color: var(--text3); flex-shrink: 0; }
@@ -1302,6 +1307,7 @@ canvas.chart { width: 100%; display: block; }
 .mtt-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0;}
 .mtt-status.ok{background:rgba(22,163,74,.12);color:var(--ok);border:1px solid rgba(22,163,74,.25);}
 .mtt-status.nf{background:rgba(220,38,38,.1);color:var(--nf);border:1px solid rgba(220,38,38,.2);}
+.mtt-status.mn{background:rgba(217,119,6,.12);color:var(--warn);border:1px solid rgba(217,119,6,.25);}
 .mtt-hint{padding:5px 12px 7px;font-size:10px;color:var(--text3);border-top:1px solid rgba(200,210,220,.3);text-align:center;letter-spacing:.01em;}
 
 
@@ -2753,6 +2759,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
         <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Status</div>
         <select class="minput" id="ecm-status" style="cursor:pointer">
           <option value="Ativo">Ativo</option>
+          <option value="Em manutenção">Em manutenção</option>
           <option value="Não funcional">Não funcional</option>
         </select>
       </div>
@@ -2792,7 +2799,7 @@ t)).default()}catch(e){warn(`JpxImage#getJsModule: ${e}`)}e(n)}static async#N(e,
     <div class="mbtns" style="margin-top:14px;flex-wrap:wrap;gap:8px">
       <button class="mbtn cancel" onclick="closeModal('edit-cam-modal')">Cancelar</button>
       <button class="mbtn primary" onclick="saveEditModal()">Salvar</button>
-      <button class="mbtn" style="background:#0369a1;color:#fff;border:none" onclick="saveEditAndExport()">Salvar e Exportar XLS</button>
+      <button class="mbtn" style="background:#0369a1;color:#fff;border:none" onclick="saveEditAndExport()">Salvar e Exportar XLSX</button>
     </div>
   </div>
 </div>
@@ -2931,8 +2938,8 @@ function showMapTooltip(cam,cx,cy){
   document.getElementById('mtt-fov').textContent=cam.fov+'° / '+cam.ir+'px';
   const dot=document.getElementById('mtt-dot');
   const st=document.getElementById('mtt-status');
-  if(dot)dot.style.background=cam.fn?'var(--ok)':'var(--nf)';
-  if(st){st.textContent=cam.fn?'Ativo':'Inativo';st.className='mtt-status '+(cam.fn?'ok':'nf');}
+  if(dot)dot.style.background=cam.mn?'var(--warn)':cam.fn?'var(--ok)':'var(--nf)';
+  if(st){st.textContent=cam.mn?'Manutenção':cam.fn?'Ativo':'Inativo';st.className='mtt-status '+(cam.mn?'mn':cam.fn?'ok':'nf');}
   const W=window.innerWidth,H=window.innerHeight,TW=210,TH=165;
   let x=cx+14,y=cy-10;
   if(x+TW>W-8)x=cx-TW-10;
@@ -2994,10 +3001,11 @@ function lookup(nome){
   }
   // Fallback: derive parecer from STATUS DE OPERAÇÃO field in camera row
   const statusOp=String(cam['STATUS DE OPERAÇÃO']||'').toLowerCase();
+  const isMN = statusOp.includes('manut');
   const isNF = statusOp.includes('não') || statusOp.includes('nao') ||
                statusOp.includes('inativ') || statusOp === 'off' ||
                (par && par['Parecer'].toLowerCase().includes('não'));
-  const parecerStr = par ? par['Parecer'].trim() : (isNF ? 'Não funcional' : 'OK');
+  const parecerStr = isMN ? 'Em manutenção' : (par ? par['Parecer'].trim() : (isNF ? 'Não funcional' : 'OK'));
   return{
     nome, canal:cam['CANAL']||'', gravador:grav, modelo:cam['MODELO CÂMERA']||'',
     serial:cam['SERIAL']||'', ativo:cam['ATIVO']||'', statusAtivo:cam['STATUS ATIVO']||'',
@@ -3005,26 +3013,37 @@ function lookup(nome){
     locGrav:rec?rec['LOCALIZAÇÃO']:'',
     setor: cam['SETOR_OVERRIDE']||(par?par['Localização/Bloco']:''),
     parecer:parecerStr,
+    manut:isMN,
     criticidade: cam['CRITICIDADE']||'MÉDIA'
   };
 }
-function isFn(nome){return!lookup(nome).parecer.toLowerCase().includes('não');}
+// Em manutenção conta como NÃO funcional nos KPIs (câmera não está gravando)
+function isFn(nome){const l=lookup(nome);return!l.manut&&!l.parecer.toLowerCase().includes('não');}
+function isMn(nome){return!!lookup(nome).manut;}
 
 // ═══════════════ CAMERA ═══════════════
 let _uid=1;
 class Cam{
   constructor(id,name,x,y){this.id=id;this.name=name;this.x=x;this.y=y;this.rot=0;this.fov=90;this.ir=60;this.sel=false;this.info=lookup(name);}
-  get fn(){return!this.info.parecer.toLowerCase().includes('não');}
+  get fn(){return!this.info.manut&&!this.info.parecer.toLowerCase().includes('não');}
+  get mn(){return!!this.info.manut;}
   draw(ctx,glow=0){
-    const{x,y,rot,fov,ir,sel,fn}=this;
+    const{x,y,rot,fov,ir,sel}=this;
+    const st=this.mn?'mn':this.fn?'ok':'nf';
     const r=rot*Math.PI/180,fR=fov*Math.PI/180,g=sel?1:glow;
     const theme=document.documentElement.getAttribute('data-theme');
     const isLight=theme==='light';
+    // Paleta por estado: ok=verde, nf=vermelho, mn=âmbar (em manutenção)
+    const P={
+      ok:{rgb:'21,155,119',bodyL:['#f0fdf4','#d1fae5'],strokeL:['#16a34a','#059669'],bodyD:['#0a1c14','#0d3324'],strokeD:['#159b77','#4ade80'],solidL:'#16a34a',solidD:'#159b77',lblL:'rgba(4,120,87,.85)',lblD:'rgba(74,222,128,.8)'},
+      nf:{rgb:'220,38,38', bodyL:['#fff5f5','#fee2e2'],strokeL:['#ef4444','#dc2626'],bodyD:['#160808','#2a0d0d'],strokeD:['#991b1b','#f87171'],solidL:'#dc2626',solidD:'#991b1b',lblL:'rgba(185,28,28,.85)',lblD:'rgba(248,113,113,.8)'},
+      mn:{rgb:'217,119,6', bodyL:['#fffbeb','#fef3c7'],strokeL:['#d97706','#b45309'],bodyD:['#1c1206','#3a2504'],strokeD:['#b45309','#fbbf24'],solidL:'#d97706',solidD:'#b45309',lblL:'rgba(180,83,9,.9)', lblD:'rgba(251,191,36,.85)'}
+    }[st];
     ctx.save();ctx.translate(x,y);ctx.rotate(r);
     // glow halo
     if(g>0){
       const gr=ctx.createRadialGradient(0,0,0,0,0,ir*1.2);
-      gr.addColorStop(0,fn?`rgba(21,155,119,${.2*g})`:`rgba(220,38,38,${.2*g})`);
+      gr.addColorStop(0,`rgba(${P.rgb},${.2*g})`);
       gr.addColorStop(1,'transparent');
       ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,ir*1.2,-fR/2,fR/2);ctx.closePath();
       ctx.fillStyle=gr;ctx.fill();
@@ -3032,43 +3051,46 @@ class Cam{
     // FOV
     ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,ir,-fR/2,fR/2);ctx.closePath();
     const alpha=0.12+g*0.08;
-    ctx.fillStyle=fn?`rgba(21,155,119,${alpha})`:`rgba(220,38,38,${alpha})`;
-    ctx.strokeStyle=fn?`rgba(21,155,119,${.35+g*.25})`:`rgba(220,38,38,${.35+g*.25})`;
+    ctx.fillStyle=`rgba(${P.rgb},${alpha})`;
+    ctx.strokeStyle=`rgba(${P.rgb},${.35+g*.25})`;
     ctx.lineWidth=1;ctx.fill();ctx.stroke();
     // body
     const bw=22,bh=14;
     ctx.beginPath();ctx.roundRect(-bw/2,-bh/2,bw,bh,3);
     if(isLight){
-      ctx.fillStyle=fn?(sel?'#d1fae5':'#f0fdf4'):(sel?'#fee2e2':'#fff5f5');
-      ctx.strokeStyle=fn?(sel?'#059669':'#16a34a'):(sel?'#dc2626':'#ef4444');
+      ctx.fillStyle=sel?P.bodyL[1]:P.bodyL[0];
+      ctx.strokeStyle=sel?P.strokeL[1]:P.strokeL[0];
     }else{
-      ctx.fillStyle=fn?(sel?'#0d3324':'#0a1c14'):(sel?'#2a0d0d':'#160808');
-      ctx.strokeStyle=fn?(sel?'#4ade80':'#159b77'):(sel?'#f87171':'#991b1b');
+      ctx.fillStyle=sel?P.bodyD[1]:P.bodyD[0];
+      ctx.strokeStyle=sel?P.strokeD[1]:P.strokeD[0];
     }
     ctx.lineWidth=sel?2.2:1.6;
-    if(g>.4){ctx.shadowColor=fn?'rgba(21,155,119,.4)':'rgba(220,38,38,.4)';ctx.shadowBlur=10;}
+    if(g>.4){ctx.shadowColor=`rgba(${P.rgb},.4)`;ctx.shadowBlur=10;}
     ctx.fill();ctx.stroke();ctx.shadowBlur=0;
     // lens
     ctx.beginPath();ctx.arc(3,0,4.5,0,Math.PI*2);
-    ctx.fillStyle=fn?(isLight?'#16a34a':'#159b77'):(isLight?'#dc2626':'#991b1b');ctx.fill();
+    ctx.fillStyle=isLight?P.solidL:P.solidD;ctx.fill();
     ctx.beginPath();ctx.arc(3,0,2.2,0,Math.PI*2);ctx.fillStyle=isLight?'#fff':'#000';ctx.fill();
     ctx.beginPath();ctx.arc(4.2,-1.3,1,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.4)';ctx.fill();
     // tail
     ctx.beginPath();ctx.roundRect(bw/2,-3,6,6,1);
-    ctx.fillStyle=fn?(isLight?'#16a34a':'#159b77'):(isLight?'#dc2626':'#991b1b');ctx.fill();
-    // NF ✕
-    if(!fn){ctx.strokeStyle=isLight?'#dc2626':'#f87171';ctx.lineWidth=1.5;
+    ctx.fillStyle=isLight?P.solidL:P.solidD;ctx.fill();
+    // NF ✕ / MN ! (marcador de estado)
+    if(st==='nf'){ctx.strokeStyle=isLight?'#dc2626':'#f87171';ctx.lineWidth=1.5;
       ctx.beginPath();ctx.moveTo(-9,-6);ctx.lineTo(-4,-1);ctx.stroke();
       ctx.beginPath();ctx.moveTo(-4,-6);ctx.lineTo(-9,-1);ctx.stroke();}
+    if(st==='mn'){ctx.strokeStyle=isLight?'#d97706':'#fbbf24';ctx.lineWidth=1.8;
+      ctx.beginPath();ctx.moveTo(-6.5,-6.5);ctx.lineTo(-6.5,-2.5);ctx.stroke();
+      ctx.beginPath();ctx.arc(-6.5,-.5,.9,0,Math.PI*2);ctx.fillStyle=isLight?'#d97706':'#fbbf24';ctx.fill();}
     if(sel){ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);
-      ctx.strokeStyle=fn?'rgba(21,155,119,.4)':'rgba(220,38,38,.4)';
+      ctx.strokeStyle=`rgba(${P.rgb},.4)`;
       ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([]);}
     ctx.restore();
     // label
     ctx.save();
     ctx.font=`${sel?600:500} 9.5px Inter,sans-serif`;
     const isLight2=document.documentElement.getAttribute('data-theme')==='light';
-    ctx.fillStyle=fn?(isLight2?'rgba(4,120,87,.85)':'rgba(74,222,128,.8)'):(isLight2?'rgba(185,28,28,.85)':'rgba(248,113,113,.8)');
+    ctx.fillStyle=isLight2?P.lblL:P.lblD;
     ctx.textAlign='center';
     ctx.fillText(this.name.length>22?this.name.slice(0,20)+'…':this.name,x,y+27);
     ctx.restore();
@@ -3103,6 +3125,7 @@ class CamRec{
   set info(_){}
   // Câmeras recomendadas NUNCA são inativas — são planejadas
   get fn(){return true;}
+  get mn(){return false;}
   draw(ctx,glow=0){
     const{x,y,rot,fov,ir,sel}=this;
     const r=rot*Math.PI/180,fR=fov*Math.PI/180,g=sel?1:glow;
@@ -3435,7 +3458,7 @@ const E={
       _hoverCam=h;
       this.c.style.cursor=h?'pointer':this.tool==='select'?'default':'crosshair';
       const sbh=document.getElementById('sb-hover');
-      if(h){sbh.textContent='● '+h.name;sbh.style.display='';sbh.style.color=h.fn?'var(--ok)':'var(--nf)';sbh.style.borderColor=h.fn?'var(--ok-border)':'var(--nf-border)';sbh.style.background=h.fn?'var(--ok-bg)':'var(--nf-bg)';}
+      if(h){const _hc=h.mn?['var(--warn)','var(--warn-bg)','rgba(217,119,6,.25)']:h.fn?['var(--ok)','var(--ok-bg)','var(--ok-border)']:['var(--nf)','var(--nf-bg)','var(--nf-border)'];sbh.textContent='● '+h.name;sbh.style.display='';sbh.style.color=_hc[0];sbh.style.borderColor=_hc[2];sbh.style.background=_hc[1];}
       else{sbh.style.display='none';}
       // Tooltip flutuante
       clearTimeout(_tooltipTimer);
@@ -3805,8 +3828,8 @@ function showInfo(cam){
   document.getElementById('rp-data').style.display='flex';
   rpTab('tec');
   document.getElementById('rp-name').textContent=cam.name;
-  const b=document.getElementById('rp-badge');b.className='status-pill '+(cam.fn?'ok':'nf');
-  b.innerHTML=cam.fn?'● Funcional':'✕ Não Funcional';
+  const b=document.getElementById('rp-badge');b.className='status-pill '+(cam.mn?'mn':cam.fn?'ok':'nf');
+  b.innerHTML=cam.mn?'⚠ Em Manutenção':cam.fn?'● Funcional':'✕ Não Funcional';
   document.getElementById('rp-canal').textContent=cam.info.canal||'—';
   document.getElementById('rp-gravador').textContent=cam.info.gravador||'—';
   document.getElementById('rp-ip').textContent=cam.info.ip||'—';
@@ -4070,11 +4093,13 @@ function saveLogEntry(){saveLogModal();}
 
 function deleteLogEntry(camName,id){
   if(!CAM_LOG[camName])return;
+  if(!confirm('Excluir esta ocorrência? Esta ação não pode ser desfeita.'))return;
   CAM_LOG[camName]=CAM_LOG[camName].filter(e=>e.id!==id);
   renderLogList(camName);
   scheduleAutoSave();
 }
 
+function _escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function renderLogList(camName){
   const el=document.getElementById('log-list');
   if(!el)return;
@@ -4102,9 +4127,9 @@ function renderLogList(camName){
           <span class="log-entry-type" style="color:${t.color}">● ${t.label}</span>
           <span class="log-entry-date">${dateStr}</span>
         </div>
-        <div class="log-entry-text">${e.text}</div>
+        <div class="log-entry-text">${_escHtml(e.text)}</div>
       </div>
-      <button class="log-del" onclick="deleteLogEntry('${camName.replace(/'/g,"\'")}',${e.id})" title="Excluir">✕</button>
+      <button class="log-del" onclick="deleteLogEntry('${camName.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;')}',${e.id})" title="Excluir">✕</button>
     </div>`;
   }).join('');
 }
@@ -4277,7 +4302,7 @@ function buildList(){
     const ipResolved=ipDirect||ipViaLookup;
     const noIp=isP&&(!ipResolved||ipResolved==='N/D'||ipResolved==='—');
     const logCount=(CAM_LOG[nm]||[]).length;
-    const _dotCls=inCurrent?'pl':fn?'ok':'nf';
+    const _dotCls=inCurrent?'pl':isMn(nm)?'mn':fn?'ok':'nf';
     const _subModel=(_info.modelo||'').replace(/^(Hikvision|Intelbras)\s+/i,'').slice(0,24);
     const _camData=DB.cameras.find(x=>(x['NOME CANAL']||x['NOME']||'')===nm)||c;
     const _canal=_camData['CANAL']||_camData['CANAL IP']||'';
@@ -4285,13 +4310,13 @@ function buildList(){
     d.innerHTML=`<span class="ci-dot ${_dotCls}"></span>
       <div class="ci-main">
         <div class="ci-row">
-          <span class="ci-name">${nm}</span>
+          <span class="ci-name">${_escHtml(nm)}</span>
           ${_crit==='ALTA'?`<span style="font-size:8px;font-weight:700;color:#dc2626;background:#fef2f2;padding:1px 4px;border-radius:4px;flex-shrink:0;border:1px solid #fecaca">ALTA</span>`:''}
           ${logCount>0?`<span style="font-size:9px;font-weight:700;color:var(--text2);background:var(--surface3);padding:1px 5px;border-radius:8px;flex-shrink:0">${logCount}</span>`:''}
           ${noIp?`<span class="ci-noip" title="IP não cadastrado">⚠ IP</span>`:''}
-          ${inOther?`<span class="ci-tag" style="color:var(--warn);font-size:9px" title="Em uso: ${otherFloor}">📌${(otherFloor||'').slice(0,5)}</span>`:''}
+          ${inOther?`<span class="ci-tag" style="color:var(--warn);font-size:9px" title="Em uso: ${_escHtml(otherFloor)}">📌${_escHtml((otherFloor||'').slice(0,5))}</span>`:''}
         </div>
-        ${(_subModel||_gravSub)?`<div class="ci-sub">${_subModel?`<span class="ci-sub-text">${_subModel}</span>`:''} ${(_subModel&&_gravSub)?`<span class="ci-sub-sep"></span>`:''} ${_gravSub?`<span class="ci-sub-grav">${_gravSub}</span>`:''}</div>`:''}</div>`;
+        ${(_subModel||_gravSub)?`<div class="ci-sub">${_subModel?`<span class="ci-sub-text">${_escHtml(_subModel)}</span>`:''} ${(_subModel&&_gravSub)?`<span class="ci-sub-sep"></span>`:''} ${_gravSub?`<span class="ci-sub-grav">${_escHtml(_gravSub)}</span>`:''}</div>`:''}</div>`;
     d.onclick=()=>goToCamera(nm);
     list.appendChild(d);
   });
@@ -5356,7 +5381,7 @@ function renderCoverage(){
     const cells=cams.map(cam=>{
       const s=mStatus[cam['NOME CANAL']];
       const ch=cam['CANAL']||'?';
-      const bg=!s?'var(--surface3)':s.rec?'#ea580c':s.fn?'var(--ok)':'var(--nf)';
+      const bg=!s?'var(--surface3)':s.rec?'#ea580c':s.mn?'var(--warn)':s.fn?'var(--ok)':'var(--nf)';
       return `<div title="Ch ${ch}: ${cam['NOME CANAL']}" style="width:18px;height:18px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;cursor:default">${ch}</div>`;
     }).join('');
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px">
@@ -5405,7 +5430,7 @@ function mmUpdate(){
   f.cameras.forEach(cam=>{
     const mx=cam.x*sc+ox,my=cam.y*sc+oy;
     ctx.beginPath();ctx.arc(mx,my,3,0,Math.PI*2);
-    ctx.fillStyle=cam.fn?'#16a34a':'#dc2626';ctx.fill();
+    ctx.fillStyle=cam.mn?'#d97706':cam.fn?'#16a34a':'#dc2626';ctx.fill();
   });
   const ew=E.c.width,eh=E.c.height;
   const vx=(-f.panX/f.zoom)*sc+ox,vy=(-f.panY/f.zoom)*sc+oy;
@@ -5625,7 +5650,7 @@ function toggleTheme(){
 // ═══════════════ UTILS ═══════════════
 function closeModal(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('show');el.style.display='';}
 let _tt;
-function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);}
+function toast(msg,dur){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),dur||3200);}
 function onDropWelcome(e){
   e.preventDefault();document.getElementById('wc-card').classList.remove('drag-over');
   const file=e.dataTransfer.files[0];if(!file)return;
@@ -5831,7 +5856,17 @@ function renderTimeline(){
 // Salva APENAS posições/metadados das câmeras — nunca imagens Base64
 // (imagens podem ter MB e travam o localStorage silenciosamente)
 let _autoSaveTimer=null;
+// Indicador de alterações não sincronizadas com o GitHub
+function markDirty(){
+  const b=document.getElementById('btn-save-cloud');if(b)b.classList.add('dirty');
+  const l=document.getElementById('save-btn-lbl');if(l&&l.textContent==='Salvar')l.textContent='Salvar •';
+}
+function clearDirty(){
+  const b=document.getElementById('btn-save-cloud');if(b)b.classList.remove('dirty');
+  const l=document.getElementById('save-btn-lbl');if(l&&l.textContent==='Salvar •')l.textContent='Salvar';
+}
 function scheduleAutoSave(){
+  markDirty();
   clearTimeout(_autoSaveTimer);
   _autoSaveTimer=setTimeout(()=>{
     try{
@@ -7900,6 +7935,18 @@ function importInventory(e){
         };
       }).filter(r=>r['NOME CANAL']);
 
+      // Nome é a chave primária do sistema — duplicatas corrompem lookup/edição
+      const _seen=new Set();const _dups=[];
+      DB.cameras=DB.cameras.filter(r=>{
+        const n=r['NOME CANAL'];
+        if(_seen.has(n)){_dups.push(n);return false;}
+        _seen.add(n);return true;
+      });
+      if(_dups.length){
+        console.warn('[Import] nomes duplicados ignorados:',_dups);
+        setTimeout(()=>toast(`⚠ ${_dups.length} nome(s) duplicado(s) na planilha foram ignorados (mantida a 1ª ocorrência): ${_dups.slice(0,3).join(', ')}${_dups.length>3?'…':''}`),1500);
+      }
+
       // ── ABA GRAVADORES ───────────────────────────────────────────────────
       const wsGrav=findSheet('Gravador','Recorder','NVR','DVR');
       if(wsGrav){
@@ -7973,6 +8020,14 @@ function importInventory(e){
         }
       }));
 
+      // Câmeras plotadas nas plantas que não existem mais no novo inventário
+      const _dbNames=new Set(DB.cameras.map(c=>c['NOME CANAL']));
+      const _ghosts=[...new Set(floors.flatMap(f=>f.cameras.filter(c=>!c.rec&&!_dbNames.has(c.name)).map(c=>c.name)))];
+      if(_ghosts.length){
+        console.warn('[Import] câmeras plotadas fora do novo inventário:',_ghosts);
+        setTimeout(()=>toast(`⚠ ${_ghosts.length} câmera(s) plotada(s) no mapa não constam na planilha importada: ${_ghosts.slice(0,3).join(', ')}${_ghosts.length>3?'…':''}. Verifique renomeações.`),3000);
+      }
+
       saveLocalInventory();
       console.log('[Import] DB.cameras após save:', DB.cameras.length, DB.cameras[0]?.['NOME CANAL']);
       buildList();updateSB();E.render();
@@ -7985,26 +8040,9 @@ function importInventory(e){
 }
 function exportInventory(){
   if(!DB.cameras.length){toast('Inventário vazio — nada para exportar.');return;}
+  if(typeof XLSX==='undefined'){toast('⚠ Biblioteca Excel não carregada — verifique a conexão.');return;}
   const now=new Date();
   const dateFmt=now.toISOString().slice(0,10).replace(/-/g,'');
-  const xmlEsc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  function makeSheet(rows){
-    if(!rows.length)return'';
-    const headers=Object.keys(rows[0]);
-    const hdrRow='<Row ss:Height="24">'+headers.map(h=>`<Cell ss:StyleID="hdr"><Data ss:Type="String">${xmlEsc(h)}</Data></Cell>`).join('')+'</Row>';
-    const body=rows.map((r,i)=>{
-      const sid=i%2===1?'alt':'txt';
-      const isNF=(String(r['STATUS DE OPERAÇÃO']||'').toLowerCase().includes('não'))||
-                 (String(r['Parecer']||'').toLowerCase().includes('não'));
-      return'<Row ss:Height="18">'+headers.map(h=>{
-        const v=r[h]??'';
-        const t=typeof v==='number'?'Number':'String';
-        const sty=isNF?'nf':(typeof v==='number'?(i%2===1?'altN':'num'):sid);
-        return`<Cell ss:StyleID="${sty}"><Data ss:Type="${t}">${xmlEsc(v)}</Data></Cell>`;
-      }).join('')+'</Row>';
-    }).join('');
-    return hdrRow+body;
-  }
   // ── Aba "Relação de Câmeras" — colunas idênticas ao IBMP_CFTV_Banco_de_Dados.xlsx ──
   const camRows=DB.cameras.map(c=>{
     const nome=c['NOME CANAL']||'';
@@ -8020,6 +8058,9 @@ function exportInventory(){
       'Status do Ativo':    c['STATUS ATIVO']||'',
       'Observação':         CAM_OBS[nome]||'',
       'CRITICIDADE':        c['CRITICIDADE']||'MÉDIA',
+      // Overrides manuais — precisam constar para não se perderem ao reimportar
+      'IP_OVERRIDE':        c['IP_OVERRIDE']||'',
+      'SETOR_OVERRIDE':     c['SETOR_OVERRIDE']||'',
     };
   });
   // ── Aba "Gravadores" ──────────────────────────────────────────────────────
@@ -8061,7 +8102,7 @@ function exportInventory(){
     'De':        h.de,
     'Para':      h.para,
   }));
-  // ── SpreadsheetML ─────────────────────────────────────────────────────────
+  // ── Monta o workbook .xlsx real via SheetJS ───────────────────────────────
   const abas=[
     {name:'Relação de Câmeras',      rows:camRows},
     {name:'Gravadores',              rows:gravRows},
@@ -8070,51 +8111,17 @@ function exportInventory(){
     ...(recRows.length? [{name:'Câmeras Recomendadas',    rows:recRows}] :[]),
     ...(histRows.length?[{name:'Histórico de Alterações', rows:histRows}]:[]),
   ].filter(a=>a.rows.length);
-  const sheetsXML=abas.map(a=>
-    `<Worksheet ss:Name="${xmlEsc(a.name)}">
-      <Table DefaultRowHeight="18">${makeSheet(a.rows)}</Table>
-      <WorksheetOptions><FreezePanes/><SplitHorizontal>1</SplitHorizontal><TopRowBottomPane>1</TopRowBottomPane></WorksheetOptions>
-    </Worksheet>`
-  ).join('');
-  const xml=`<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
-  xmlns:x="urn:schemas-microsoft-com:office:excel">
-<Styles>
-  <Style ss:ID="Default"><Alignment ss:Vertical="Center"/><Font ss:FontName="Calibri" ss:Size="10"/></Style>
-  <Style ss:ID="hdr"><Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>
-    <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/>
-    <Interior ss:Color="#16a34a" ss:Pattern="Solid"/>
-    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#d1d5db"/></Borders></Style>
-  <Style ss:ID="txt"><Alignment ss:Vertical="Center"/><Font ss:FontName="Calibri" ss:Size="10" ss:Color="#1f2937"/>
-    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#e5e7eb"/></Borders></Style>
-  <Style ss:ID="num"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
-    <Font ss:FontName="Calibri" ss:Size="10" ss:Color="#1f2937"/>
-    <NumberFormat ss:Format="#,##0.00"/>
-    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#e5e7eb"/></Borders></Style>
-  <Style ss:ID="alt"><Alignment ss:Vertical="Center"/><Font ss:FontName="Calibri" ss:Size="10" ss:Color="#1f2937"/>
-    <Interior ss:Color="#f0fdf4" ss:Pattern="Solid"/>
-    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#d1fae5"/></Borders></Style>
-  <Style ss:ID="altN"><Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
-    <Font ss:FontName="Calibri" ss:Size="10" ss:Color="#1f2937"/>
-    <Interior ss:Color="#f0fdf4" ss:Pattern="Solid"/>
-    <NumberFormat ss:Format="#,##0.00"/>
-    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#d1fae5"/></Borders></Style>
-  <Style ss:ID="nf"><Alignment ss:Vertical="Center"/>
-    <Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#991b1b"/>
-    <Interior ss:Color="#fee2e2" ss:Pattern="Solid"/>
-    <Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#fca5a5"/></Borders></Style>
-</Styles>
-${sheetsXML}
-</Workbook>`;
-  const blob=new Blob(['﻿'+xml],{type:'application/vnd.ms-excel;charset=UTF-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`IBMP_CFTV_Banco_de_Dados_${dateFmt}.xls`;
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
-  toast(`✓ Banco exportado — ${DB.cameras.length} câmeras · ${DB.recorders.length} gravadores (5 abas)`);
+  const wb=XLSX.utils.book_new();
+  abas.forEach(a=>{
+    const ws=XLSX.utils.json_to_sheet(a.rows);
+    // largura de coluna pelo conteúdo (limitada a 40 chars)
+    const headers=Object.keys(a.rows[0]);
+    ws['!cols']=headers.map(h=>({wch:Math.min(40,Math.max(h.length,...a.rows.map(r=>String(r[h]??'').length))+2)}));
+    ws['!autofilter']={ref:ws['!ref']};
+    XLSX.utils.book_append_sheet(wb,ws,a.name.slice(0,31));
+  });
+  XLSX.writeFile(wb,`IBMP_CFTV_Banco_de_Dados_${dateFmt}.xlsx`);
+  toast(`✓ Banco exportado — ${DB.cameras.length} câmeras · ${DB.recorders.length} gravadores (${abas.length} abas)`);
   setTimeout(()=>toast('⚠ O Excel não inclui histórico de ocorrências, dados financeiros manuais nem posições no mapa. Para backup completo, use Salvar no GitHub ou Exportar Projeto.',5000),800);
 }
 function saveEditAndExport(){
@@ -8124,6 +8131,7 @@ function saveEditAndExport(){
 
 // ═══════════════ LOCALSTORAGE (só inventário — sem imagens) ═══════════════
 function saveLocalInventory(){
+  if(typeof markDirty==='function')markDirty();
   try{
     const payload={
       _userImport:true,
@@ -8165,6 +8173,10 @@ function loadLocalInventory(){
 
 // ═══════════════ INIT ═══════════════
 let _autoLoaded = false;
+// Coordenação autosave × autoload da nuvem (evita sobrescrever trabalho mais novo)
+let _asModalPending = false;   // modal "Restaurar autosave?" aguardando decisão do usuário
+let _asRestored     = false;   // usuário restaurou o autosave nesta sessão
+let _pendingCloudData = null;  // projeto.json chegou enquanto o modal estava aberto
 
 window.addEventListener('DOMContentLoaded',()=>{
   E.init();
@@ -8196,6 +8208,7 @@ window.addEventListener('DOMContentLoaded',()=>{
         document.getElementById('autosave-info').textContent=
           `${totalCams} câmeras em ${data.floors?.length||1} planta(s) · Salvo em ${ts}`;
         document.getElementById('autosave-modal').classList.add('show');
+        _asModalPending=true;
         finishInit();
         return;
       }
@@ -8216,6 +8229,11 @@ function finishInit(){
 }
 function restoreAutoSave(){
   closeModal('autosave-modal');
+  _asModalPending=false;_asRestored=true;
+  if(_pendingCloudData){
+    _pendingCloudData=null;
+    setTimeout(()=>toast('Versão da nuvem NÃO aplicada — seu autosave local foi mantido. Clique em Salvar para sincronizar.'),1200);
+  }
   if(loadAutoSave()){
     finishInit();
     const f=F();
@@ -8245,6 +8263,12 @@ function restoreAutoSave(){
 function discardAutoSave(){
   clearAutoSave();
   closeModal('autosave-modal');
+  _asModalPending=false;
+  if(_pendingCloudData){
+    const d=_pendingCloudData;_pendingCloudData=null;
+    loadProjectJSON(d);
+    toast('Projeto carregado da nuvem');
+  }
   finishInit();
 }
 </script>
@@ -8397,20 +8421,21 @@ function mobBuildList(){
 
 function mobItemHTML(c){
   const grav = (c.info.gravador||'').replace(/DVR-|NVR-/g,'')||'—';
-  const modelo = (c.info.modelo||'').replace(/^(Hikvision|Intelbras|VIP)\s*/i,'').slice(0,20);
+  const dbCam = DB.cameras.find(dc=>dc['NOME CANAL']===c.nome)||{};
+  const modelo = (c.info.modelo||'').replace(/^(Hikvision|Intelbras)\s+/i,'').slice(0,24);
   const gravCh = c.info.gravador ? (c.info.gravador + (dbCam['CANAL'] ? ` · CH${dbCam['CANAL']}` : '')) : '';
   const sub  = [modelo, gravCh].filter(Boolean).join(' · ') || c.info.setor || grav;
   const nomeEnc = encodeURIComponent(c.nome);
+  const mn  = !!c.info.manut;
   const cls = 'mob-item' + (c.fn ? '' : ' nf-item');
-  const dot = c.fn ? 'ok' : 'nf';
-  const dbCam = DB.cameras.find(dc=>dc['NOME CANAL']===c.nome)||{};
+  const dot = mn ? 'mn' : c.fn ? 'ok' : 'nf';
   const crit = dbCam['CRITICIDADE']||'';
   const critColor = crit==='ALTA'?'#dc2626':crit==='BAIXA'?'#16a34a':'#d97706';
   const critBadge = crit ? '<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:5px;background:' + critColor + '18;color:' + critColor + ';border:1px solid ' + critColor + '30">' + crit + '</span>' : '';
   return '<div class="' + cls + '" onclick="mobOpenSheet(decodeURIComponent(\'' + nomeEnc + '\'))">' +
     '<div class="mob-item-dot ' + dot + '"></div>' +
-    '<div class="mob-item-body"><div class="mob-item-name">' + c.nome + '</div><div class="mob-item-sub">' + sub + '</div></div>' +
-    '<div class="mob-item-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">' + critBadge + '<span class="mob-item-tag">' + grav + '</span></div>' +
+    '<div class="mob-item-body"><div class="mob-item-name">' + _escHtml(c.nome) + '</div><div class="mob-item-sub">' + _escHtml(sub) + '</div></div>' +
+    '<div class="mob-item-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">' + critBadge + '<span class="mob-item-tag">' + _escHtml(grav) + '</span></div>' +
     '</div>';
 }
 
@@ -8436,8 +8461,8 @@ function mobOpenSheet(nome){
 
   document.getElementById('mob-sheet-name').textContent = nome;
   const st = document.getElementById('mob-sheet-status');
-  st.className = 'mob-sheet-status ' + (fn?'ok':'nf');
-  st.textContent = fn ? '● Operante' : '✕ Inativa';
+  st.className = 'mob-sheet-status ' + (info.manut?'mn':fn?'ok':'nf');
+  st.textContent = info.manut ? '⚠ Em Manutenção' : fn ? '● Operante' : '✕ Inativa';
 
   const rows = [
     {l:'Canal',    v:info.canal||'—',    c:''},
@@ -8618,6 +8643,17 @@ const CHANGELOG = [
     'Dashboard de Manutenção: nova aba com KPIs, inoperantes por criticidade, substituições urgentes, expansões',
     'Relatório de Gravadores: KPIs + ranking de falhas + cards por gravador com timbrado institucional',
   ]},
+  { v:'v7', d:'Jul 2026', items:[
+    'Redesign visual: dark mode refinado, KPI hero no Dashboard, painel direito com abas Técnico/Financeiro/Histórico',
+    'Lista de câmeras em duas linhas (nome + modelo · gravador · canal) com badges de contagem nos filtros',
+    'Novo status "Em manutenção" (âmbar) em todo o sistema: mapa, lista, painel, minimap e mobile',
+    'Exportação em .xlsx real (SheetJS) — sem aviso de formato no Excel, com autofiltro e larguras automáticas',
+    'Histórico de alterações (de/para) exportável no Excel e persistido no GitHub',
+    'Financeiro, ano de instalação e histórico agora salvos no projeto.json (antes só locais)',
+    'Proteção contra conflito: autosave local mais novo não é mais sobrescrito pelo projeto da nuvem',
+    'Indicador de alterações não salvas no botão Salvar',
+    'Correções: lista mobile (ReferenceError), menu Relatórios, zoom inicial da planta, filtros cortados',
+  ]},
   { v:'v6.5', d:'Mai 2026', items:[
     'Fabricante "VIP" no Excel corrigido (era exibido como fabricante ao invés do modelo)',
     'Contagem zero de câmeras nos gravadores — lookup corrigido',
@@ -8658,7 +8694,7 @@ const CHANGELOG = [
     'Welcome card não aparece mais quando projeto.json é carregado',
   ]},
   { v:'v6.1', d:'Mai 2026', items:[
-    'Login com senha Ibmp@2026 e sessão por sessionStorage',
+    'Login com senha e sessão por sessionStorage',
     'Autoload de projeto.json ao abrir o sistema (GitHub Pages)',
     'Botão Salvar integrado com GitHub API (PUT)',
     'View mobile dedicada com KPIs, busca, filtros e bottom sheet',
@@ -9228,7 +9264,7 @@ function mobSetView(v){
         const cells=cams.map(cam=>{
           const s=mStatus[cam['NOME CANAL']];
           const ch=cam['CANAL']||'?';
-          const bg=!s?'var(--surface3)':s.rec?'#ea580c':s.fn?'var(--ok)':'var(--nf)';
+          const bg=!s?'var(--surface3)':s.rec?'#ea580c':s.mn?'var(--warn)':s.fn?'var(--ok)':'var(--nf)';
           return `<div title="Ch ${ch}: ${cam['NOME CANAL']}" style="width:20px;height:20px;border-radius:3px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff">${ch}</div>`;
         }).join('');
         return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;flex-direction:column;gap:10px">
@@ -9535,7 +9571,11 @@ function buildProjectJSON(){
       cameras: f.cameras.map(c => c.toJSON())
     })),
     inventory: typeof CAM_INV !== 'undefined' ? CAM_INV : {},
-    camLog:    typeof CAM_LOG !== 'undefined' ? CAM_LOG  : {}
+    camLog:    typeof CAM_LOG !== 'undefined' ? CAM_LOG  : {},
+    camFin:    typeof CAM_FIN !== 'undefined' ? CAM_FIN  : {},
+    camObs:    typeof CAM_OBS !== 'undefined' ? CAM_OBS  : {},
+    installYear: typeof INSTALL_YEAR !== 'undefined' ? INSTALL_YEAR : {},
+    changeLog: typeof _CHANGE_LOG !== 'undefined' ? _CHANGE_LOG.slice(-1000) : []
   };
 }
 
@@ -9584,12 +9624,15 @@ async function saveToCloud(){
     const put = await fetch(apiUrl, {method:'PUT', headers, body: JSON.stringify(body)});
     if(put.ok){
       btn.classList.remove('saving'); btn.classList.add('saved');
+      clearDirty();
       if(lbl) lbl.textContent = '✓ Salvo!';
       toast('Projeto salvo no GitHub!');
       setTimeout(() => { btn.classList.remove('saved'); if(lbl) lbl.textContent = 'Salvar'; }, 3000);
+    } else if(put.status===409){
+      throw new Error('CONFLITO: o projeto foi salvo por outra sessão/aba. Recarregue a página antes de salvar para não sobrescrever.');
     } else {
-      const er = await put.json();
-      throw new Error(er.message || put.status);
+      let er={};try{er=await put.json();}catch(_){}
+      throw new Error(er.message || ('HTTP '+put.status));
     }
   }catch(e){
     btn.classList.remove('saving'); btn.classList.add('error');
@@ -9599,7 +9642,7 @@ async function saveToCloud(){
       toast('Token GitHub expirado — clique em Configurar GitHub');
       setTimeout(()=>openGhConfig(), 500);
     } else {
-      toast('Erro ao salvar: ' + e.message);
+      toast('Erro ao salvar: ' + e.message, 6000);
     }
     setTimeout(() => { btn.classList.remove('error'); if(lbl) lbl.textContent = 'Salvar'; }, 3000);
   }
@@ -9641,12 +9684,18 @@ function loadProjectJSON(data){
       }
       return fl;
     });
-    _floorIdx = 0;
+    activeFloor = Math.min(activeFloor, floors.length - 1);
+    if(activeFloor < 0) activeFloor = 0;
+    E.sel = null; // seleção apontava para objetos das plantas antigas
     const allIds = floors.flatMap(f => f.cameras.map(c => c.id)).filter(Number.isFinite);
     if(allIds.length) _uid = Math.max(...allIds) + 1;
   }
   if(data.inventory) Object.assign(CAM_INV, data.inventory);
   if(data.camLog)    Object.assign(CAM_LOG,  data.camLog);
+  if(data.camFin)    Object.assign(CAM_FIN,  data.camFin);
+  if(data.camObs)    Object.assign(CAM_OBS,  data.camObs);
+  if(data.installYear) Object.assign(INSTALL_YEAR, data.installYear);
+  if(data.changeLog?.length) _CHANGE_LOG = data.changeLog;
 
   const wel = document.getElementById('welcome');
   const tb  = document.getElementById('toolbar');
@@ -9684,6 +9733,22 @@ window.addEventListener('DOMContentLoaded', () => {
       if(!r.ok) return;
       const data = await r.json();
       console.log('[AutoLoad] OK, chaves:', Object.keys(data));
+      // Modal de autosave aberto? Aguarda a decisão do usuário em vez de sobrescrever
+      if(_asModalPending){
+        _pendingCloudData=data;
+        console.log('[AutoLoad] aguardando decisão do modal de autosave');
+        return;
+      }
+      // Autosave já restaurado e mais novo que a nuvem? Não sobrescreve trabalho local
+      if(_asRestored){
+        let asTs=0;try{asTs=JSON.parse(localStorage.getItem('ibmp_autosave')||'{}').ts||0;}catch(e){}
+        const cloudTs=Date.parse(data.exported||'')||0;
+        if(asTs>cloudTs){
+          toast('⚠ Seu autosave local é mais recente que a nuvem — mantido. Clique em Salvar para sincronizar.');
+          console.log('[AutoLoad] pulado: autosave local mais novo',{asTs,cloudTs});
+          return;
+        }
+      }
       loadProjectJSON(data);
       toast('Projeto carregado automaticamente');
     }catch(e){
