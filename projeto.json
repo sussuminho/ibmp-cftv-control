@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "exported": "2026-07-06T11:36:40.185Z",
+  "exported": "2026-07-06T11:37:02.794Z",
   "db": {
     "cameras": [
       {
@@ -12,7 +12,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400165UR",
         "ATIVO": "1910",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Cultivo Procariotos - DT",
@@ -23,7 +24,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400168VO",
         "ATIVO": "1912",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sintese de Acidos Nucleicos - DT",
@@ -34,7 +36,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I34002039I",
         "ATIVO": "1918",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sintese Quimica - DT",
@@ -45,7 +48,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400206HG",
         "ATIVO": "1909",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Acesso a Convivencia - DT",
@@ -56,7 +60,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400202S5",
         "ATIVO": "1919",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala de Freezers - DT",
@@ -67,7 +72,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400200XA",
         "ATIVO": "1914",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Convivencia 1 - DT",
@@ -75,10 +81,11 @@
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
         "CANAL": 8,
-        "STATUS DE OPERAÇÃO": "Ativo",
+        "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "IM2I3400199KR",
         "ATIVO": "1915",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Data Center - DT",
@@ -89,7 +96,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "4REJ0701420KN",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Cultivo Eucariotos 2 - DT",
@@ -100,7 +108,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400201XE",
         "ATIVO": "1900",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Cultivo Eucariotos - DT",
@@ -111,7 +120,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Convivencia 2 - DT",
@@ -122,7 +132,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400205WC",
         "ATIVO": "1920",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Hall Entrada - DT",
@@ -133,7 +144,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400159Z5",
         "ATIVO": "1911",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Piso Tecnico - DT",
@@ -144,7 +156,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "CJTJ4904039N9",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Externo - Bloco B",
@@ -155,7 +168,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "OX3H37001573Q",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "15% Imunoensaio - DT",
@@ -166,7 +180,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I2900348L9",
         "ATIVO": "1921",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "50% Imunoensaio - DT",
@@ -174,10 +189,11 @@
         "MODELO CÂMERA": "VIP-3220-D",
         "MODELO GRAVADOR": "",
         "CANAL": 4,
-        "STATUS DE OPERAÇÃO": "Ativo",
+        "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "IM2I3400496T1",
         "ATIVO": "1901",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "PRM- Preparo Reação Molecular",
@@ -188,7 +204,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400495YA",
         "ATIVO": "1903",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala de PCR",
@@ -199,7 +216,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "IM2I3400492UR",
         "ATIVO": "1902",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Extracao - DT",
@@ -210,7 +228,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400498T1",
         "ATIVO": "1907",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Porta Data Center - DT",
@@ -221,7 +240,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "DHY0001448520",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala de Água - DT",
@@ -232,7 +252,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I34001647Y",
         "ATIVO": "1904",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Lavagem e Esterilização - DT",
@@ -243,7 +264,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400160KM",
         "ATIVO": "1905",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Entrada Lab Geral - DT",
@@ -254,7 +276,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400166DN",
         "ATIVO": "1913",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Lab Geral - DT",
@@ -265,7 +288,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400208RK",
         "ATIVO": "1898",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Convivência - DT",
@@ -276,7 +300,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3400204B0",
         "ATIVO": "1908",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala de Manutencao Bloco C1",
@@ -287,7 +312,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "7KOL0201290JE",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Entrada Piso Tecnico - Bloco C1",
@@ -298,7 +324,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "XO4K310078985",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor/Escada 1 - Bloco D",
@@ -309,7 +336,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "9BAM0403372EX",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor/SAC - Bloco D",
@@ -320,7 +348,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "9BAM0405485PH",
         "ATIVO": "4208",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor/DN - Bloco D",
@@ -331,7 +360,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "9BAM0403397WZ",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Estoque TI - Bloco D",
@@ -342,7 +372,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "9BAM0403408OC",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Convivencia - Bloco C1",
@@ -353,7 +384,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I29003446V",
         "ATIVO": "1922",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Preparo e Tampoes",
@@ -364,7 +396,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I4204309J6",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Envase 3",
@@ -375,7 +408,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I2900346D2",
         "ATIVO": "1923",
-        "STATUS ATIVO": "Com ativo"
+        "STATUS ATIVO": "Com ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Envase 2",
@@ -386,7 +420,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3700505UL",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Empacotamento 1a",
@@ -397,7 +432,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I4202070KY",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Sujo 1",
@@ -408,7 +444,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "CJTK1106676ZR",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Envase 1",
@@ -419,7 +456,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I1004680UM",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Limpo",
@@ -430,7 +468,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I1802348VZ",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Purificacao",
@@ -441,7 +480,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I4202088HG",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Teste rapido",
@@ -452,7 +492,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I4204305YN",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Empacotamento 2a",
@@ -463,7 +504,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I4204313SS",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala Lise",
@@ -474,7 +516,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I4202087T9",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Empacotamento 1b",
@@ -485,7 +528,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "56ZK4812364JD",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala de Crescimento",
@@ -496,7 +540,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I4204308B9",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala de Impressao",
@@ -507,7 +552,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "56ZK4814329B5",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Secretaria Bloco C1",
@@ -518,7 +564,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "HW2J330050045",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Hall de Entrada - Bloco C1",
@@ -529,7 +576,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "HW2J3301486Q7",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala de Reuniao Mezanino",
@@ -540,7 +588,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "IM2I3700509FX",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Sujo 2",
@@ -551,7 +600,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "56ZK4814348EP",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Subida Mezanino - Producao",
@@ -562,7 +612,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "56ZK4814347UW",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Sujo Saida de Rejeitos",
@@ -573,7 +624,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "56ZK4812379UP",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Sujo 2 - Producao",
@@ -584,7 +636,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "56ZK48123623L",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Empacotamento 2 - Producao 2",
@@ -595,7 +648,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "56ZK4814352NA",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Entrada - CQ",
@@ -606,7 +660,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Microbiologia - CQ",
@@ -617,7 +672,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "PCR - CQ",
@@ -628,7 +684,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Externo Expedicao",
@@ -639,7 +696,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Escritorio Logistica",
@@ -650,7 +708,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Externo Controle Positivo",
@@ -661,7 +720,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Entrada Logistica 1",
@@ -672,7 +732,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Estoque Saida Logistica",
@@ -683,7 +744,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Estoque 1",
@@ -694,7 +756,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Estoque 2",
@@ -705,7 +768,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Estoque 3",
@@ -716,7 +780,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Escritorio Estoque",
@@ -727,7 +792,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Estoque 4",
@@ -738,7 +804,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Quarentena Estoque",
@@ -749,7 +816,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Escritorio Recebimento",
@@ -760,7 +828,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Entrada Logistica 2",
@@ -771,7 +840,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Externo Corredor Logística",
@@ -782,7 +852,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Coredor prox. Sala equipamentos",
@@ -793,7 +864,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor /Frente Preparo soluções",
@@ -804,7 +876,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor C",
@@ -815,7 +888,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor Sujo 3 - Producao",
@@ -826,7 +900,8 @@
         "STATUS DE OPERAÇÃO": "Ativo",
         "SERIAL": "56ZK4812384MI",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Entrada Copa C",
@@ -837,7 +912,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Entrada sala Distribuição Piso Técnico",
@@ -848,7 +924,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Escritório Produção C",
@@ -859,7 +936,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Expedição C",
@@ -870,7 +948,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Expedição C 1",
@@ -881,7 +960,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Preparo soluções",
@@ -892,7 +972,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala de Distribuição Piso Técnico",
@@ -903,7 +984,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala de Preparo  C",
@@ -914,7 +996,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala Equipamentos",
@@ -925,7 +1008,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Sala principal (Lise, Purificação e Crescimento C",
@@ -936,7 +1020,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Prototipagem - Bloco B",
@@ -947,7 +1032,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       },
       {
         "NOME CANAL": "Corredor /Frente Preparo soluções 2",
@@ -958,7 +1044,8 @@
         "STATUS DE OPERAÇÃO": "Não funcional",
         "SERIAL": "",
         "ATIVO": "",
-        "STATUS ATIVO": "Sem ativo"
+        "STATUS ATIVO": "Sem ativo",
+        "CRITICIDADE": "MÉDIA"
       }
     ],
     "recorders": [
@@ -969,7 +1056,8 @@
         "LOCALIZAÇÃO": "DATA CENTER DT",
         "IMAGENS": "BLOCO B",
         "TIPO DE GRAVADOR": "NVR",
-        "Armazenamento": "2 x 3,63TB"
+        "Armazenamento": "2 x 3,63TB",
+        "Observação": ""
       },
       {
         "NOME DO GRAVADOR": "DVR-BLOCOB-02",
@@ -978,7 +1066,8 @@
         "LOCALIZAÇÃO": "DATA CENTER DT",
         "IMAGENS": "BLOCO B",
         "TIPO DE GRAVADOR": "NVR",
-        "Armazenamento": "5,45TB"
+        "Armazenamento": "5,45TB",
+        "Observação": ""
       },
       {
         "NOME DO GRAVADOR": "DVR-BLOCOC-01",
@@ -987,7 +1076,8 @@
         "LOCALIZAÇÃO": "SALA DE DISTRIBUICAO",
         "IMAGENS": "BLOCO C1 E BLOCO D",
         "TIPO DE GRAVADOR": "NVR",
-        "Armazenamento": "2 x 3,63TB"
+        "Armazenamento": "2 x 3,63TB",
+        "Observação": ""
       },
       {
         "NOME DO GRAVADOR": "DVR-BLOCOC-02",
@@ -996,7 +1086,8 @@
         "LOCALIZAÇÃO": "SALA DE DISTRIBUICAO",
         "IMAGENS": "BLOCO C1 PRODUCAO",
         "TIPO DE GRAVADOR": "NVR",
-        "Armazenamento": "5,45TB"
+        "Armazenamento": "5,45TB",
+        "Observação": ""
       },
       {
         "NOME DO GRAVADOR": "DVR-BLOCOC-03",
@@ -1005,7 +1096,8 @@
         "LOCALIZAÇÃO": "SALA DE DISTRIBUICAO",
         "IMAGENS": "BLOCO C1 PRODUCAO",
         "TIPO DE GRAVADOR": "NVR",
-        "Armazenamento": "3,64TB"
+        "Armazenamento": "3,64TB",
+        "Observação": ""
       },
       {
         "NOME DO GRAVADOR": "DVR-CQ-01",
@@ -1014,7 +1106,8 @@
         "LOCALIZAÇÃO": "CQ",
         "IMAGENS": "CQ",
         "TIPO DE GRAVADOR": "Hibrido DVR",
-        "Armazenamento": "2,73TB"
+        "Armazenamento": "2,73TB",
+        "Observação": "ACESSO APENAS PELO INTERNET EXPLORER"
       },
       {
         "NOME DO GRAVADOR": "DVR-LOGISTICA-01",
@@ -1023,133 +1116,134 @@
         "LOCALIZAÇÃO": "LOGISTICA",
         "IMAGENS": "LOGISTICA",
         "TIPO DE GRAVADOR": "Hibrido DVR",
-        "Armazenamento": "2,69TB"
+        "Armazenamento": "2,69TB",
+        "Observação": "SEM SERIAL DAS CAMERAS"
       }
     ],
     "pareceres": [
       {
         "Câmera": 1,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Cromatografia - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 2,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Cultivo Procariotos - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 3,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Sintese de Acidos Nucleicos - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 5,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Sintese Quimica - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 6,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Acesso a Convivencia - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 7,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Sala de Freezers - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 8,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
-        "Parecer": "OK"
+        "Localização/Bloco": "Convivencia 1 - DT",
+        "Parecer": "Não funcional"
       },
       {
         "Câmera": 9,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Data Center - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 10,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Cultivo Eucariotos 2 - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 11,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Cultivo Eucariotos - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 12,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Convivencia 2 - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 13,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Hall Entrada - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 14,
-        "Localização/Bloco": "DT — DVR-BLOCOB-01",
+        "Localização/Bloco": "Piso Tecnico - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 1,
-        "Localização/Bloco": "Externo — DVR-BLOCOB-02",
+        "Localização/Bloco": "Externo - Bloco B",
         "Parecer": "OK"
       },
       {
         "Câmera": 3,
-        "Localização/Bloco": "Lab — DVR-BLOCOB-02",
+        "Localização/Bloco": "15% Imunoensaio - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 4,
-        "Localização/Bloco": "Lab — DVR-BLOCOB-02",
-        "Parecer": "OK"
+        "Localização/Bloco": "50% Imunoensaio - DT",
+        "Parecer": "Não funcional"
       },
       {
         "Câmera": 5,
-        "Localização/Bloco": "PRM — DVR-BLOCOB-02",
+        "Localização/Bloco": "PRM- Preparo Reação Molecular",
         "Parecer": "OK"
       },
       {
         "Câmera": 6,
-        "Localização/Bloco": "Sala de PCR — DVR-BLOCOB-02",
+        "Localização/Bloco": "Sala de PCR",
         "Parecer": "Não funcional"
       },
       {
         "Câmera": 7,
-        "Localização/Bloco": "Extracao — DVR-BLOCOB-02",
+        "Localização/Bloco": "Extracao - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 8,
-        "Localização/Bloco": "Porta Data Center — DVR-BLOCOB-02",
+        "Localização/Bloco": "Porta Data Center - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 9,
-        "Localização/Bloco": "Sala Nilson — DVR-BLOCOB-02",
+        "Localização/Bloco": "Sala de Água - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 10,
-        "Localização/Bloco": "Esterilizacao — DVR-BLOCOB-02",
+        "Localização/Bloco": "Lavagem e Esterilização - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 14,
-        "Localização/Bloco": "Entrada Lab Central — DVR-BLOCOB-02",
+        "Localização/Bloco": "Entrada Lab Geral - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 15,
-        "Localização/Bloco": "Lab Central — DVR-BLOCOB-02",
+        "Localização/Bloco": "Lab Geral - DT",
         "Parecer": "OK"
       },
       {
         "Câmera": 16,
-        "Localização/Bloco": "Corredor Lab Central — DVR-BLOCOB-02",
+        "Localização/Bloco": "Corredor Convivência - DT",
         "Parecer": "OK"
       },
       {
