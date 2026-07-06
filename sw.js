@@ -1,9 +1,11 @@
 /**
- * IBMP CFTV Control — Service Worker v8
- * Cache atualizado — força limpeza do cache anterior
+ * IBMP CFTV Control — Service Worker v9
+ * HTML principal agora é network-first: sempre busca a versão mais nova
+ * quando há conexão (ex.: troca de senha), usando o cache só como fallback offline.
  */
-const CACHE_NAME = 'ibmp-cftv-v12';
-const CACHE_CDN  = 'ibmp-cftv-cdn-v12';
+const CACHE_NAME = 'ibmp-cftv-v13';
+const CACHE_CDN  = 'ibmp-cftv-cdn-v13';
+const MAIN_HTML  = './IBMP_CFTV_Control_v6_5.html';
 const LOCAL_ASSETS = [
   './IBMP_CFTV_Control_v6_5.html',
   './manifest.json',
@@ -40,8 +42,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   const isCDN = CDN_HOSTS.some(host => url.hostname.includes(host));
+  // Navegação (abrir/recarregar a página) ou o próprio HTML: sempre tenta a rede primeiro,
+  // pra garantir que troca de senha/atualizações valham na próxima vez que a pessoa abrir online.
+  const isMainHtml = event.request.mode === 'navigate' || url.pathname.endsWith('IBMP_CFTV_Control_v6_5.html');
   if (isCDN) {
     event.respondWith(networkFirstCDN(event.request));
+  } else if (isMainHtml) {
+    event.respondWith(networkFirstLocal(event.request));
   } else {
     event.respondWith(cacheFirstLocal(event.request));
   }
@@ -57,7 +64,19 @@ async function cacheFirstLocal(request) {
     }
     return response;
   } catch {
-    return caches.match('./IBMP_CFTV_Control_v6_5.html');
+    return caches.match(MAIN_HTML);
+  }
+}
+async function networkFirstLocal(request) {
+  try {
+    const response = await fetch(request);
+    if (response && response.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return (await caches.match(request)) || (await caches.match(MAIN_HTML));
   }
 }
 async function networkFirstCDN(request) {
